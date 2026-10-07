@@ -1,7 +1,8 @@
 // The Three.js stage: renderer, orthographic camera framed on the board, fixed light rig, Street BBQ backdrop.
 // Knows nothing about rules. The board view (board.js) puts things on it.
 import * as THREE from 'three';
-import { materials, tickMaterials } from './materials.js';
+import { materials, tickMaterials, setEmberDetail } from './materials.js';
+import { TIERS } from './quality.js';
 import { CAMERA_ELEVATION } from './layout.js';
 import { softDot } from './textures.js';
 
@@ -18,7 +19,7 @@ export class Stage {
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = shadows;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap; // PCFSoftShadowMap is gone from three r18x
     this.pixelRatioMax = pixelRatioMax;
 
     this.scene = new THREE.Scene();
@@ -33,7 +34,36 @@ export class Stage {
     this.#backdrop();
     this.time = 0;
     this.updaters = new Set();
+    this.tier = null;
+    this.onTier = null; // (name, tier) => void: board view / particles follow the tier
     this.resize();
+  }
+
+  /** Apply a quality tier (render/quality.js TIERS): pixel ratio, shadow map, ember shader detail. */
+  setQuality(name) {
+    const t = TIERS[name];
+    if (!t || this.tierName === name) return;
+    const prev = this.tier;
+    this.tierName = name;
+    this.tier = t;
+    this.pixelRatioMax = t.pixelRatio;
+    const sm = this.renderer.shadowMap;
+    const enabled = t.shadows !== 'off';
+    if (sm.enabled !== enabled) {
+      sm.enabled = enabled;
+      this.scene.traverse((o) => {
+        if (!o.material) return;
+        for (const m of Array.isArray(o.material) ? o.material : [o.material]) m.needsUpdate = true; // shadow code is compiled in
+      });
+    }
+    if (enabled && prev?.shadowMap !== t.shadowMap) {
+      this.key.shadow.mapSize.set(t.shadowMap, t.shadowMap);
+      this.key.shadow.map?.dispose();
+      this.key.shadow.map = null;
+    }
+    setEmberDetail(t.ember);
+    this.resize();
+    this.onTier?.(name, t);
   }
 
   #lights() {
@@ -189,20 +219,48 @@ export class Stage {
     } else this.renderer.render(this.scene, this.camera);
   }
 
-  /** requestAnimationFrame loop with a clamped dt. */
-  start(onFrame) {
+  /**
+   * requestAnimationFrame loop. `gate(dt)` (optional) returns the dt to render with, or 0 to skip this frame
+   * (render on demand); `onFrame(dt)` advances the view before the render; `onRendered(info)` gets
+   * { dt, cpuMs, calls, triangles } after it. dt is clamped to 50 ms, so a slow device animates slower, never skips.
+   * Stops while the page is hidden and restarts without a jump when it comes back.
+   */
+  start(onFrame, { gate = null, onRendered = null } = {}) {
     let last = performance.now();
     const loop = (now) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const raw = (now - last) / 1000;
       last = now;
-      onFrame?.(dt);
-      this.render(dt);
+      const step = gate ? gate(raw) : raw;
+      if (step > 0) {
+        const dt = Math.min(0.05, step);
+        const t0 = performance.now();
+        onFrame?.(dt);
+        this.render(dt);
+        const info = this.renderer.info.render;
+        onRendered?.({ dt: step, cpuMs: performance.now() - t0, calls: info.calls, triangles: info.triangles, pixelRatio: this.renderer.getPixelRatio() });
+      }
       this.raf = requestAnimationFrame(loop);
     };
     this.raf = requestAnimationFrame(loop);
+    if (!this.onVisibility && typeof document !== 'undefined') {
+      this.onVisibility = () => {
+        cancelAnimationFrame(this.raf);
+        if (document.visibilityState === 'hidden') return;
+        last = performance.now();
+        this.raf = requestAnimationFrame(loop);
+      };
+      document.addEventListener('visibilitychange', this.onVisibility);
+    }
   }
 
   stop() {
     cancelAnimationFrame(this.raf);
+    if (this.onVisibility) document.removeEventListener('visibilitychange', this.onVisibility);
+    this.onVisibility = null;
+  }
+
+  /** Something on screen moves (camera shake). */
+  get busy() {
+    return this.shake > 0.001;
   }
 }

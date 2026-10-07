@@ -117,3 +117,58 @@ test('coach: shows the first move of the solver solution, only for levels with a
   assert.equal(coachMove({ hint: 'x', solver: { solution: 'btongs:0.1 m1.2-0.2' } }), null); // booster first: no hand
   assert.equal(coachMove({ hint: 'x', solver: { solution: 'garbage' } }), null);
 });
+
+test('quality: start tier from setting, history, then device size', async () => {
+  const { initialTier, lowerTier, TIERS, TIER_ORDER } = await import('../../client/render/quality.js');
+  assert.equal(initialTier({ setting: 'low', autoTier: 'high' }), 'low'); // manual override wins
+  assert.equal(initialTier({ setting: 'auto', autoTier: 'medium' }), 'medium'); // where auto settled last time
+  assert.equal(initialTier({ deviceMemory: 2, cores: 8 }), 'medium');
+  assert.equal(initialTier({ deviceMemory: 8, cores: 4 }), 'medium');
+  assert.equal(initialTier({ deviceMemory: 8, cores: 8 }), 'high');
+  assert.equal(initialTier({}), 'high'); // Safari tells nothing: start high, the monitor steps down
+  assert.equal(lowerTier('high'), 'medium');
+  assert.equal(lowerTier('low'), 'low');
+  // each step is cheaper on every axis
+  for (let i = 1; i < TIER_ORDER.length; i++) {
+    const a = TIERS[TIER_ORDER[i - 1]], b = TIERS[TIER_ORDER[i]];
+    assert.ok(b.pixelRatio <= a.pixelRatio && b.shadowMap <= a.shadowMap && b.ember <= a.ember && b.particles <= a.particles);
+  }
+});
+
+test('quality: the monitor steps down only after 2 s of slow frames, ignoring hiccups', async () => {
+  const { FrameMonitor } = await import('../../client/render/quality.js');
+  const m = new FrameMonitor();
+  const feed = (ms, seconds) => {
+    let fired = 0;
+    for (let t = 0; t < seconds * 1000; t += ms) fired += m.add(ms) ? 1 : 0;
+    return fired;
+  };
+  assert.equal(feed(16.7, 10), 0); // 60 fps: never
+  m.reset();
+  assert.equal(feed(25, 1.5), 0); // slow, but not for long enough yet
+  assert.equal(feed(25, 0.6), 1); // past 2 s: one step
+  m.reset();
+  for (let i = 0; i < 200; i++) assert.equal(m.add(i % 50 ? 16 : 400), false); // a 400 ms hitch every 50 frames is ignored
+  m.reset();
+  assert.equal(feed(30, 1) + feed(10, 3), 0); // a 1 s slow patch: no 2 s window averages over 20 ms
+});
+
+test('quality: idle gate renders every frame while busy, ~12 fps when still', async () => {
+  const { IdleGate } = await import('../../client/render/quality.js');
+  const g = new IdleGate({ idleFps: 12, holdS: 0.6 });
+  const run = (seconds, busy) => {
+    let rendered = 0;
+    for (let t = 0; t < seconds; t += 1 / 60) if (g.tick(1 / 60, busy) > 0) rendered++;
+    return rendered;
+  };
+  assert.ok(run(1, true) >= 59);
+  run(0.6, false); // hold: still every frame while a fade ends
+  const still = run(2, false);
+  assert.ok(still >= 22 && still <= 26, `${still} frames in 2 s idle`);
+  // the dt handed over covers the skipped frames, so time-driven effects keep their speed
+  let total = 0;
+  for (let i = 0; i < 120; i++) total += g.tick(1 / 60, false);
+  assert.ok(Math.abs(total - 2) < 0.1, `${total}`);
+  g.wake();
+  assert.ok(g.tick(1 / 60, false) > 0); // input: render right away
+});

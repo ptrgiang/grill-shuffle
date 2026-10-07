@@ -77,10 +77,14 @@ function createEmberMaterial(heat) {
       uniform sampler2D uMap; uniform float uTime; uniform float uHeat; varying vec2 vUv;
       void main() {
         vec2 uv = vUv * vec2(1.6, 0.8);
+      #ifdef EMBER_LOW
+        vec3 c = texture2D(uMap, uv * 1.15 + vec2(0.0, 0.15)).rgb * 0.78; // one still layer, about as bright as the two
+      #else
         vec3 a = texture2D(uMap, uv + vec2(uTime * 0.013, uTime * 0.005)).rgb;
         vec3 b = texture2D(uMap, uv * 1.3 + vec2(-uTime * 0.009, 0.31)).rgb;
         float flick = 0.82 + 0.18 * sin(uTime * 3.1 + vUv.x * 9.0) * sin(uTime * 2.3 + vUv.y * 7.0);
         vec3 c = (a * 0.65 + b * 0.55) * flick;
+      #endif
         c = mix(c * vec3(0.35, 0.4, 0.55) * 0.5, c * 1.05, uHeat);
         // fade at the edges of the fire box
         float edge = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x) * smoothstep(0.0, 0.18, vUv.y) * smoothstep(1.0, 0.82, vUv.y);
@@ -115,6 +119,18 @@ export function materials() {
     target: new THREE.MeshBasicMaterial({ color: 0x9cff9c, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }),
   };
   return shared;
+}
+
+/** Ember shader detail (quality tier): 1 = two drifting layers + flicker, 0 = one still layer. */
+export function setEmberDetail(level) {
+  const m = materials();
+  for (const mat of [m.emberHot, m.emberCold]) {
+    const low = level < 1;
+    if (!!mat.defines.EMBER_LOW === low) continue;
+    if (low) mat.defines.EMBER_LOW = 1;
+    else delete mat.defines.EMBER_LOW;
+    mat.needsUpdate = true;
+  }
 }
 
 /** Advance time-driven shader uniforms. */

@@ -112,6 +112,18 @@ export class Particles {
     this.add = new System(700, THREE.AdditiveBlending);
     this.soft = new System(260, THREE.NormalBlending);
     scene.add(this.add.points, this.soft.points);
+    this.density = 1; // quality tier multiplier on spawn counts
+    this.burstFor = 0; // seconds a burst / steam / poof is still in the air (ambient embers do not count)
+  }
+
+  /** Spawn count for `n` at the current density (at least 1 when n > 0). */
+  #n(n) {
+    return n > 0 ? Math.max(1, Math.round(n * this.density)) : 0;
+  }
+
+  /** A burst is still playing: the board renders every frame until it ends. */
+  get busy() {
+    return this.burstFor > 0;
   }
 
   /** pixels per world unit, so point sizes are in world units */
@@ -121,39 +133,44 @@ export class Particles {
   }
 
   update(dt) {
+    this.burstFor = Math.max(0, this.burstFor - dt);
     this.add.update(dt);
     this.soft.update(dt);
   }
 
   /** The match burst: a flame column, sparks flying out, a puff of smoke. intensity grows with the combo. */
   flameBurst(at, intensity = 1) {
-    const n = Math.round(34 * intensity);
+    this.burstFor = Math.max(this.burstFor, 1.6);
+    const n = this.#n(34 * intensity);
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2, r = Math.random() * 0.55;
       this.add.spawn({ x: at.x + Math.cos(a) * r, y: at.y + 0.05, z: at.z + Math.sin(a) * r * 0.5, vx: Math.cos(a) * 0.3, vy: 1.6 + Math.random() * 1.8, vz: Math.sin(a) * 0.2, drag: 0.04, life: 0.5 + Math.random() * 0.35, s0: 0.7, s1: 0.18, c0: '#ffd27a', c1: '#ff3d0a', a: 0.9 });
     }
-    const sparks = Math.round(22 * intensity);
+    const sparks = this.#n(22 * intensity);
     for (let i = 0; i < sparks; i++) {
       const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3.5;
       this.add.spawn({ x: at.x, y: at.y + 0.3, z: at.z, vx: Math.cos(a) * sp, vy: 2.5 + Math.random() * 3, vz: Math.sin(a) * sp * 0.6, g: 9, drag: 0.02, life: 0.5 + Math.random() * 0.45, s0: 0.11, s1: 0.04, c0: '#fff4c2', c1: '#ff8a1e' });
     }
-    for (let i = 0; i < 6; i++) this.soft.spawn({ x: at.x + (Math.random() - 0.5) * 0.8, y: at.y + 0.4, z: at.z + (Math.random() - 0.5) * 0.3, vy: 0.6 + Math.random() * 0.4, vx: (Math.random() - 0.5) * 0.2, drag: 0.03, life: 1.1 + Math.random() * 0.5, s0: 0.5, s1: 1.4, c0: '#6a5a5a', c1: '#2a2228', a: 0.28 });
+    for (let i = 0, k = this.#n(6); i < k; i++) this.soft.spawn({ x: at.x + (Math.random() - 0.5) * 0.8, y: at.y + 0.4, z: at.z + (Math.random() - 0.5) * 0.3, vy: 0.6 + Math.random() * 0.4, vx: (Math.random() - 0.5) * 0.2, drag: 0.03, life: 1.1 + Math.random() * 0.5, s0: 0.5, s1: 1.4, c0: '#6a5a5a', c1: '#2a2228', a: 0.28 });
   }
 
-  /** Little hiss when food lands: steam wisps. */
-  steam(at, n = 4) {
-    for (let i = 0; i < n; i++) this.soft.spawn({ x: at.x + (Math.random() - 0.5) * 0.35, y: at.y + 0.2, z: at.z + (Math.random() - 0.5) * 0.2, vy: 0.5 + Math.random() * 0.4, vx: (Math.random() - 0.5) * 0.15, drag: 0.02, life: 0.8 + Math.random() * 0.4, s0: 0.25, s1: 0.7, c0: '#fff6ee', c1: '#d8ccc4', a: 0.32 });
+  /** Little hiss when food lands: steam wisps. `ambient`: the idle wisps off food, which never keep the board busy. */
+  steam(at, n = 4, { ambient = false } = {}) {
+    if (!ambient) this.burstFor = Math.max(this.burstFor, 1.2);
+    for (let i = 0, k = this.#n(n); i < k; i++) this.soft.spawn({ x: at.x + (Math.random() - 0.5) * 0.35, y: at.y + 0.2, z: at.z + (Math.random() - 0.5) * 0.2, vy: 0.5 + Math.random() * 0.4, vx: (Math.random() - 0.5) * 0.15, drag: 0.02, life: 0.8 + Math.random() * 0.4, s0: 0.25, s1: 0.7, c0: '#fff6ee', c1: '#d8ccc4', a: 0.32 });
   }
 
   /** Ambient: occasional embers rising off a hot grill. */
   ember(at) {
+    if (this.density < 1 && Math.random() > this.density) return;
     this.add.spawn({ x: at.x, y: at.y, z: at.z, vx: (Math.random() - 0.5) * 0.3, vy: 0.6 + Math.random() * 0.8, vz: (Math.random() - 0.5) * 0.1, drag: 0.01, life: 1 + Math.random(), s0: 0.06, s1: 0.02, c0: '#ffcc66', c1: '#ff4a10', a: 0.9 });
   }
 
   /** Reveal / unlock poof. */
   poof(at, color = '#d7ecff') {
-    for (let i = 0; i < 14; i++) {
-      const a = (i / 14) * Math.PI * 2;
+    this.burstFor = Math.max(this.burstFor, 0.7);
+    for (let i = 0, k = this.#n(14); i < k; i++) {
+      const a = (i / k) * Math.PI * 2;
       this.soft.spawn({ x: at.x, y: at.y + 0.2, z: at.z, vx: Math.cos(a) * 1.6, vy: 0.4, vz: Math.sin(a) * 0.9, drag: 0.08, life: 0.6, s0: 0.35, s1: 0.8, c0: color, c1: '#ffffff', a: 0.45 });
     }
   }
