@@ -24,16 +24,20 @@
   --font: 'Fredoka', 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-tap-highlight-color: transparent; overscroll-behavior: none; } /* no pull-to-refresh / bounce */
 body.in-game { overflow: hidden; height: 100dvh; }
 
 button, a.btn { font-family: inherit; }
+/* phones: no long-press callout or text selection on controls, no double-tap zoom on taps */
+button, a, .btn, .tool, .icon-btn, .level-card { touch-action: manipulation; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 
-#app { position: relative; width: 100vw; height: 100dvh; overflow: hidden; user-select: none; -webkit-user-select: none; }
+#app { position: relative; width: 100vw; height: 100dvh; overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
 #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui > .levels, #ui > .modal-back, #ui > .loading { pointer-events: auto; }
@@ -57,14 +61,14 @@ button, a.btn { font-family: inherit; }
 .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
 .badge { background: rgba(255, 179, 71, 0.2); color: var(--accent); border-radius: 999px; padding: 2px 10px; font-size: 14px; font-weight: 600; }
 .muted { color: var(--muted); }
-.link { color: var(--muted); }
+.link { color: var(--muted); display: inline-flex; align-items: center; min-height: 44px; }
 
 /* ---------- menu */
-.menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: calc(28px + var(--safe-top)) 16px calc(22px + var(--safe-bottom)); pointer-events: none; }
+.menu { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: calc(28px + var(--safe-top)) calc(16px + var(--safe-right)) calc(22px + var(--safe-bottom)) calc(16px + var(--safe-left)); pointer-events: none; }
 .menu > * { pointer-events: auto; }
 .logo { text-align: center; margin-top: 8px; }
 .logo-mark { display: block; width: 60px; height: 60px; margin: 0 auto 6px; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5)); }
-@media (max-height: 699px) { .logo-mark { display: none; } } /* short screens: the board needs the room (see marginTop in main.js) */
+@media (max-height: 699px) { .logo-mark { display: none; } } /* short screens: the board preview needs the room */
 .title {
   margin: 0; font-size: clamp(46px, 13vw, 92px); line-height: 0.95; font-weight: 700; letter-spacing: -1px;
   background: linear-gradient(#fff1c9, #ffb347 55%, #ff7b54); -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -90,7 +94,7 @@ body.in-game .landing { display: none; }
 /* ---------- HUD */
 .hud { position: absolute; inset: 0; pointer-events: none; }
 .hud > * { pointer-events: auto; }
-.hud-top { position: absolute; top: calc(8px + var(--safe-top)); left: 10px; right: 10px; display: flex; align-items: center; gap: 10px; }
+.hud-top { position: absolute; top: calc(8px + var(--safe-top)); left: calc(10px + var(--safe-left)); right: calc(10px + var(--safe-right)); display: flex; align-items: center; gap: 10px; }
 .hud-title { flex: 1; min-width: 0; background: var(--panel); border-radius: 14px; padding: 5px 12px; height: 46px; display: flex; flex-direction: column; justify-content: center; }
 .hud-title .lvl { font-weight: 700; font-size: 16px; line-height: 1.1; }
 .hud-title .lvl-name { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -98,20 +102,21 @@ body.in-game .landing { display: none; }
 .moves-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 .moves-num { font-size: 22px; font-weight: 700; line-height: 1; }
 .moves.low .moves-num { color: var(--bad); animation: pulse 0.8s infinite; }
-.goals { position: absolute; top: calc(62px + var(--safe-top)); left: 0; right: 0; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+.goals { position: absolute; top: calc(62px + var(--safe-top)); left: var(--safe-left); right: var(--safe-right); display: flex; justify-content: center; gap: 8px; pointer-events: none; }
 .goal { display: flex; align-items: center; gap: 4px; background: var(--panel); border-radius: 999px; padding: 3px 12px 3px 4px; font-weight: 600; font-size: 16px; }
 .goal-icon { width: 40px; height: 40px; object-fit: contain; }
 .goal-icon.all { display: grid; place-items: center; font-size: 22px; }
 .goal.done { background: rgba(80, 160, 80, 0.55); }
 .goal.bump { animation: bump 0.35s; }
-.hud-bottom { position: absolute; bottom: calc(10px + var(--safe-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 10px; pointer-events: none; }
+.hud-bottom { position: absolute; bottom: calc(10px + var(--safe-bottom)); left: var(--safe-left); right: var(--safe-right); display: flex; justify-content: center; gap: 10px; pointer-events: none; }
 .tool { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 1px; width: 72px; height: 64px; border: 0; border-radius: 16px; background: var(--panel); color: var(--ink); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; justify-content: center; }
 .tool svg { width: 26px; height: 26px; fill: currentColor; }
 .tool:disabled { opacity: 0.4; }
 .tool:active { transform: scale(0.94); }
 .combo { position: absolute; top: 34%; left: 0; right: 0; text-align: center; font-size: 36px; font-weight: 700; color: #ffe28a; text-shadow: 0 3px 0 #8a3510, 0 0 24px rgba(255, 140, 40, 0.8); opacity: 0; pointer-events: none; }
 .combo.show { animation: combo 1s ease-out; }
-.tip { position: absolute; left: 50%; bottom: calc(86px + var(--safe-bottom)); transform: translateX(-50%) translateY(10px); width: min(460px, calc(100% - 24px)); background: rgba(255, 243, 227, 0.95); color: #3a2214; padding: 10px 14px; border-radius: 14px; font-size: 15px; text-align: center; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+/* over the goal chips for a few seconds, never over the board (main.js frames the board below the goals) */
+.tip { position: absolute; left: 50%; top: calc(60px + var(--safe-top)); transform: translateX(-50%) translateY(-10px); width: min(460px, calc(100% - 24px)); background: #fff3e3; color: #3a2214; padding: 10px 14px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); border-radius: 14px; font-size: 15px; text-align: center; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
 .tip.show { opacity: 1; transform: translateX(-50%); }
 
 .float { position: absolute; transform: translate(-50%, -50%); font-weight: 700; font-size: 22px; color: #fff3c4; text-shadow: 0 2px 0 #7a2c0c, 0 0 12px rgba(255, 120, 40, 0.8); animation: floatUp 1.05s ease-out forwards; white-space: nowrap; }
@@ -149,7 +154,7 @@ body.in-game .landing { display: none; }
 .install-steps ol { margin: 0; padding-left: 22px; line-height: 1.45; }
 .install-more { text-align: left; margin: 14px 0 4px; color: var(--muted); }
 .install-more summary { cursor: pointer; }
-.install-btn { min-height: 40px; padding: 8px 12px; font-size: 15px; }
+.install-btn { min-height: 44px; padding: 8px 12px; font-size: 15px; }
 .modal-foot { margin-top: 12px; display: flex; justify-content: center; }
 .volumes { display: grid; gap: 8px; margin-top: 14px; }
 .volume { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 10px; color: var(--muted); font-size: 15px; text-align: left; }
@@ -189,6 +194,49 @@ body.in-game .landing { display: none; }
 @media (min-width: 700px) {
   .hud-top { left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 20px)); }
   .goals { top: calc(64px + var(--safe-top)); }
+  .tip { top: calc(64px + var(--safe-top)); }
+}
+
+/* phones held sideways (client/ui/fit.js SHORT_LANDSCAPE): the HUD becomes two side columns so the board gets the
+   full height. Left: pause, moves, level, goals, tip. Right: the tools. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud-top {
+    left: calc(10px + var(--safe-left)); right: auto; top: calc(8px + var(--safe-top)); transform: none; width: 176px;
+    display: grid; grid-template-columns: 46px 1fr; gap: 8px;
+  }
+  .hud-top > .icon-btn { grid-area: 1 / 1; }
+  .hud-top > .moves { grid-area: 1 / 2; min-width: 0; }
+  .hud-top > .hud-title { grid-area: 2 / 1 / 3 / 3; }
+  .goals { top: calc(116px + var(--safe-top)); left: calc(10px + var(--safe-left)); right: auto; width: 176px; flex-direction: column; align-items: stretch; }
+  .hud-bottom { top: 0; bottom: 0; left: auto; right: calc(10px + var(--safe-right)); flex-direction: column; justify-content: center; }
+  .tool { width: 68px; height: 60px; }
+  .tip { top: auto; bottom: calc(8px + var(--safe-bottom)); left: calc(10px + var(--safe-left)); width: 176px; transform: translateY(10px); font-size: 13px; padding: 8px 10px; }
+  .tip.show { transform: none; }
+  .combo { top: 40%; }
+
+  .menu {
+    display: grid; grid-template-columns: 1fr minmax(260px, 340px); grid-template-rows: auto 1fr auto; column-gap: 20px; row-gap: 8px;
+    align-items: center; padding: calc(10px + var(--safe-top)) calc(16px + var(--safe-right)) calc(10px + var(--safe-bottom)) calc(16px + var(--safe-left));
+  }
+  .logo { grid-area: 1 / 1; margin: 0; }
+  .title { font-size: clamp(34px, 6.5vw, 56px); }
+  .subtitle { font-size: 15px; margin-top: 4px; }
+  .menu-spacer { grid-area: 2 / 1 / 4 / 2; }
+  .menu-buttons { grid-area: 1 / 2 / 3 / 3; margin: 0; width: 100%; }
+  .menu-foot { grid-area: 3 / 2; justify-self: center; }
+  .btn.big { font-size: 20px; min-height: 52px; padding: 12px 20px; }
+
+  /* modals: wider and flatter so the results / pause buttons fit without scrolling */
+  .modal-back { padding: 8px; }
+  .modal { width: min(580px, 100%); max-height: calc(100dvh - 16px); padding: 12px 18px 12px; }
+  .modal h2 { font-size: 24px; margin-bottom: 2px; }
+  .modal p { margin: 6px 0; }
+  .stars.big { margin: 2px 0 6px; }
+  .stars.big .star svg { width: 36px; height: 36px; }
+  .result-stats { margin: 2px 0 4px; }
+  .result-stats div { padding: 4px; }
+  .result-stats b { font-size: 20px; }
+  .modal-buttons { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 8px; }
 }
 
 /* ---------- "new version ready" (client/ui/update.js) */
@@ -198,5 +246,5 @@ body.in-game .landing { display: none; }
   padding: 8px 8px 8px 16px; border-radius: 16px; background: var(--panel-solid); color: var(--ink);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); font-size: 15px;
 }
-.update-bar .btn { min-height: 40px; padding: 8px 14px; font-size: 15px; }
+.update-bar .btn { min-height: 44px; padding: 8px 14px; font-size: 15px; }
 .update-bar .btn.ghost { padding: 8px 10px; }

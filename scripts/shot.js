@@ -20,6 +20,11 @@ const SET = [
   { path: '/sandbox/board?level=street-016&anim=0', w: 360, h: 800, mobile: true, out: 'board-mobile-360-slabs.png' }, // steak / toast / salmon
   { path: '/play/street-001', w: 390, h: 844, mobile: true, out: 'game-mobile.png' },
   { path: '/', w: 1280, h: 800, out: 'menu-desktop.png' },
+  // issue #3 viewports: HUD vs board on small, tall and sideways phones
+  ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].flatMap(([w, h]) => [
+    { path: '/level/31', w, h, mobile: w < 1000, out: `layout-game-${w}x${h}.png` },
+    { path: '/', w, h, mobile: w < 1000, out: `layout-menu-${w}x${h}.png` },
+  ]),
 ];
 
 const jobs = args.set

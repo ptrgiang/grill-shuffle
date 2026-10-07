@@ -52,7 +52,7 @@ export class BoardView {
     this.clearing = []; // ItemViews playing their match animation (already gone from the state)
     this.timeline = []; // { at, fn } scheduled presentation steps
     this.clock = 0;
-    this.margins = { marginTop: 0, marginBottom: 0, marginSide: 0 };
+    this.margins = { marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0 };
     this.selected = null;
     this.drag = null;
     this.hover = null;
@@ -90,7 +90,7 @@ export class BoardView {
   relayout() {
     if (!this.state) return;
     const { w, h } = this.stage.size;
-    const availW = w - this.margins.marginSide * 2, availH = h - this.margins.marginTop - this.margins.marginBottom;
+    const availW = w - this.margins.marginLeft - this.margins.marginRight, availH = h - this.margins.marginTop - this.margins.marginBottom;
     this.layout = layoutBoard(this.state.grills.map((g) => g.slots.length), Math.max(0.2, availW / Math.max(1, availH)));
     this.layout.grills.forEach((L, i) => {
       this.grills[i].group.position.set(L.x, 0, L.z);

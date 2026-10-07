@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { layoutBoard, hitTest, hitTestSegment, slotOffsetX, SLOT, CAMERA_ELEVATION } from '../../client/render/layout.js';
 import { POINTER_TUNING, tuningFor, aimPoint } from '../../client/game/input.js';
 import { SOUNDS, matchSound } from '../../client/audio/synth.js';
+import { marginsFrom } from '../../client/ui/fit.js';
 
 test('layout: portrait boards stack, landscape boards spread', () => {
   const portrait = layoutBoard([3, 3, 3, 3, 2], 390 / 640);
@@ -82,4 +83,17 @@ test('synth: every sound renders finite, bounded, non-silent audio deterministic
     assert.ok(peak > 0.2 && peak <= 0.95, `${name} peak ${peak}`);
   }
   assert.deepEqual(matchSound(sr, 2, 4), matchSound(sr, 2, 4));
+});
+
+test('fit: margins clear every HUD rect, never shrink below the base, ignore hidden rects', () => {
+  const base = { marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10 };
+  const r = (left, top, w, h) => ({ left, top, right: left + w, bottom: top + h, width: w, height: h });
+  // portrait: a top bar and goal chips above, tools below
+  const p = marginsFrom(390, 844, { top: [r(10, 8, 370, 46), r(150, 62, 90, 46)], bottom: [r(80, 770, 72, 64)] }, base, 6);
+  assert.deepEqual(p, { marginTop: 114, marginBottom: 80, marginLeft: 10, marginRight: 10 });
+  // landscape: a left column and a right column of tools
+  const l = marginsFrom(844, 390, { left: [r(10, 8, 176, 46), r(10, 116, 176, 46)], right: [r(766, 100, 68, 60)] }, base);
+  assert.deepEqual(l, { marginTop: 10, marginBottom: 10, marginLeft: 194, marginRight: 86 });
+  // a hidden element (display: none) does not count; an element inside the base keeps the base
+  assert.deepEqual(marginsFrom(390, 844, { top: [r(0, 0, 0, 0), r(0, 0, 50, 1)] }, base), base);
 });
