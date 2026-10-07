@@ -1,6 +1,7 @@
 # Contributing: issue → branch → PR → review → merge → deploy
 
-1. **Issue.** Every change starts from an issue (templates: feature, bug). It states the problem, scope and
+1. **Issue.** Pick with `npm run next-issue` (roadmap #35 order, skips claimed/blocked issues), then claim it
+   (`status/in-progress` + assignee). Every change starts from an issue (templates: feature, bug). It states the problem, scope and
    acceptance criteria, and names its branch. Labels: `area/*`, `priority/*`; milestone = the plan step.
 2. **Branch** from up-to-date `main`, named in the issue: `feat/…`, `fix/…`, `perf/…`, `content/…`, `chore/…`,
    `test/…`. One issue per branch; keep it independent of other open branches.
