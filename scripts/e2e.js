@@ -4,10 +4,14 @@
 //   mobile:  touch tap-to-select (on the top of the item) + tap-destination at 390 x 844
 //   mobile-drag: touch drag-and-drop at 390 x 844; the carried item must ride above the finger and land where the
 //                item (not the finger) is released
-// Each solves the level with its stored optimal solution and expects a 3-star win and the results screen.
+//   burn-*: the burn levels (rules v3) won through tap / drag, the tray level included
+//   burn-char: lets an item char on purpose and expects the level lost with the "Burnt!" screen
+// Each winning case solves the level with its stored optimal solution and expects a 3-star win and the results screen.
 import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT } from './lib/content.js';
-import { decodeActions } from '../shared/moves.js';
+import { decodeActions, getLegalMoves } from '../shared/moves.js';
+import { createState } from '../shared/state.js';
+import { applyAction } from '../shared/resolve.js';
 import { POINTER_TUNING } from '../client/game/input.js';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -153,12 +157,67 @@ async function run(name, { w, h, mobile, levelId, mode }) {
   }
 }
 
+/** A shortest legal move sequence that loses `lvl` by charring (iterative deepening; burn levels are small). */
+function charLine(lvl) {
+  for (let depth = 1; depth <= 8; depth++) {
+    const dfs = (s, path) => {
+      if (s.status === 'lost') return s.failReason === 'charred' ? path : null;
+      if (s.status !== 'playing' || path.length === depth) return null;
+      for (const m of getLegalMoves(s)) {
+        const found = dfs(applyAction(s, m).state, [...path, m]);
+        if (found) return found;
+      }
+      return null;
+    };
+    const line = dfs(createState(lvl), []);
+    if (line) return line;
+  }
+  return null;
+}
+
+async function runCharred(name, { w, h, mobile, levelId }) {
+  const moves = charLine(level(levelId));
+  check(!!moves, `${name}: found a line that chars ${levelId}`);
+  if (!moves) return;
+  const { page, close } = await launchChrome({ width: w, height: h, mobile, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  try {
+    await page.goto(`${vite.url}/level/${STORY.indexOf(levelId) + 1}`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    await settle(page, 600);
+    const badges = await page.evaluate(() => window.__gs.state.grills.flatMap((g) => g.slots).filter((it) => it?.burn).length);
+    check(badges > 0, `${name}: ${badges} burning item(s) on the board`);
+    for (const m of moves) {
+      const a = await slotXY(page, m.from.grill, m.from.slot);
+      const b = await slotXY(page, m.to.grill, m.to.slot);
+      await page.touchscreen.tap(a.x, a.y);
+      await sleep(120);
+      await page.touchscreen.tap(b.x, b.y);
+      await settle(page, 450);
+    }
+    await settle(page, 1500);
+    const s = await page.evaluate(() => ({ status: window.__gs.state.status, reason: window.__gs.state.failReason, charred: window.__gs.state.grills.flatMap((g) => g.slots).filter((it) => it?.charred).length }));
+    check(s.status === 'lost' && s.reason === 'charred' && s.charred > 0, `${name}: ${moves.length} move(s) char ${s.charred} item(s) and lose the level (${s.status}, ${s.reason})`);
+    await page.waitForFunction(() => !!document.querySelector('.modal h2'), { timeout: 30000 }).catch(() => {});
+    const title = await page.evaluate(() => document.querySelector('.modal h2')?.textContent);
+    check(title === 'Burnt!', `${name}: fail screen says "${title}"`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 const vite = await startVite(ROOT);
 try {
   await run('desktop', { w: 1280, h: 800, mobile: false, levelId: 'street-003', mode: 'drag' });
   await run('mobile', { w: 390, h: 844, mobile: true, levelId: 'street-006', mode: 'tap' });
   await run('mobile-drag', { w: 390, h: 844, mobile: true, levelId: 'street-003', mode: 'touch-drag' });
+  await run('burn-two', { w: 1280, h: 800, mobile: false, levelId: 'street-012', mode: 'drag' });
+  await run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' });
+  await runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' });
 } finally {
   vite.stop();
 }
