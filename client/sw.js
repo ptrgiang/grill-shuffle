@@ -15,8 +15,26 @@ const PREFIX = 'grill-shuffle-';
 const CACHE = PREFIX + VERSION;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE.map((url) => new Request(url, { cache: 'reload' })))));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(PRECACHE.map(async (url) => cache.put(url, await fetchBuildFile(url))));
+    })(),
+  );
 });
+
+// Right after a deploy some Cloudflare edges still answer a new file with the SPA fallback (index.html, 200). Such a
+// response cached as a font or a script would stay wrong until the next deploy, so only the shell '/' may be HTML:
+// retry a few times, then fail the install (the browser tries again on a later visit; the old worker keeps serving).
+async function fetchBuildFile(url, tries = 3) {
+  for (let i = 1; ; i++) {
+    const res = await fetch(new Request(url, { cache: 'reload' })).catch(() => null);
+    const html = (res?.headers.get('content-type') ?? '').startsWith('text/html');
+    if (res?.ok && !res.redirected && html === (url === '/')) return res;
+    if (i >= tries) throw new Error(`precache ${url}: ${res ? `${res.status} ${res.headers.get('content-type')}` : 'network error'}`);
+    await new Promise((r) => setTimeout(r, 2000 * i));
+  }
+}
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
