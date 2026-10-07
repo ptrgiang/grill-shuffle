@@ -27,8 +27,11 @@ import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS 
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
 import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
+import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
+import { StatsOverlay } from './ui/stats.js';
 
-const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true };
+// quality: 'auto' | 'high' | 'medium' | 'low'; autoTier: where auto mode settled on this device
+const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null };
 
 const ui = document.getElementById('ui');
 const canvas = document.getElementById('stage');
@@ -67,6 +70,34 @@ new Input(canvas, () => app.session, view, {
   },
   onMove: (move, { dropped }) => doAction(move, { dropped }),
 });
+
+// ---------------------------------------------------------------- render loop: on demand, adaptive quality
+
+const idle = new IdleGate();
+const frames = new FrameMonitor();
+const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
+const stats = new URLSearchParams(location.search).get('stats') === '1' ? new StatsOverlay(document.getElementById('app')) : null;
+for (const ev of ['pointerdown', 'pointermove', 'wheel']) canvas.addEventListener(ev, () => idle.wake(), { passive: true });
+
+function applyQuality() {
+  const s = app.settings;
+  const tier = TIERS[urlQuality] ? urlQuality : initialTier({ setting: s.quality, autoTier: s.autoTier, deviceMemory: navigator.deviceMemory, cores: navigator.hardwareConcurrency });
+  stage.setQuality(tier);
+  frames.reset();
+  idle.wake();
+}
+
+/** After each rendered frame: feed the monitor (busy frames only: idle ticks are slow on purpose), step down if needed. */
+function onRendered(info) {
+  stats?.frame(info, { tier: stage.tierName, busy: idle.active });
+  if (!idle.active) return;
+  const auto = !TIERS[urlQuality] && app.settings.quality === 'auto';
+  if (frames.add(info.dt * 1000) && auto && stage.tierName !== 'low') {
+    app.settings.autoTier = lowerTier(stage.tierName);
+    stage.setQuality(app.settings.autoTier);
+    db.set('settings', app.settings);
+  }
+}
 
 function doAction(action, opts = {}) {
   const r = app.session.apply(action);
@@ -239,6 +270,22 @@ function volumeSlider(label, key) {
   };
   const input = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(app.settings[key] * 100), 'aria-label': `${label} volume`, on: { input: (e) => apply(e.target.value / 100) } });
   return h('label.volume', h('span', label), input);
+}
+
+/** Graphics: Auto (steps down by itself when frames are slow) or a fixed tier. */
+function qualityPicker() {
+  const label = { auto: 'Auto', high: 'High', medium: 'Med', low: 'Low' };
+  const buttons = QUALITY_SETTINGS.map((q) =>
+    h('button.seg-btn', { 'aria-pressed': String(app.settings.quality === q), on: { click: () => {
+      audio.onEvent({ type: 'button' });
+      app.settings.quality = q;
+      if (q === 'auto') app.settings.autoTier = null; // re-measure from the top
+      for (const b of buttons) b.setAttribute('aria-pressed', String(b === buttons[QUALITY_SETTINGS.indexOf(q)]));
+      applyQuality();
+      db.set('settings', app.settings);
+    } } }, label[q]),
+  );
+  return h('div.volume', h('span', 'Graphics'), h('div.seg', { role: 'group', 'aria-label': 'Graphics quality' }, ...buttons));
 }
 
 function challengePicker() {
@@ -495,7 +542,7 @@ function pauseMenu() {
       h('a.btn', { href: '/levels', 'data-nav': true }, 'Levels'),
       h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
     ),
-    h('div.volumes', volumeSlider('Effects', 'sfxVolume'), volumeSlider('Ambience', 'ambienceVolume')),
+    h('div.volumes', volumeSlider('Effects', 'sfxVolume'), volumeSlider('Ambience', 'ambienceVolume'), qualityPicker()),
     h('div.modal-foot', soundToggle()),
   );
 }
@@ -629,6 +676,7 @@ function onViewportChange() {
     refitQueued = false;
     stage.resize();
     refit();
+    idle.wake();
   });
 }
 window.addEventListener('resize', onViewportChange);
@@ -643,7 +691,8 @@ async function boot() {
   app.progress = await db.get('progress', {});
   app.streak = await db.get('dailyStreak', null);
   render();
-  stage.start((dt) => view.update(dt));
+  applyQuality();
+  stage.start((dt) => view.update(dt), { gate: (dt) => idle.tick(dt, view.busy), onRendered });
   syncNow();
   registerServiceWorker();
 }
@@ -658,4 +707,4 @@ window.addEventListener('online', syncNow);
 boot();
 
 // test / debugging hooks (the e2e script reads the authoritative state through these, never from meshes)
-window.__gs = { app, view, stage, audio, go, doAction, get state() { return app.session?.state; } };
+window.__gs = { app, view, stage, audio, go, doAction, idle, get state() { return app.session?.state; } };

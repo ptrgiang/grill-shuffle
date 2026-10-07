@@ -11,7 +11,8 @@ import { layoutBoard, hitTestSegment } from './layout.js';
 import { GrillView } from './grill.js';
 import { createFood, foodMaterial } from './foods.js';
 import { Particles } from './particles.js';
-import { badgeTexture } from './textures.js';
+import { badgeTexture, softDot } from './textures.js';
+import { materials } from './materials.js';
 
 export const TIMING = Object.freeze({
   move: 0.17, // pick-up-to-land arc
@@ -27,6 +28,10 @@ const MATCH_DUR = TIMING.matchPop + TIMING.matchConverge + TIMING.matchServe;
 const LIFT = 0.42; // selected / dragged height
 // top of the tallest standing item incl. the selected lift and bob: picking covers the column from the table up to it
 export const PICK_TOP = 0.75;
+
+let blobGeometry = null, blobMaterial = null;
+const blobGeo = () => (blobGeometry ??= new THREE.CircleGeometry(0.34, 20).rotateX(-Math.PI / 2));
+const blobMat = () => (blobMaterial ??= Object.assign(materials().shadowBlob, { map: softDot() }));
 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -62,6 +67,28 @@ export class BoardView {
     this.selRing = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#ffe7b0', transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
     this.selRing.renderOrder = 3;
     this.root.add(this.selRing);
+    this.blobs = false; // low quality tier: no shadow map, a soft blob under each item instead
+    stage.onTier = (name, tier) => this.setQuality(tier);
+    if (stage.tier) this.setQuality(stage.tier);
+  }
+
+  /** Follow the stage's quality tier: particle density, blob shadows when the shadow map is off. */
+  setQuality(tier) {
+    this.particles.density = tier.particles;
+    this.blobs = tier.shadows === 'off';
+    for (const v of this.items.values()) if (v.blob) v.blob.visible = this.blobs;
+  }
+
+  /**
+   * Something on the board moves: animations, a selection, a drag, a burst, a fading glow. When false the board is
+   * still and the loop can render at an idle tick (render/quality.js IdleGate).
+   */
+  get busy() {
+    if (this.timeline.length || this.clearing.length || this.drag || this.selected || this.hint) return true;
+    if (this.selRing.material.opacity > 0.01 || this.particles.busy || this.stage.busy) return true;
+    for (const g of this.grills) if (g.busy) return true;
+    for (const v of this.items.values()) if (v.motion || v.squash > 0 || v.shake > 0 || v.settle) return true;
+    return false;
   }
 
   // ---------------------------------------------------------------- building
@@ -111,9 +138,13 @@ export class BoardView {
     const holder = new THREE.Group();
     const mesh = createFood(item.food, { seed: item.id * 977 + (this.state.levelId?.length ?? 0) });
     holder.add(mesh);
+    const blob = new THREE.Mesh(blobGeo(), blobMat());
+    blob.visible = this.blobs;
+    blob.renderOrder = 1;
+    holder.add(blob);
     holder.position.copy(this.slotPos(grill, slot));
     this.root.add(holder);
-    return { id: item.id, food: item.food, grill, slot, holder, mesh, motion: null, phase: Math.random() * 6.28, hiddenUntil: 0 };
+    return { id: item.id, food: item.food, grill, slot, holder, mesh, blob, motion: null, phase: Math.random() * 6.28, hiddenUntil: 0 };
   }
 
   /** Converge the view on `state`: create missing items, drop stale ones, retarget everything to its slot. */
@@ -311,6 +342,7 @@ export class BoardView {
       // a match can follow the landing of the very item that made it: start from where it will be
       const from = this.slotPos(v.grill, v.slot);
       const pre = v.motion?.kind === 'move' ? v.motion : null; // finish landing first
+      v.blob.visible = false; // it flies off the grate
       v.motion = { kind: 'match', from, centre: centre.clone(), t0: start, combo: ev.combo, spin: (Math.random() - 0.5) * 2, pre };
       this.clearing.push(v);
     }
@@ -476,7 +508,7 @@ export class BoardView {
         this.particles.ember(new THREE.Vector3(L.x + (Math.random() - 0.5) * L.w * 0.8, -0.05, L.z + (Math.random() - 0.5) * 1.1));
         if (Math.random() < 0.3) {
           const items = [...this.items.values()].filter((v) => v.grill === gi && v.holder.visible);
-          if (items.length) this.particles.steam(items[Math.floor(Math.random() * items.length)].holder.position, 1);
+          if (items.length) this.particles.steam(items[Math.floor(Math.random() * items.length)].holder.position, 1, { ambient: true });
         }
       }
     }
@@ -543,6 +575,7 @@ export class BoardView {
       v.shake = Math.max(0, v.shake - dt);
       h.position.x += Math.sin(now * 70) * v.shake * 0.12;
     }
+    if (this.blobs) v.blob.position.y = (0.004 - h.position.y) / Math.max(0.01, h.scale.y); // stays on the grate
   }
 
   /** Match animation for one item. Returns true when it is finished. */

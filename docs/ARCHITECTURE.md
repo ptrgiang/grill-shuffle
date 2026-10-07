@@ -53,11 +53,12 @@ solver/        search over the shared simulation
 client/        browser game (Vite root)
   main.js        routes, screens, HUD, wiring
   ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), coach.js (first-level
-                 onboarding hand), install.js, update.js
+                 onboarding hand), stats.js (?stats=1 overlay), install.js, update.js
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
   game/          session.js (state + undo + action log), input.js (pointer state machine), content.js (packs),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
-  render/        stage.js (renderer, camera, lights, backdrop), layout.js (pure board layout + hit test),
+  render/        stage.js (renderer, camera, lights, backdrop, quality tier, rAF loop), quality.js (pure: tiers,
+                 frame monitor, idle gate), layout.js (pure board layout + hit test),
                  board.js (BoardView: state + events -> animation), grill.js, foods.js, materials.js,
                  particles.js, textures.js, icons.js
   audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,

@@ -25,6 +25,9 @@ const SET = [
   // issue #2: an item selected by touch - valid grills pulse, full ones dim; and the first-level onboarding hand
   ...[[360, 800, 'street-010'], [390, 844, 'street-009'], [430, 932, 'street-008']].map(([w, h, id]) => ({ path: `/play/${id}?coach=0`, w, h, mobile: true, select: true, out: `select-${w}.png` })),
   { path: '/play/street-001?coach=1', w: 390, h: 844, mobile: true, out: 'coach-390.png', cssAt: 1820 }, // the hand tapping the grill
+  // issue #4: the three quality tiers side by side (?quality= forces one for this visit; ?stats=1 shows the overlay)
+  ...['high', 'medium', 'low'].map((q) => ({ path: `/play/street-009?coach=0&stats=1&quality=${q}`, w: 390, h: 844, mobile: true, out: `quality-${q}-390.png` })),
+  { path: '/play/street-003?coach=0&quality=low', w: 1280, h: 800, out: 'quality-low-desktop.png' },
   ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].flatMap(([w, h]) => [
     { path: '/level/31', w, h, mobile: w < 1000, out: `layout-game-${w}x${h}.png` },
     { path: '/', w, h, mobile: w < 1000, out: `layout-menu-${w}x${h}.png` },

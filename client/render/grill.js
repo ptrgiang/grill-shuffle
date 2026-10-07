@@ -133,6 +133,14 @@ export class GrillView {
     this.style = st;
   }
 
+  /** Still animating (fades, flash, shake, unlock, a pulsing target): the board must keep rendering. */
+  get busy() {
+    return (
+      Math.abs(this.glowTarget - this.glowLevel) > 0.005 || this.glowTarget > 0 || Math.abs(this.dimTarget - this.dim) > 0.005 ||
+      this.flash > 0 || this.shake > 0 || this.pulse > 0 || this.unlocking > 0
+    );
+  }
+
   /** Where the grill sits in the board (the shake moves around this). */
   place(x, z) {
     this.homeX = x;

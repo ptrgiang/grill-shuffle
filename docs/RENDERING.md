@@ -97,6 +97,12 @@ the food, then the grill. The move is the first move of the level's solver `solu
 useful) and needs a level `hint`; after a selection the hand only taps the grill, the first move removes it.
 `?coach=1` / `?coach=0` force it on / off (screenshots).
 
+## Quality and frame pacing
+
+Tiers, auto-downgrade, render on demand and `?stats=1`: [PERFORMANCE.md](PERFORMANCE.md). The stage applies a tier
+(`Stage.setQuality`: pixel ratio, shadow map on/off and size, ember shader `EMBER_LOW` define); the board view
+follows through `stage.onTier` (particle density, blob shadows).
+
 ## Audio
 
 `audio/synth.js` generates every sound (thud, sizzle with crackle, sparkle, bell notes, metallic clank, whoosh,

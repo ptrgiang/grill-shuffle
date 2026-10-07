@@ -265,6 +265,43 @@ async function runCharred(name, { w, h, mobile, levelId }) {
   }
 }
 
+/** Issue #4: a still board renders at the idle tick, input wakes it, tiers switch mid-game, the Graphics picker works. */
+async function runQuality(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  try {
+    await page.goto(`${vite.url}/level/27?quality=low&coach=0`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    await settle(page, 1500);
+    check(await page.evaluate(() => window.__gs.stage.tierName) === 'low', `${name}: ?quality=low applies the low tier`);
+    const frames = () => page.evaluate(() => window.__gs.stage.renderer.info.render.frame);
+    const still = await page.evaluate(() => ({ busy: window.__gs.view.busy, active: window.__gs.idle.active }));
+    const f0 = await frames();
+    await sleep(2000);
+    const idleFps = ((await frames()) - f0) / 2;
+    check(!still.busy && !still.active && idleFps <= 14, `${name}: a still board renders at the idle tick (${idleFps} frames/s, ${JSON.stringify(still)})`);
+    const a = await slotXY(page, 0, 0, 0.3);
+    await page.touchscreen.tap(a.x, a.y);
+    await sleep(100);
+    check(await page.evaluate(() => window.__gs.view.busy && window.__gs.idle.active), `${name}: a selection makes the board busy`);
+    for (const q of ['high', 'medium', 'low']) {
+      await page.evaluate((q) => window.__gs.stage.setQuality(q), q);
+      await sleep(400);
+    }
+    check(await page.evaluate(() => window.__gs.stage.tierName) === 'low', `${name}: tiers switch mid-game`);
+    await page.click('button[aria-label="Pause"]');
+    await page.waitForSelector('.seg-btn');
+    await page.evaluate(() => [...document.querySelectorAll('.seg-btn')].find((b) => b.textContent === 'Med').click());
+    await sleep(300);
+    const picked = await page.evaluate(() => ({ setting: window.__gs.app.settings.quality, pressed: document.querySelector('.seg-btn[aria-pressed="true"]')?.textContent }));
+    check(picked.setting === 'medium' && picked.pressed === 'Med', `${name}: Graphics picker sets the quality (${JSON.stringify(picked)})`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 const vite = await startVite(ROOT);
 try {
@@ -276,6 +313,7 @@ try {
   await runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' });
   await run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' });
   for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
+  await runQuality('quality', { w: 390, h: 844 });
 } finally {
   vite.stop();
 }
