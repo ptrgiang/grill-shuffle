@@ -4,6 +4,8 @@
 //   same_food - identical food ids (the base rule)
 //   category  - same food category (meat / seafood / veg / grain): a later variant
 // matchSize: how many matching items on ONE grill clear together.
+// Charred items (burn counter ran out, rules v2) no longer match fresh food: they share one key, CHARRED_KEY, so
+// any matchSize charred items on one grill clear together whatever food they were.
 
 import { FOODS } from './foods.js';
 
@@ -11,6 +13,8 @@ export const MATCHERS = Object.freeze({
   same_food: (item) => item.food,
   category: (item) => FOODS[item.food].category,
 });
+
+export const CHARRED_KEY = '#charred';
 
 export const DEFAULT_RULES = Object.freeze({
   matcher: 'same_food',
@@ -28,8 +32,9 @@ export function resolveRules(overrides = {}) {
 
 /**
  * Grill types. A `tray` (prep tray) holds food but never cooks, so it never matches: a buffer the player can park on.
+ * `heat` is how many burn ticks an item on the grill takes per move (a locked grill is covered: no heat).
  */
 export const GRILL_TYPES = Object.freeze({
-  grill: { matches: true },
-  tray: { matches: false },
+  grill: { matches: true, heat: 1 },
+  tray: { matches: false, heat: 0 },
 });

@@ -1,9 +1,9 @@
-# Puzzle rules (puzzleRuleVersion 1)
+# Puzzle rules (puzzleRuleVersion 2)
 
 ## Board
 
 A board is 2–12 **grills**. Each grill has 1–6 **slots** (normally 3). A slot is empty (`null`) or holds an item
-`{ id, food }`. Slot order inside a grill never matters to the rules.
+`{ id, food }` (plus `burn` or `charred`, see Burn counter). Slot order inside a grill never matters to the rules.
 
 ```js
 {
@@ -30,14 +30,17 @@ source slot holds an item, both grills are unlocked, the target slot is empty, a
      Per match: combo +1, score += `matchScore × combo`, goal progress, every locked grill's counter −1.
    - every empty, unlocked grill with stacked trays reveals its next layer.
    Matches produced by an unlock or a reveal are **chain** matches (`chain` > 0 in the event).
-3. No match during the move → combo resets to 0.
-4. All goals met → `won`. Else no moves left → `lost ('moves')`. Else no legal move and no usable booster →
-   `lost ('stuck')`.
+3. **Burn** (moves only, v2): unless every goal is already met, every burning item on a heated grill ticks down;
+   at 0 it chars. If anything charred, step 2 runs again (charred items can complete a charred match: a chain match).
+4. No match during the move → combo resets to 0.
+5. A goal failed (something charred that had to be saved) → `lost ('charred')`. Else all goals met → `won`. Else no
+   moves left → `lost ('moves')`. Else no legal move and no usable booster → `lost ('stuck')`.
 
 ## Events
 
-`move, match {grill, food, foods, itemIds, slots, chain, combo}, score, goal_progress, lock_progress, unlock,
-reveal {grill, items, layersLeft}, combo, combo_reset, booster, level_complete, level_failed`.
+`move, match {grill, food, foods, itemIds, slots, chain, combo, charred?, burning?}, score, goal_progress, goal_failed,
+lock_progress, unlock, reveal {grill, items, layersLeft}, burn_tick {items: [{grill, slot, itemId, food, burn}]},
+charred {grill, slot, itemId, food}, combo, combo_reset, booster, level_complete, level_failed {reason}`.
 The renderer and audio consume these; nothing else does.
 
 ## Obstacles (all turn-based)
@@ -47,9 +50,24 @@ The renderer and audio consume these; nothing else does.
 | Locked grill | `"lock": N` | Can't take from or drop on it. Each match anywhere ticks every lock down by one. At 0 it opens and can match at once. |
 | Stacked tray | `"layers": [[…], …]` | Hidden trays under a grill. When the grill is empty (by matching *or* moving everything away) the next layer flips up. |
 | Prep tray | `"type": "tray"` | Holds food, never matches. A parking buffer. |
+| Burn counter (v2) | `{"food": "shrimp", "burn": N}` | The item chars after N moves on a heated grill (below). |
 
-Planned, not in v1: burn counter (`charred` after N actions on a hot grill), frozen item, chain link, covered grill.
-Grill heat states (cold/warm/hot/overheated) and food cook/char exist only visually for now (`uCook`, `uChar`).
+Planned: grill heat states, frozen item, chain link, covered grill.
+
+### Burn counter
+
+- A slot cell may be an object `{"food": "shrimp", "burn": N}` (N 1..20; modifier `burn_counter`). Stacked layers hold
+  plain foods only. In the state the item is `{ id, food, burn }`.
+- After every **move** that leaves the level unfinished, every burning item on a heated grill loses the grill's heat
+  (`burnHeat`: 1 on an open grill; 0 on a prep tray or a locked, covered grill). The moved item ticks too. Boosters
+  cost no move and never tick. An item matched during the move is gone before the tick.
+- At 0 the item becomes **charred** `{ id, food, charred: true }`: it never matches fresh food again, but any
+  `matchSize` charred items on one grill clear together, whatever food they were (`clear_all` counts them,
+  `clear_food`/`serve_food` do not).
+- Rule version: a board stamps the lowest rule version it needs (`ruleVersionOf`): boards without burning items are
+  still v1, so their hashes, fan-booster seeds and stored replays are unchanged.
+- Visuals (minimal for now): a counter badge on burning items, the charred material on charred ones. Staged
+  cook/char visuals and grill heat build on `burnHeat` and the `burn_tick`/`charred` events.
 
 ## Combo
 
@@ -59,8 +77,10 @@ No timers, no reflexes.
 ## Goals
 
 `clear_all`, `clear_food {food, count}`, `serve_food {food, count}`, `complete_matches {count}`, `reach_score {count}`,
-`clear_blocker` (open every lock), `reveal_hidden` (flip every stacked tray). Several goals compose; all must be
-met. Planned with the burn mechanic: `protect_food`, `clear_before_char`.
+`clear_blocker` (open every lock), `reveal_hidden` (flip every stacked tray), `clear_before_char {food?}` (serve every
+burning item, of `food` if given, while fresh; fails when one chars), `protect_food {food}` (a constraint: fails when
+an item of `food` chars; target 0, so a level needs another goal too). Several goals compose; all must be met and
+none failed.
 
 ## Boosters
 

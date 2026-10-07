@@ -7,7 +7,7 @@
 //   "name": "First Flip",
 //   "theme": "street_bbq",
 //   "moves": 9,
-//   "board": { "grills": [ { "type": "grill", "slots": ["shrimp", null, "beef"], "layers": [["corn", "corn", null]], "lock": 0 } ] },
+//   "board": { "grills": [ { "type": "grill", "slots": ["shrimp", null, {"food": "beef", "burn": 4}], "layers": [["corn", "corn", null]], "lock": 0 } ] },
 //   "goals": [ { "type": "clear_all" } ],
 //   "rules": { },                 optional overrides of shared/rules.js DEFAULT_RULES
 //   "modifiers": [ ],              mechanics in play (informational + validated)
@@ -22,14 +22,33 @@ import { BOOSTERS } from './boosters.js';
 import { LEVEL_FORMAT_VERSION } from './version.js';
 
 export const THEMES = Object.freeze(['street_bbq', 'beach_grill', 'night_market', 'mountain_camp', 'rooftop_grill']);
-export const MODIFIERS = Object.freeze(['locked_grill', 'stacked_tray', 'prep_tray']);
-export const LIMITS = Object.freeze({ maxGrills: 12, maxSlots: 6, maxLayers: 6, maxLock: 9, maxMoves: 99 });
+export const MODIFIERS = Object.freeze(['locked_grill', 'stacked_tray', 'prep_tray', 'burn_counter']);
+export const LIMITS = Object.freeze({ maxGrills: 12, maxSlots: 6, maxLayers: 6, maxLock: 9, maxMoves: 99, maxBurn: 20 });
+
+// A visible slot cell is null, a food id ("shrimp"), or an item with a burn counter ({"food": "shrimp", "burn": 4}).
+// Stacked layers hold plain food ids only.
+/** Food id of a level slot cell (null for an empty slot). */
+export const cellFood = (cell) => (cell && typeof cell === 'object' ? cell.food : cell) ?? null;
+/** Burn counter of a level slot cell (0 = does not burn). */
+export const cellBurn = (cell) => (cell && typeof cell === 'object' ? cell.burn ?? 0 : 0);
+
+/**
+ * The puzzle rule version a level is played under: the lowest one that has every mechanic it uses. Boards without
+ * v2 mechanics stay v1, so their state hashes (and the fan booster's seed, which comes from the hash) and every
+ * stored replay stay exactly what they were before v2 existed.
+ */
+export function ruleVersionOf(level) {
+  return level.board.grills.some((g) => g.slots.some((c) => cellBurn(c) > 0)) ? 2 : 1;
+}
 
 /** Every food id on the board, including hidden layers, with counts. */
 export function foodTotals(level) {
   const totals = {};
   for (const g of level.board.grills) {
-    for (const f of g.slots) if (f) totals[f] = (totals[f] || 0) + 1;
+    for (const c of g.slots) {
+      const f = cellFood(c);
+      if (f) totals[f] = (totals[f] || 0) + 1;
+    }
     for (const layer of g.layers || []) for (const f of layer) if (f) totals[f] = (totals[f] || 0) + 1;
   }
   return totals;
@@ -42,6 +61,7 @@ export function usedModifiers(level) {
     if ((g.lock || 0) > 0) used.add('locked_grill');
     if ((g.layers || []).length) used.add('stacked_tray');
     if ((g.type || 'grill') === 'tray') used.add('prep_tray');
+    if (g.slots.some((c) => cellBurn(c) > 0)) used.add('burn_counter');
   }
   return [...used].sort();
 }
@@ -79,7 +99,14 @@ export function validateLevel(level) {
       err(`${at}: slots must have 1..${LIMITS.maxSlots} entries`);
       return;
     }
-    for (const f of g.slots) if (f !== null && !isFood(f)) err(`${at}: unknown food ${JSON.stringify(f)}`);
+    g.slots.forEach((c, s) => {
+      if (c === null) return;
+      if (c && typeof c === 'object') {
+        if (Object.keys(c).some((k) => k !== 'food' && k !== 'burn')) err(`${at} slot ${s}: an item may only have food and burn`);
+        if (!Number.isInteger(c.burn) || c.burn < 1 || c.burn > LIMITS.maxBurn) err(`${at} slot ${s}: burn must be an integer 1..${LIMITS.maxBurn}`);
+      }
+      if (!isFood(cellFood(c))) err(`${at}: unknown food ${JSON.stringify(cellFood(c))}`);
+    });
     const lock = g.lock ?? 0;
     if (!Number.isInteger(lock) || lock < 0 || lock > LIMITS.maxLock) err(`${at}: lock must be an integer 0..${LIMITS.maxLock}`);
     const layers = g.layers ?? [];
@@ -95,7 +122,11 @@ export function validateLevel(level) {
     if (lock === 0) openEmpty += g.slots.filter((f) => f === null).length;
     if (rules && type === 'grill' && lock === 0) {
       const counts = {};
-      for (const f of g.slots) if (f) counts[MATCHERS[rules.matcher]({ food: f })] = (counts[MATCHERS[rules.matcher]({ food: f })] || 0) + 1;
+      for (const c of g.slots) {
+        if (!isFood(cellFood(c))) continue;
+        const k = MATCHERS[rules.matcher]({ food: cellFood(c) });
+        counts[k] = (counts[k] || 0) + 1;
+      }
       if (Object.values(counts).some((n) => n >= rules.matchSize)) err(`${at}: starts with a match already on it`);
     }
   });
@@ -121,6 +152,8 @@ export function validateLevel(level) {
       const problem = spec.validate(goal, level, totals, size);
       if (problem) err(`goal ${i} (${goal.type}): ${problem}`);
     });
+  if (Array.isArray(level.goals) && level.goals.length && level.goals.every((goal) => GOAL_TYPES[goal?.type]?.constraint))
+    err('goals: needs at least one goal besides constraints like protect_food');
 
   for (const m of level.modifiers ?? []) if (!MODIFIERS.includes(m)) err(`unknown modifier ${m}`);
   const declared = new Set(level.modifiers ?? []);

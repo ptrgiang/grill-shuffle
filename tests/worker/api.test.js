@@ -25,7 +25,7 @@ const call = async (method, path, { body, pid = PID, raw } = {}) => {
 test('version and static fallthrough', async () => {
   const v = await call('GET', '/api/version');
   assert.equal(v.status, 200);
-  assert.equal(v.data.puzzleRuleVersion, 1);
+  assert.equal(v.data.puzzleRuleVersion, 2);
   assert.equal(v.data.levels, STORY.length);
   const page = await call('GET', '/play/street-001');
   assert.equal(page.data, 'asset');

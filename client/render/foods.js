@@ -333,11 +333,13 @@ export function foodGeometry(food, variant = 0) {
   return geoCache.get(key);
 }
 
-export function foodMaterial(food, { cook, char = 0 } = {}) {
+/** `tint` (optional colour) multiplies the food's colour: used to blacken charred items. */
+export function foodMaterial(food, { cook, char = 0, tint = null } = {}) {
   const base = FOOD_MODELS[food].material;
   const c = cook ?? base.cook;
-  const key = `${food}:${c.toFixed(2)}:${char.toFixed(2)}`;
-  if (!matCache.has(key)) matCache.set(key, createFoodMaterial({ ...base, cook: c, char, vertexColors: true }));
+  const key = `${food}:${c.toFixed(2)}:${char.toFixed(2)}${tint ? `:${tint}` : ''}`;
+  const color = tint ? new THREE.Color(base.color ?? 0xffffff).multiply(new THREE.Color(tint)) : base.color;
+  if (!matCache.has(key)) matCache.set(key, createFoodMaterial({ ...base, cook: c, char, color, vertexColors: true }));
   return matCache.get(key);
 }
 

@@ -3,7 +3,7 @@
 
 import { mulberry32, deriveSeed } from '../../shared/rng.js';
 import { makeCandidate } from '../../solver/generator.js';
-import { validateLevel, foodTotals } from '../../shared/levels.js';
+import { validateLevel, foodTotals, usedModifiers } from '../../shared/levels.js';
 import { createState, serializeState, deserializeState } from '../../shared/state.js';
 import { getLegalMoves, isLegalMove, hasLegalMove } from '../../shared/moves.js';
 import { applyAction } from '../../shared/resolve.js';
@@ -20,13 +20,16 @@ function check(cond, msg, ctx) {
 
 export function invariants(level, state, ctx) {
   const total = Object.values(foodTotals(level)).reduce((a, b) => a + b, 0);
-  let visible = 0, hidden = 0;
+  let visible = 0, hidden = 0, charred = 0;
   const ids = new Set();
   state.grills.forEach((g, gi) => {
     check(g.slots.length === level.board.grills[gi].slots.length, 'capacity changed', ctx);
     for (const it of g.slots)
       if (it) {
         visible++;
+        if (it.charred) charred++;
+        check(it.burn === undefined || (Number.isInteger(it.burn) && it.burn > 0), 'burn counter out of range', ctx);
+        check(!(it.burn && it.charred), 'item both burning and charred', ctx);
         check(!ids.has(it.id), 'duplicate item id', ctx);
         ids.add(it.id);
         check(it.id < state.nextItemId, 'id beyond nextItemId', ctx);
@@ -35,7 +38,11 @@ export function invariants(level, state, ctx) {
     check(g.lock >= 0, 'negative lock', ctx);
   });
   const cleared = state.matches * state.rules.matchSize;
-  check(visible + hidden + cleared === total, `item conservation ${visible}+${hidden}+${cleared} != ${total}`, ctx);
+  check(visible + hidden + cleared === total, `item conservation ${visible}+${hidden}+${cleared} != ${total}`, ctx); // charred included
+  const burnable = level.board.grills.reduce((n, g) => n + g.slots.filter((c) => c && typeof c === 'object').length, 0);
+  check(charred <= burnable, `${charred} charred items but only ${burnable} could burn`, ctx);
+  if (state.goals.some((g) => g.failed)) check(state.status === 'lost' && state.failReason === 'charred', 'failed goal but not lost (charred)', ctx);
+  if (state.failReason === 'charred') check(state.goals.some((g) => g.failed), 'lost (charred) without a failed goal', ctx);
   check(findMatches(state).length === 0, 'unresolved match left on board', ctx);
   for (const g of state.goals) check(g.progress >= 0 && g.progress <= g.target, 'goal progress out of range', ctx);
   if (state.status === 'playing') check(state.movesLeft > 0 && (hasLegalMove(state) || hasUsableBooster(state)), 'playing without a move', ctx);
@@ -57,11 +64,30 @@ function tongsActions(state) {
   return out;
 }
 
+/** Half the boards get burning items (and sometimes the burn goals). Mutates the level; keeps it valid. */
+function addBurn(level, rng) {
+  if (rng.chance(0.5)) return;
+  const burning = [];
+  for (const g of level.board.grills)
+    g.slots.forEach((f, i) => {
+      if (f && rng.chance(0.35)) {
+        g.slots[i] = { food: f, burn: rng.int(1, 8) };
+        burning.push(f);
+      }
+    });
+  if (!burning.length) return;
+  level.modifiers = usedModifiers(level);
+  if (rng.chance(0.3)) level.goals.push({ type: 'protect_food', food: rng.pick(burning) });
+  if (rng.chance(0.3)) level.goals.push({ type: 'clear_before_char', ...(rng.chance(0.5) ? { food: rng.pick(burning) } : {}) });
+  if (!validateLevel(level).ok) throw new Error(`fuzz: burn made an invalid level: ${validateLevel(level).errors.join()}`);
+}
+
 /** One fuzz case. Returns the number of steps played. */
 export function fuzzCase(seed) {
   const rng = mulberry32(seed);
   const level = makeCandidate(CONFIG, deriveSeed(seed, 'board'));
   if (!level || !validateLevel(level).ok) return 0;
+  addBurn(level, mulberry32(deriveSeed(seed, 'burn'))); // own stream: the pre-burn cases keep their move sequences
   level.moves = rng.int(3, 40);
   level.boosters = { tongs: rng.int(0, 2), fan: rng.int(0, 2) };
   let state = createState(level);

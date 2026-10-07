@@ -1,20 +1,20 @@
 // Authoritative puzzle state. Plain JSON-serializable data; no DOM, no three.js, no Math.random.
 //
 // state = {
-//   v: PUZZLE_RULE_VERSION, levelId,
+//   v: ruleVersionOf(level) (<= PUZZLE_RULE_VERSION: the rules the board needs), levelId,
 //   rules: { matcher, matchSize, matchScore },
 //   movesLeft, movesUsed, score, combo, maxCombo, matches,
 //   nextItemId,                       item ids are a deterministic sequence: rendering identity, never game logic
-//   grills: [ { id, type, lock, slots: [ {id, food} | null ], layers: [ [food|null, ...], ... ] } ],
-//   goals: [ { type, food?, target, progress } ],
+//   grills: [ { id, type, lock, slots: [ {id, food, burn?, charred?} | null ], layers: [ [food|null, ...], ... ] } ],
+//   goals: [ { type, food?, target, progress, failed? } ],
 //   boosters: { [id]: count },
-//   status: 'playing' | 'won' | 'lost', failReason?: 'moves' | 'stuck'
+//   status: 'playing' | 'won' | 'lost', failReason?: 'moves' | 'stuck' | 'charred'
 // }
+// An item has `burn` (moves left before it chars, > 0) only while it is burning, and `charred: true` once it has.
 
-import { PUZZLE_RULE_VERSION } from './version.js';
 import { resolveRules } from './rules.js';
 import { initGoals } from './goals.js';
-import { foodTotals } from './levels.js';
+import { foodTotals, cellFood, cellBurn, ruleVersionOf } from './levels.js';
 import { foodCode, foodFromCode } from './foods.js';
 
 export function createState(level) {
@@ -23,11 +23,11 @@ export function createState(level) {
     id: `g${i}`,
     type: g.type ?? 'grill',
     lock: g.lock ?? 0,
-    slots: g.slots.map((food) => (food ? { id: nextItemId++, food } : null)),
+    slots: g.slots.map((c) => (c ? (cellBurn(c) ? { id: nextItemId++, food: cellFood(c), burn: cellBurn(c) } : { id: nextItemId++, food: cellFood(c) }) : null)),
     layers: (g.layers ?? []).map((layer) => layer.slice()),
   }));
   return {
-    v: PUZZLE_RULE_VERSION,
+    v: ruleVersionOf(level),
     levelId: level.id,
     rules: resolveRules(level.rules),
     movesLeft: level.moves,
@@ -68,8 +68,16 @@ export function cloneState(s) {
 // Items are never mutated in place (moves relocate the same object), so slots.slice() above is a safe clone, and
 // layer arrays are immutable (obstacles.js replaces them on a reveal), so they are shared between states.
 
-const cell = (it) => (it ? `${foodCode(it.food)}${it.id}` : '_');
-const unCell = (c) => (c === '_' ? null : { id: Number(c.slice(1)), food: foodFromCode(c[0]) });
+// cell: <food code><id>[~<burn>|!]   e.g. s12, s12~3 (burning), s12! (charred)
+const cell = (it) => (it ? `${foodCode(it.food)}${it.id}${it.burn ? `~${it.burn}` : it.charred ? '!' : ''}` : '_');
+function unCell(c) {
+  if (c === '_') return null;
+  const m = /^(.)(\d+)(?:~(\d+)|(!))?$/.exec(c);
+  const it = { id: Number(m[2]), food: foodFromCode(m[1]) };
+  if (m[3]) it.burn = Number(m[3]);
+  if (m[4]) it.charred = true;
+  return it;
+}
 const layerStr = (layer) => layer.map((f) => (f ? foodCode(f) : '_')).join('');
 const unLayer = (s) => [...s].map((c) => (c === '_' ? null : foodFromCode(c)));
 

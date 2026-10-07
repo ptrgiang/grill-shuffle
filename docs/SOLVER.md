@@ -7,6 +7,10 @@
 - Full information: the solver sees stacked layers (the player sees only their count). Difficulty adds a term for
   hidden layers.
 - Boosters are ignored by the solver (levels must be winnable without them).
+- Burn counters (rules v2) are part of the state key (`s4` = shrimp with 4 moves left, `s*` = charred shrimp; failed
+  goals are marked too), so the same board with different counters is a different state. The A\* heuristic returns
+  0 while anything burns or is charred (charred items match across foods). `boardSignature` keeps burn counters.
+  Bench: `npm run bench:solver` explores the same 93,100 states before and after v2; speed within run-to-run noise.
 - Unit move cost, so breadth-first search gives exact minimums.
 
 ## State space reduction

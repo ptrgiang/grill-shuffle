@@ -342,8 +342,9 @@ class Hud {
     s.goals.forEach((g, i) => {
       const left = g.target - g.progress;
       const ge = this.goalEls[i];
-      ge.count.textContent = left > 0 ? (g.type === 'clear_all' ? `${left} left` : `×${left}`) : '✓';
-      ge.el.classList.toggle('done', left <= 0);
+      const guard = g.type === 'protect_food'; // a constraint: nothing to collect, it can only fail
+      ge.count.textContent = g.failed ? '✗' : guard ? 'safe' : left > 0 ? (g.type === 'clear_all' ? `${left} left` : `×${left}`) : '✓';
+      ge.el.classList.toggle('done', left <= 0 && !g.failed && !guard);
     });
   }
 
@@ -385,6 +386,10 @@ function goalLabel(g) {
       return 'Open every locked grill';
     case 'reveal_hidden':
       return 'Flip every stacked tray';
+    case 'protect_food':
+      return `Don't let any ${FOODS[g.food].name} char`;
+    case 'clear_before_char':
+      return `Serve ${g.target} burning ${g.food ? FOODS[g.food].name : 'item'}${g.target === 1 ? '' : 's'} before they char`;
   }
   return g.type;
 }
@@ -421,8 +426,8 @@ async function showResult(won, reason) {
   const level = app.level;
   if (!won) {
     openModal(
-      h('h2', reason === 'stuck' ? 'No room left!' : 'Out of moves'),
-      h('p.muted', reason === 'stuck' ? 'Every slot is full. Undo a move or start over.' : 'So close. One more try?'),
+      h('h2', reason === 'stuck' ? 'No room left!' : reason === 'charred' ? 'Burnt!' : 'Out of moves'),
+      h('p.muted', reason === 'stuck' ? 'Every slot is full. Undo a move or start over.' : reason === 'charred' ? 'That one had to be served before it charred.' : 'So close. One more try?'),
       h('div.modal-buttons',
         h('button.btn.primary', { on: { click: restart } }, 'Try again'),
         app.session.canUndo() ? h('button.btn', { on: { click: undo } }, 'Undo last move') : null,

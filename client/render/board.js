@@ -9,8 +9,9 @@
 import * as THREE from 'three';
 import { layoutBoard, hitTest } from './layout.js';
 import { GrillView } from './grill.js';
-import { createFood } from './foods.js';
+import { createFood, foodMaterial } from './foods.js';
 import { Particles } from './particles.js';
+import { badgeTexture } from './textures.js';
 
 export const TIMING = Object.freeze({
   move: 0.17, // pick-up-to-land arc
@@ -127,6 +128,7 @@ export class BoardView {
           v = this.#makeItem(item, gi, si);
           this.items.set(item.id, v);
         }
+        this.#syncLook(v, item);
         if (v.grill !== gi || v.slot !== si || snap) {
           v.grill = gi;
           v.slot = si;
@@ -144,6 +146,34 @@ export class BoardView {
       }
     }
     this.#refreshSlots();
+  }
+
+  /**
+   * Burn state, read from the item (never from timers): a counter badge while it burns, the charred material once
+   * it has. Minimal on purpose; staged cook/char visuals are their own feature.
+   */
+  #syncLook(v, item) {
+    const burn = item.burn ?? 0;
+    const charred = !!item.charred;
+    if ((v.charred ?? false) !== charred) {
+      v.charred = charred;
+      v.mesh.material = charred ? foodMaterial(item.food, { char: 1, tint: '#4a3f3a' }) : foodMaterial(item.food);
+    }
+    if ((v.burn ?? 0) === burn) return;
+    v.burn = burn;
+    if (v.badge) {
+      v.holder.remove(v.badge);
+      v.badge.material.map.dispose();
+      v.badge.material.dispose();
+      v.badge = null;
+    }
+    if (!burn) return;
+    const badge = new THREE.Sprite(new THREE.SpriteMaterial({ map: badgeTexture(String(burn), { ring: burn <= 1 ? '#ff3b1f' : '#ff8a3d', bg: '#3a1712' }), depthTest: false, toneMapped: false }));
+    badge.scale.setScalar(0.34);
+    badge.position.set(0.24, 0.5, 0.18);
+    badge.renderOrder = 10;
+    v.holder.add(badge);
+    v.badge = badge;
   }
 
   /** Locks and stacked-tray counts. During play() they change on their events' beats; this is the backstop. */
@@ -231,6 +261,10 @@ export class BoardView {
           break;
         case 'combo_reset':
           this.#fxAt(land, ev, null);
+          break;
+        case 'charred':
+          this.#at(land + 0.05, () => this.particles.poof(this.slotPos(ev.grill, ev.slot).setY(0.35), '#5a5350'));
+          this.#fxAt(land + 0.05, ev, ev.grill);
           break;
         case 'level_complete':
         case 'level_failed':

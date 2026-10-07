@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-012",
+  "name": "Burnt Ends",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":[{"food":"corn","burn":1},{"food":"shrimp","burn":1},"beef"]},
+      {"slots":[{"food":"shrimp","burn":1},{"food":"corn","burn":1},"chicken"]},
+      {"slots":["beef",{"food":"corn","burn":1},null]},
+      {"slots":["beef",{"food":"shrimp","burn":1},"chicken"]},
+      {"slots":["chicken",null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["burn_counter"],
+  "hint": "Charred food never matches fresh food, but any three charred pieces clear together.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 27,
+    "rating": "normal",
+    "states": 2294,
+    "solution": "m0.2-2.2 m1.2-4.1 m2.1-0.2 m3.0-2.1 m3.1-1.2 m3.2-4.2"
+  }
+}
