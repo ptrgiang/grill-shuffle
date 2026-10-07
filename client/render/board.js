@@ -157,7 +157,7 @@ export class BoardView {
     const charred = !!item.charred;
     if ((v.charred ?? false) !== charred) {
       v.charred = charred;
-      v.mesh.material = foodMaterial(item.food, { char: charred ? 1 : 0 });
+      v.mesh.material = charred ? foodMaterial(item.food, { char: 1, tint: '#4a3f3a' }) : foodMaterial(item.food);
     }
     if ((v.burn ?? 0) === burn) return;
     v.burn = burn;
