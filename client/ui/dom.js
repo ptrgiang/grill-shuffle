@@ -34,6 +34,7 @@ export const icons = {
   lock: '<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>',
   share: '<svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="6" r="2.6"/><circle cx="18" cy="18" r="2.6"/><path d="m8.3 10.8 7.4-3.6m-7.4 6 7.4 3.6" stroke="currentColor" stroke-width="2"/></svg>',
   tongs: '<svg viewBox="0 0 24 24"><path d="M5 3l7 12M19 3l-7 12M12 15v6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  hand: '<svg viewBox="0 0 24 24"><path d="M10.2 2.6a1.6 1.6 0 0 1 3.2 0V11l4.6.9a2.4 2.4 0 0 1 1.9 2.7l-.8 5.1a3 3 0 0 1-3 2.5h-5.3a3 3 0 0 1-2.4-1.2l-3.6-4.8a1.6 1.6 0 0 1 2.5-2l2.9 2.9Z"/></svg>',
   fan: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7s2 5-4 7Zm2 2c4 0 7 1 7 4s-5 2-7-4Zm-2 2c0 4-1 7-4 7s-2-5 4-7Zm-2-2c-4 0-7-1-7-4s5-2 7 4Z"/></svg>',
 };
 

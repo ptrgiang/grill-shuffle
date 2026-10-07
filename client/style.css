@@ -248,3 +248,37 @@ body.in-game .landing { display: none; }
 }
 .update-bar .btn { min-height: 44px; padding: 8px 14px; font-size: 15px; }
 .update-bar .btn.ghost { padding: 8px 10px; }
+
+/* ---------- first-level onboarding hand (client/ui/coach.js): tap the food, then tap the grill */
+.coach { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.coach-hand { position: absolute; left: 0; top: 0; width: 62px; height: 62px; margin: -6px 0 0 -33px; opacity: 0; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.55)); }
+.coach-hand svg { width: 100%; height: 100%; fill: #fff3e3; stroke: #3a2214; stroke-width: 1.2; stroke-linejoin: round; }
+.coach-ring { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 3px solid #fff3e3; opacity: 0; }
+.coach-ring.a { translate: var(--ax) var(--ay); }
+.coach-ring.b { translate: var(--bx) var(--by); }
+.coach.pick .coach-hand { animation: coachPick 2.8s ease-in-out infinite; }
+.coach.pick .coach-ring.a { animation: coachTap 2.8s ease-out infinite; animation-delay: 0.42s; }
+.coach.pick .coach-ring.b { animation: coachTap 2.8s ease-out infinite; animation-delay: 1.82s; }
+.coach.drop .coach-hand { animation: coachDrop 1.4s ease-in-out infinite; }
+.coach.drop .coach-ring.b { animation: coachTap 1.4s ease-out infinite; animation-delay: 0.42s; }
+@keyframes coachPick {
+  0% { translate: var(--ax) calc(var(--ay) + 40px); opacity: 0; scale: 1; }
+  10% { translate: var(--ax) calc(var(--ay) + 10px); opacity: 1; }
+  15% { translate: var(--ax) var(--ay); scale: 0.86; }
+  22% { translate: var(--ax) calc(var(--ay) + 8px); scale: 1; }
+  45% { translate: var(--bx) calc(var(--by) + 10px); }
+  65% { translate: var(--bx) var(--by); scale: 0.86; opacity: 1; }
+  72% { translate: var(--bx) calc(var(--by) + 8px); scale: 1; }
+  90%, 100% { translate: var(--bx) calc(var(--by) + 30px); opacity: 0; }
+}
+@keyframes coachDrop {
+  0% { translate: var(--bx) calc(var(--by) + 40px); opacity: 0; scale: 1; }
+  20% { translate: var(--bx) calc(var(--by) + 10px); opacity: 1; }
+  30% { translate: var(--bx) var(--by); scale: 0.86; }
+  45% { translate: var(--bx) calc(var(--by) + 8px); scale: 1; opacity: 1; }
+  80%, 100% { translate: var(--bx) calc(var(--by) + 30px); opacity: 0; }
+}
+@keyframes coachTap { 0% { opacity: 0.9; scale: 0.4; } 30% { opacity: 0; scale: 1.5; } 100% { opacity: 0; scale: 1.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .coach.pick .coach-hand, .coach.drop .coach-hand { animation-duration: 4s; }
+}

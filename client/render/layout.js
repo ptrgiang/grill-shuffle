@@ -76,3 +76,20 @@ export function hitTestSegment(layout, x, zA, zB, { margin = 0.25 } = {}) {
   });
   return best && { grill: best.grill, slot: best.slot };
 }
+
+/**
+ * Slot rings and target glows are sized in screen pixels, not world units: on a phone the board is drawn at ~40 px
+ * per world unit, where a fixed 0.08-unit ring is a 3 px hairline. `pxPerWorld` = 1 / Stage.worldPerPixel.
+ * Returns world-unit widths and opacities: { ringWidth, ringOpacity, candidateOpacity, glowPad }.
+ */
+export function markerStyle(pxPerWorld) {
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const ppw = pxPerWorld > 0 ? pxPerWorld : 100;
+  const small = ppw < 70;
+  return {
+    ringWidth: clamp(5 / ppw, 0.08, 0.16), // at least ~5 px
+    ringOpacity: small ? 0.36 : 0.24,
+    candidateOpacity: small ? 0.5 : 0.36, // empty slots of a grill that accepts the selected item
+    glowPad: clamp(10 / ppw, 0.15, 0.3), // glow rim beyond the grill, per side
+  };
+}

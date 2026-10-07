@@ -7,7 +7,7 @@ import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeom
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { materials } from './materials.js';
 import { badgeTexture } from './textures.js';
-import { grillWidth, slotOffsetX, GRILL_DEPTH } from './layout.js';
+import { grillWidth, slotOffsetX, GRILL_DEPTH, markerStyle } from './layout.js';
 
 const geoCache = new Map();
 const cached = (key, make) => {
@@ -48,9 +48,11 @@ function trayGeometries(slots) {
   });
 }
 
-const ringGeo = () => cached('ring', () => new THREE.RingGeometry(0.3, 0.38, 32).rotateX(-Math.PI / 2));
+const ringGeo = (width) => cached(`ring:${width.toFixed(3)}`, () => new THREE.RingGeometry(0.3, 0.3 + width, 32).rotateX(-Math.PI / 2));
 const discGeo = () => cached('disc', () => new THREE.CircleGeometry(0.3, 32).rotateX(-Math.PI / 2));
-const glowGeo = (w, d) => cached(`glow:${w.toFixed(2)}`, () => new RoundedBoxGeometry(w + 0.3, 0.02, d + 0.3, 2, 0.12));
+const glowGeo = (w, d, pad) => cached(`glow:${w.toFixed(2)}:${pad.toFixed(3)}`, () => new RoundedBoxGeometry(w + pad * 2, 0.02, d + pad * 2, 2, 0.12));
+const dimGeo = (w, d) => cached(`dim:${w.toFixed(2)}`, () => new THREE.PlaneGeometry(w - 0.08, d - 0.08).rotateX(-Math.PI / 2));
+const VALID = new THREE.Color('#ffe2a8'), HOVER = new THREE.Color('#b8ffb0'), INVALID = new THREE.Color('#ff4d4d');
 
 export class GrillView {
   /** @param grill  { type, slots: [...], lock, layers: [...] } (state or level shape: only counts are read) */
@@ -82,23 +84,31 @@ export class GrillView {
       this.w = g.w;
       this.d = g.d;
     }
+    this.style = markerStyle(0);
     // drop-target / selection glow under the grill
     this.glowMat = m.highlight.clone();
-    this.glow = new THREE.Mesh(glowGeo(this.w, this.d), this.glowMat);
+    this.glow = new THREE.Mesh(glowGeo(this.w, this.d, this.style.glowPad), this.glowMat);
     this.glow.position.y = -0.345;
     this.glow.renderOrder = 1;
     this.group.add(this.glow);
-    // slot markers: faint rings on empty slots, a disc when a slot is the drop target
+    // "can't go here" while an item is selected: a dark veil over the grate, under the food
+    this.dimMat = new THREE.MeshBasicMaterial({ color: 0x0c0608, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+    this.dimMesh = new THREE.Mesh(dimGeo(this.w, this.d), this.dimMat);
+    this.dimMesh.position.y = 0.006;
+    this.dimMesh.renderOrder = 1;
+    this.group.add(this.dimMesh);
+    // slot markers: rings on empty slots, a pulsing disc on the empty slots of a grill that accepts the selected
+    // item, a solid disc on the slot a drag would drop into
     this.slotRings = [];
     for (let s = 0; s < this.slots; s++) {
-      const ring = new THREE.Mesh(ringGeo(), m.slotPad.clone());
+      const ring = new THREE.Mesh(ringGeo(this.style.ringWidth), m.slotPad.clone());
       ring.position.set(slotOffsetX(s, this.slots), 0.012, 0);
       ring.renderOrder = 2;
       const disc = new THREE.Mesh(discGeo(), m.target.clone());
       disc.position.set(slotOffsetX(s, this.slots), 0.014, 0);
       disc.renderOrder = 2;
       this.group.add(ring, disc);
-      this.slotRings.push({ ring, disc });
+      this.slotRings.push({ ring, disc, empty: false, target: false, candidate: false, dim: false });
     }
     this.lockGroup = null;
     this.layerGroup = null;
@@ -106,23 +116,53 @@ export class GrillView {
     this.setLayers(grill.layers?.length ?? 0);
     this.glowLevel = 0;
     this.glowTarget = 0;
+    this.dim = 0;
+    this.dimTarget = 0;
+    this.flash = 0; // invalid-action red flash, 1 -> 0
+    this.shake = 0; // invalid-action shake, seconds left
+    this.homeX = 0; // layout position; the shake wobbles around it
+    this.time = Math.random() * 10;
     this.pulse = 0;
+  }
+
+  /** Size slot rings and the glow rim for the board's current scale (pixels per world unit). */
+  setMarkerScale(pxPerWorld) {
+    const st = markerStyle(pxPerWorld);
+    if (st.ringWidth !== this.style.ringWidth) for (const r of this.slotRings) r.ring.geometry = ringGeo(st.ringWidth);
+    if (st.glowPad !== this.style.glowPad) this.glow.geometry = glowGeo(this.w, this.d, st.glowPad);
+    this.style = st;
+  }
+
+  /** Where the grill sits in the board (the shake moves around this). */
+  place(x, z) {
+    this.homeX = x;
+    this.group.position.set(x, 0, z);
+    this.group.updateMatrixWorld(true);
+  }
+
+  /** Invalid action aimed at this grill: red flash + a short sideways shake. */
+  reject() {
+    this.flash = 1;
+    this.shake = 0.32;
   }
 
   slotPosition(slot, out = new THREE.Vector3()) {
     return out.set(slotOffsetX(slot, this.slots), 0, 0).applyMatrix4(this.group.matrixWorld);
   }
 
-  /** Empty-slot rings: visible, dimmed or hidden. */
-  setSlotState(slot, { empty, target = false, dim = false }) {
-    const { ring, disc } = this.slotRings[slot];
-    ring.material.opacity = empty ? (dim ? 0.08 : 0.24) : 0;
-    disc.material.opacity = target ? 0.55 : 0;
+  /** Slot marker state; drawn (with the candidate pulse) in update(). */
+  setSlotState(slot, { empty, target = false, candidate = false, dim = false }) {
+    Object.assign(this.slotRings[slot], { empty, target, candidate: candidate && empty, dim });
   }
 
-  /** 0 = none, 1 = valid drop target, 2 = hovered target, -1 = invalid */
+  /** 0 = none, 1 = valid drop target (pulses), 2 = hovered target */
   setGlow(level) {
     this.glowTarget = level;
+  }
+
+  /** Dim the grill: it cannot take the selected item. */
+  setDim(on) {
+    this.dimTarget = on ? 1 : 0;
   }
 
   setLock(n, { instant = false } = {}) {
@@ -188,12 +228,27 @@ export class GrillView {
   }
 
   update(dt) {
+    this.time += dt;
     const k = 1 - Math.pow(0.0005, dt);
     this.glowLevel += (this.glowTarget - this.glowLevel) * k;
+    this.dim += (this.dimTarget - this.dim) * k;
+    this.flash = Math.max(0, this.flash - dt * 2.6);
     const lv = this.glowLevel;
-    this.glowMat.opacity = Math.abs(lv) * 0.45;
-    if (lv < 0) this.glowMat.color.set('#ff6b6b');
-    else this.glowMat.color.set(lv > 1.2 ? '#b8ffb0' : '#ffe2a8');
+    const wave = 0.5 + 0.5 * Math.sin(this.time * 6.5); // valid targets breathe so they read without hover
+    const valid = Math.min(1, lv) * (0.42 + 0.33 * wave) + Math.max(0, lv - 1) * 0.25;
+    this.glowMat.color.copy(lv > 1.2 ? HOVER : VALID).lerp(INVALID, this.flash);
+    this.glowMat.opacity = Math.max(valid, this.flash * 0.9);
+    this.dimMat.opacity = this.dim * 0.62 + this.flash * 0.25;
+    this.dimMat.color.setRGB(0.05 + this.flash * 0.6, 0.02, 0.03);
+    const st = this.style;
+    for (const r of this.slotRings) {
+      r.ring.material.opacity = r.empty ? (r.dim ? 0.08 : st.ringOpacity * (1 - 0.6 * this.dim)) : 0;
+      r.disc.material.opacity = r.target ? 0.6 : r.candidate ? st.candidateOpacity * (0.45 + 0.55 * wave) : 0;
+    }
+    if (this.shake > 0) {
+      this.shake = Math.max(0, this.shake - dt);
+      this.group.position.x = this.homeX + Math.sin(this.time * 60) * this.shake * 0.35;
+    } else if (this.group.position.x !== this.homeX) this.group.position.x = this.homeX;
     if (this.pulse > 0 && this.badge) {
       this.pulse = Math.max(0, this.pulse - dt * 3);
       this.badge.scale.setScalar(0.62 * (1 + 0.35 * Math.sin(this.pulse * Math.PI)));

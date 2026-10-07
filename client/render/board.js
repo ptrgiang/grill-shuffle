@@ -56,6 +56,7 @@ export class BoardView {
     this.selected = null;
     this.drag = null;
     this.hover = null;
+    this.targets = null; // grills that accept the selected item (null: nothing selected)
     this.hint = null;
     this.ambient = 0;
     this.selRing = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#ffe7b0', transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
@@ -75,6 +76,7 @@ export class BoardView {
     this.timeline = [];
     this.selected = null;
     this.drag = null;
+    this.targets = null;
     this.state = state;
     this.grills = state.grills.map((g) => new GrillView(g));
     for (const g of this.grills) this.root.add(g.group);
@@ -92,13 +94,11 @@ export class BoardView {
     const { w, h } = this.stage.size;
     const availW = w - this.margins.marginLeft - this.margins.marginRight, availH = h - this.margins.marginTop - this.margins.marginBottom;
     this.layout = layoutBoard(this.state.grills.map((g) => g.slots.length), Math.max(0.2, availW / Math.max(1, availH)));
-    this.layout.grills.forEach((L, i) => {
-      this.grills[i].group.position.set(L.x, 0, L.z);
-      this.grills[i].group.updateMatrixWorld(true);
-    });
+    this.layout.grills.forEach((L, i) => this.grills[i].place(L.x, L.z));
     const hasLayers = this.state.grills.some((g) => g.layers.length);
     this.stage.frame({ width: this.layout.width + 0.5, depth: this.layout.depth + (hasLayers ? 0.7 : 0.2), height: 1.1, ...this.margins });
     this.particles.setScale((1 / this.stage.worldPerPixel) * this.stage.renderer.getPixelRatio());
+    for (const g of this.grills) g.setMarkerScale(1 / this.stage.worldPerPixel);
     for (const v of this.items.values()) if (!v.motion && v !== this.drag?.view) v.holder.position.copy(this.slotPos(v.grill, v.slot));
   }
 
@@ -190,7 +190,8 @@ export class BoardView {
   #refreshSlots() {
     if (!this.state) return;
     this.state.grills.forEach((g, gi) => {
-      g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
+      const candidate = !!this.targets?.includes(gi) && !this.hover;
+      g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0, candidate, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
     });
   }
 
@@ -298,6 +299,7 @@ export class BoardView {
     const from = v.holder.position.clone();
     const to = this.slotPos(v.grill, v.slot);
     const dist = from.distanceTo(to);
+    v.settle = false;
     v.motion = { kind: 'move', from, to, t0: this.clock + delay, dur: Math.max(0.06, dur * Math.min(1.4, 0.6 + dist * 0.12)), arc: arc ? Math.min(1.1, 0.25 + dist * 0.12) : 0 };
   }
 
@@ -364,7 +366,16 @@ export class BoardView {
   }
 
   select(grill, slot) {
+    const prev = this.selected?.view;
     this.selected = grill === null ? null : { grill, slot, view: this.itemAt(grill, slot) };
+    // put down without a move: a small squash when it touches the grate again
+    if (prev && prev !== this.selected?.view && !prev.motion) prev.settle = true;
+  }
+
+  /** Screen position of a slot, `y` world units above the grate (overlays such as the onboarding hand). */
+  slotScreen(grill, slot, y = 0) {
+    if (!this.layout?.grills[grill]) return null;
+    return this.stage.toScreen(this.slotPos(grill, slot).setY(y));
   }
 
   beginDrag(grill, slot) {
@@ -394,9 +405,17 @@ export class BoardView {
     this.drag = null;
   }
 
-  /** Highlight valid destinations for an item picked from `fromGrill` (null clears). */
-  setTargets(targets) {
-    this.grills.forEach((g, i) => g.setGlow(targets ? (targets.includes(i) ? 1 : 0) : 0));
+  /**
+   * Show where the selected item can go: `targets` (grill indexes) pulse, every other grill except `fromGrill`
+   * dims. Touch has no hover, so this is the whole answer to "where can this go?". null clears.
+   */
+  setTargets(targets, fromGrill = -1) {
+    this.targets = targets ? [...targets] : null;
+    this.grills.forEach((g, i) => {
+      g.setGlow(targets?.includes(i) ? 1 : 0);
+      g.setDim(!!targets && !targets.includes(i) && i !== fromGrill);
+    });
+    this.#refreshSlots();
   }
 
   setHover(hit, valid) {
@@ -405,11 +424,12 @@ export class BoardView {
     this.#refreshSlots();
   }
 
+  /** An action aimed at `grill` was refused: the grill and its food shake, the grill flashes red. */
   flashInvalid(grill) {
     const g = this.grills[grill];
     if (!g) return;
-    g.setGlow(-1);
-    this.#at(this.clock + 0.25, () => g.setGlow(0));
+    g.reject();
+    for (const v of this.items.values()) if (v.grill === grill && !v.motion) v.shake = 0.3;
   }
 
   showHint(move) {
@@ -499,6 +519,10 @@ export class BoardView {
       h.position.z += (tmp.z - h.position.z) * Math.min(1, dt * 20);
       h.position.y += (lift - h.position.y) * Math.min(1, dt * 18);
       if (sel) scale = 1.08;
+      else if (v.settle && h.position.y < 0.03) {
+        v.settle = false;
+        v.squash = 0.8;
+      }
       if (this.hint) {
         const hm = this.hint.move;
         if (hm.from.grill === v.grill && hm.from.slot === v.slot) {
