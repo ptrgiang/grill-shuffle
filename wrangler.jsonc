@@ -24,7 +24,10 @@
       "migrations_dir": "migrations"
     }
   ],
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // 00:05 UTC: pre-build today's and tomorrow's daily puzzle into D1 (worker/index.js prebuildDaily).
+  // Local test: npx wrangler dev --test-scheduled, then GET /cdn-cgi/handler/scheduled?cron=5+0+*+*+*
+  "triggers": { "crons": ["5 0 * * *"] }
   // Building a generated / daily puzzle the first time its result is submitted runs the solver (cached in D1 after),
   // which can take more than the free plan's CPU allowance. On a paid plan, raise it:
   // "limits": { "cpu_ms": 30000 }

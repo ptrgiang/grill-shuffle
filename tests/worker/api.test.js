@@ -126,3 +126,34 @@ test('daily: same puzzle for everyone; result verified', async () => {
   assert.ok(d2.data.boardHash);
   assert.equal(d2.data.minMoves, p.level.solver.minMoves);
 });
+
+test('cron: scheduled handler pre-builds today and tomorrow; /api/daily then serves the level', async () => {
+  // 2026-10-12 is a Monday (band E), 10-13 a Tuesday (band N): quick to build
+  const now = Date.UTC(2026, 9, 12, 0, 5);
+  const waits = [];
+  await worker.scheduled({ scheduledTime: now, cron: '5 0 * * *' }, env, { waitUntil: (p) => waits.push(p) });
+  assert.equal(waits.length, 1);
+  const out = await waits[0];
+  assert.deepEqual(out.map((d) => [d.date, d.status]), [['2026-10-12', 'built'], ['2026-10-13', 'built']]);
+  const { puzzleForCode } = await import('../../solver/presets.js');
+  for (const date of ['2026-10-12', '2026-10-13']) {
+    const d = await call('GET', `/api/daily?date=${date}`);
+    assert.equal(d.status, 200);
+    // the cached level is exactly what a client would generate from the code
+    assert.deepEqual(d.data.level, puzzleForCode(encodeDaily(date)).level);
+    assert.equal(d.data.minMoves, d.data.level.solver.minMoves);
+  }
+  // a second run only reads the cache
+  const { prebuildDaily } = await import('../../worker/index.js');
+  assert.deepEqual((await prebuildDaily(env, now)).map((d) => d.status), ['cached', 'cached']);
+  // a day nobody built yet: no level, the client generates it itself
+  assert.equal((await call('GET', '/api/daily?date=2026-12-01')).data.level, null);
+});
+
+test('daily: a level cached under older rules is not handed out', async () => {
+  const date = '2026-10-19';
+  await env.DB.prepare('INSERT INTO challenge_links (code, kind, level_json, board_hash, min_moves, rules_version, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)')
+    .bind(encodeDaily(date), 'daily', '{"id":"old"}', 'h', 5, 0, 0)
+    .run();
+  assert.equal((await call('GET', `/api/daily?date=${date}`)).data.level, null);
+});

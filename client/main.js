@@ -14,7 +14,8 @@ import { STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
-import { pullProgress, pushProgressSoon, submitResult } from './storage/sync.js';
+import { pullProgress, pushProgressSoon, submitResult, fetchDaily } from './storage/sync.js';
+import { advanceStreak, currentStreak, msUntilNextDaily, formatCountdown, serverDailyLevel, rankLine } from './game/daily.js';
 import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { FOODS } from '../shared/foods.js';
 import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js';
@@ -36,6 +37,7 @@ const app = {
   code: null,
   target: null, // moves to beat (shared links)
   progress: {},
+  streak: null, // local daily streak { last, count, best }
   settings: { muted: false },
   hud: null,
   busy: false,
@@ -154,6 +156,7 @@ function showMenu() {
     view.setState(app.session.state);
   }
   const stars = totalStars(app.progress);
+  const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
   const nextIdx = storyIndex(next) + 1;
   screen(
@@ -163,7 +166,7 @@ function showMenu() {
       h('div.menu-buttons',
         h('a.btn.big.primary', { href: '/play', 'data-nav': true }, stars ? `Continue · Level ${nextIdx}` : 'Play'),
         h('div.row',
-          h('a.btn', { href: '/daily', 'data-nav': true }, 'Daily Grill'),
+          h('a.btn', { href: '/daily', 'data-nav': true }, h('span', 'Daily Grill'), streak ? h('span.badge', `🔥 ${streak}`) : null),
           h('a.btn', { href: '/levels', 'data-nav': true }, h('span', 'Levels'), stars ? h('span.badge', `★ ${stars}`) : null),
         ),
         h('button.btn.ghost', { on: { click: () => challengePicker() } }, "Chef's Challenge"),
@@ -232,7 +235,9 @@ async function startCode(code, { mode }) {
   }
   screen(h('div.loading', h('div.spinner'), h('p', d.kind === 'daily' ? "Lighting today's grill…" : 'Prepping your challenge…')));
   app.route = 'loading';
-  const res = await puzzleFromCode(d.code);
+  // the daily is pre-built on the server (Cron): use it when it is there, else build it here (same code, same board)
+  const pre = d.kind === 'daily' ? serverDailyLevel(await fetchDaily(d.date), d.code, d.date) : null;
+  const res = pre ? { ok: true, level: pre } : await puzzleFromCode(d.code);
   if (parseRoute().name !== (mode === 'daily' ? 'daily' : 'code')) return; // navigated away meanwhile
   if (!res?.ok) {
     toast('Could not build that puzzle.');
@@ -442,9 +447,10 @@ async function showResult(won, reason) {
   const { improved } = await db.recordResult(key, { stars, moves: s.movesUsed, score: s.score });
   app.progress = await db.get('progress', {});
   pushProgressSoon();
-  if (app.mode !== 'story' && app.code) {
-    submitResult(app.mode === 'daily' ? 'daily' : 'challenge', app.code, { code: app.code, date: app.mode === 'daily' ? level.id.slice(6) : undefined, moves: app.session.replayString(), hash: app.session.finalHash(), versions: VERSIONS });
-  }
+  const submitted = app.mode !== 'story' && app.code
+    ? submitResult(app.mode === 'daily' ? 'daily' : 'challenge', app.code, { code: app.code, date: app.mode === 'daily' ? level.id.slice(6) : undefined, moves: app.session.replayString(), hash: app.session.finalHash(), versions: VERSIONS })
+    : null;
+  const daily = app.mode === 'daily' ? await dailyPanel(level.id.slice(6), s.movesUsed, submitted) : null;
   const t = min ? starThresholds(min) : null;
   const idx = storyIndex(level.id);
   const nextId = app.mode === 'story' && idx >= 0 ? STORY[idx + 1] : null;
@@ -459,6 +465,7 @@ async function showResult(won, reason) {
     ),
     min ? h('p.muted', stars === 3 ? `Solved in ${s.movesUsed}. The best possible is ${min}.` : `3 stars at ${t.three} moves or fewer (best possible: ${min}).`) : null,
     beat ? h('p.beat', beat) : null,
+    daily,
     improved && app.mode === 'story' ? h('p.muted', 'New best saved.') : null,
     h('div.modal-buttons',
       nextId ? h('a.btn.primary', { href: `/play/${nextId}`, 'data-nav': true }, 'Next level') : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
@@ -466,6 +473,44 @@ async function showResult(won, reason) {
       h('button.btn.ghost', { on: { click: restart } }, 'Replay'),
     ),
   );
+}
+
+/**
+ * The daily's part of the result screen: local streak, the server's verified rank among today's players (filled
+ * in when the replayed result comes back), and the countdown to tomorrow's grill.
+ */
+async function dailyPanel(date, moves, submitted) {
+  const streak = (app.streak = advanceStreak(await db.get('dailyStreak', null), date));
+  await db.set('dailyStreak', streak);
+  const rank = h('p.daily-rank.muted', 'Checking your moves with the kitchen…');
+  const verified = h('span.verified.pending', 'verifying');
+  const clock = h('b.countdown', formatCountdown(msUntilNextDaily(Date.now())));
+  const panel = h('div.daily-panel',
+    h('div.daily-row',
+      h('span.streak', { title: `Best streak: ${streak.best} days` }, '🔥 ', h('b', String(streak.count)), ' day streak'),
+      verified,
+    ),
+    rank,
+    h('p.next-daily', 'Next daily grill in ', clock),
+  );
+  const timer = setInterval(() => {
+    const left = msUntilNextDaily(Date.now());
+    clock.textContent = formatCountdown(left);
+    if (!clock.isConnected || left < 1000) clearInterval(timer); // the modal closed, or the day rolled over
+  }, 1000);
+  submitted?.then((r) => {
+    if (r?.verified) {
+      verified.className = 'verified ok';
+      verified.textContent = '✓ verified';
+      rank.textContent = rankLine({ ...r, moves });
+      rank.classList.remove('muted');
+    } else {
+      verified.className = 'verified off';
+      verified.textContent = 'offline';
+      rank.textContent = 'Saved on this device. Rankings need a connection.';
+    }
+  });
+  return panel;
 }
 
 async function share(moves) {
@@ -508,6 +553,7 @@ async function boot() {
   app.settings = { muted: false, ...(await db.get('settings', {})) };
   audio.setMuted(app.settings.muted);
   app.progress = await db.get('progress', {});
+  app.streak = await db.get('dailyStreak', null);
   render();
   stage.start((dt) => view.update(dt));
   pullProgress().then((p) => {

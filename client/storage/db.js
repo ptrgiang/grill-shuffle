@@ -5,6 +5,7 @@
 //       'settings'  { muted, reducedMotion }
 //       'current'   last story level id
 //       'daily:<date>', 'challenge:<code>'  { stars, moves, score, at }
+//       'dailyStreak'  { last: date, count, best }   consecutive UTC days with a daily win (client/game/daily.js)
 //       'boosters'  { tongs, fan }
 //       'meta'      { saveVersion, playerId }
 import { SAVE_VERSION } from '../../shared/version.js';

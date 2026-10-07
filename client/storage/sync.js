@@ -2,12 +2,13 @@
 // means "local only". Never awaited on the play path.
 import { get, set, playerId, mergeProgress } from './db.js';
 
-async function api(path, { method = 'GET', body } = {}) {
+async function api(path, { method = 'GET', body, timeout } = {}) {
   const pid = await playerId();
   const res = await fetch(path, {
     method,
     headers: { 'content-type': 'application/json', 'x-player-id': pid },
     body: body ? JSON.stringify(body) : undefined,
+    signal: timeout && AbortSignal.timeout ? AbortSignal.timeout(timeout) : undefined,
   });
   if (!res.ok) throw new Error(`${method} ${path}: ${res.status}`);
   return res.json();
@@ -41,15 +42,16 @@ export function pushProgressSoon() {
 export async function submitResult(kind, key, payload) {
   try {
     const path = kind === 'daily' ? '/api/daily/result' : `/api/challenge/${encodeURIComponent(key)}/result`;
-    return await api(path, { method: 'POST', body: payload });
+    return await api(path, { method: 'POST', body: payload, timeout: 20_000 });
   } catch {
     return null;
   }
 }
 
-export async function fetchDaily() {
+/** Today's daily info (+ the pre-built level when the Cron made it). Short timeout: generating locally is the fallback. */
+export async function fetchDaily(date, { timeout = 2500 } = {}) {
   try {
-    return await api('/api/daily');
+    return await api(`/api/daily?date=${encodeURIComponent(date)}`, { timeout });
   } catch {
     return null;
   }
