@@ -60,12 +60,14 @@ client/        browser game (Vite root)
   audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,
                  hide/show suspend + ambience fade, sfx/ambience volumes, idle buffer warm-up)
   storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync)
-  ui/            dom.js (tiny DOM helpers)
+  ui/            dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps)
+  public/        favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
+                 "Grill Shuffle"; regenerate the PNGs with node scripts/make-icons.js after a logo change)
   sandbox/       /sandbox/food, /sandbox/board
 content/       levels/<pack>/*.json + pack.json, themes/*.json
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema
-scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, build-content, lib/browser.js
+scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, build-content, make-icons, lib/browser.js
 tests/         node:test suites: sim/, solver/, worker/, client/
 ```
 
