@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const level = (id) => JSON.parse(readFileSync(join(ROOT, 'content/levels/street_bbq', `${id}.json`), 'utf8'));
+const STORY = JSON.parse(readFileSync(join(ROOT, 'content/levels/street_bbq/pack.json'), 'utf8')).levels;
 let failures = 0;
 const check = (cond, msg) => {
   console.log(`${cond ? 'ok  ' : 'FAIL'} ${msg}`);
@@ -54,6 +55,8 @@ async function run(name, { w, h, mobile, levelId, mode }) {
   try {
     await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const path = await page.evaluate(() => location.pathname);
+    check(path === `/level/${STORY.indexOf(levelId) + 1}`, `${name}: /play/${levelId} is rewritten to the on-screen number (${path})`);
     await settle(page, 600);
     const state = () => page.evaluate(() => ({ status: window.__gs.state.status, movesUsed: window.__gs.state.movesUsed, grills: window.__gs.state.grills.map((g) => g.slots.map((x) => x && x.food)) }));
 
