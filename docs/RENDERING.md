@@ -57,9 +57,22 @@ camera shake → serve 220 ms; lock counters on the burst; reveals after the mat
 ## Input
 
 `game/input.js`, Pointer Events only (mouse, touch, pen share one path). Press an item → it lifts and valid grills
-glow. Drag past 7 px → it follows the pointer; release over a grill drops into the aimed slot or the nearest free
-one. Release without dragging → it stays selected; tap a grill (or an item on a grill with room) to send it.
-`touch-action: none` on the canvas.
+glow. Drag past the threshold → it follows the pointer; release over a grill drops into the aimed slot or the nearest
+free one, and while dragging over a valid grill that slot's disc lights up (snap preview). Release without dragging →
+it stays selected; tap a grill (or an item on a grill with room) to send it. `touch-action: none` on the canvas.
+
+Per pointer type (`POINTER_TUNING`, overridable through `new Input(..., { tuning })`):
+
+| | drag threshold | hit margin | carried item drawn |
+|---|---|---|---|
+| mouse | 7 px | 0.25 | at the cursor |
+| pen | 9 px | 0.3 | at the pen |
+| touch | 14 px | 0.45 | 72 px above the finger |
+
+The lifted point (the "aim") is what hovers, previews and drops: the item lands where it is drawn, not under the
+finger. Picking is pure math (`BoardView.pick` → `layout.hitTestSegment`): the pixel's ray is tested from the table
+up to `PICK_TOP` (tallest item incl. lift), so a tap anywhere on a standing item's silhouette hits its slot. Touch
+pick-ups and drops give an 8 ms haptic tick (`navigator.vibrate`) unless `settings.haptics` is `false`.
 
 ## Audio
 

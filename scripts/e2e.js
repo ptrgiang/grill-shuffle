@@ -1,12 +1,15 @@
 // End-to-end: plays real levels through real input in headless Chrome (safe launcher), reading the result from the
 // authoritative simulation state (window.__gs.state), never from meshes.
 //   desktop: mouse drag-and-drop, plus an invalid drop that must change nothing
-//   mobile:  touch tap-to-select + tap-destination at 390 x 844
+//   mobile:  touch tap-to-select (on the top of the item) + tap-destination at 390 x 844
+//   mobile-drag: touch drag-and-drop at 390 x 844; the carried item must ride above the finger and land where the
+//                item (not the finger) is released
 // Each solves the level with its stored optimal solution and expects a 3-star win and the results screen.
 import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT } from './lib/content.js';
 import { decodeActions } from '../shared/moves.js';
-import { readFileSync } from 'node:fs';
+import { POINTER_TUNING } from '../client/game/input.js';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const level = (id) => JSON.parse(readFileSync(join(ROOT, 'content/levels/street_bbq', `${id}.json`), 'utf8'));
@@ -16,18 +19,27 @@ const check = (cond, msg) => {
   if (!cond) failures++;
 };
 
-async function slotXY(page, grill, slot) {
+async function slotXY(page, grill, slot, y = 0.12) {
   return page.evaluate(
-    (g, s) => {
+    (g, s, y) => {
       const v = window.__gs.view;
       const p = v.slotPos(g, s);
-      p.y = 0.12;
+      p.y = y;
       return v.stage.toScreen(p);
     },
     grill,
     slot,
+    y,
   );
 }
+
+/** Screen position of the dragged item (`target`: where it is heading; else where it is drawn), null if none. */
+const dragXY = (page, target = false) =>
+  page.evaluate((target) => {
+    const v = window.__gs.view;
+    const p = target ? v.drag?.target : v.drag?.view?.holder.position;
+    return p ? v.stage.toScreen(p) : null;
+  }, target);
 
 async function settle(page, ms = 700) {
   await sleep(ms);
@@ -59,10 +71,42 @@ async function run(name, { w, h, mobile, levelId, mode }) {
       check(JSON.stringify(await state()) === JSON.stringify(before), `${name}: dropping back on its own grill changes nothing`);
     }
 
+    const lift = POINTER_TUNING.touch.liftPx;
+    let carried = Infinity;
     for (const m of moves) {
-      const a = await slotXY(page, m.from.grill, m.from.slot);
+      // taps aim at the top of the item (a thumb on its silhouette), drags and destinations at the slot
+      const a = await slotXY(page, m.from.grill, m.from.slot, mode === 'tap' ? 0.4 : 0.12);
       const b = await slotXY(page, m.to.grill, m.to.slot);
-      if (mode === 'drag') {
+      if (mode === 'touch-drag') {
+        // the finger ends liftPx below the destination slot: the item, drawn above the finger, is what is aimed
+        const end = { x: b.x, y: b.y + lift };
+        await page.touchscreen.touchStart(a.x, a.y);
+        for (let i = 1; i <= 10; i++) {
+          const f = { x: a.x + ((end.x - a.x) * i) / 10, y: a.y + ((end.y - a.y) * i) / 10 };
+          await page.touchscreen.touchMove(f.x, f.y);
+          await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))); // move delivered
+          // where the view puts the carried item (headless software rendering runs at a few fps, so the drawn item
+          // trails the finger; the target is what a real device's 60 fps easing reaches within a few frames)
+          const t = await dragXY(page, true);
+          if (t) carried = Math.min(carried, f.y - t.y);
+          // hold still once mid-drag: the drawn item must sit above the finger; keep a frame for review
+          if (i === 8 && m === moves[0]) {
+            await sleep(1500);
+            const it = await dragXY(page);
+            check(!!it && f.y - it.y > lift * 0.8, `${name}: held still, the drawn item sits ${it ? Math.round(f.y - it.y) : '?'} px above the finger`);
+            await page.evaluate(({ x, y }) => {
+              const d = document.createElement('div');
+              d.id = 'e2e-finger';
+              d.style.cssText = `position:fixed;left:${x - 18}px;top:${y - 18}px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.45);border:2px solid #fff;pointer-events:none;z-index:99`;
+              document.body.append(d);
+            }, f);
+            await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-carry.png`) });
+            await page.evaluate(() => document.getElementById('e2e-finger')?.remove());
+          }
+        }
+        await sleep(120);
+        await page.touchscreen.touchEnd();
+      } else if (mode === 'drag') {
         await page.mouse.move(a.x, a.y);
         await page.mouse.down();
         for (let i = 1; i <= 10; i++) await page.mouse.move(a.x + ((b.x - a.x) * i) / 10, a.y + ((b.y - a.y) * i) / 10);
@@ -75,6 +119,7 @@ async function run(name, { w, h, mobile, levelId, mode }) {
       await settle(page, 450);
     }
     await settle(page, 1500);
+    if (mode === 'touch-drag') check(carried >= lift - 2, `${name}: the carried item aims above the finger for the whole drag (min ${Math.round(carried)} px, lift ${lift})`);
     const s = await state();
     check(s.status === 'won', `${name}: level ${levelId} won through ${mode} input (status ${s.status})`);
     check(s.movesUsed === lvl.solver.minMoves, `${name}: used ${s.movesUsed} moves = solver minimum ${lvl.solver.minMoves}`);
@@ -105,10 +150,12 @@ async function run(name, { w, h, mobile, levelId, mode }) {
   }
 }
 
+mkdirSync(join(ROOT, 'shots'), { recursive: true });
 const vite = await startVite(ROOT);
 try {
   await run('desktop', { w: 1280, h: 800, mobile: false, levelId: 'street-003', mode: 'drag' });
   await run('mobile', { w: 390, h: 844, mobile: true, levelId: 'street-006', mode: 'tap' });
+  await run('mobile-drag', { w: 390, h: 844, mobile: true, levelId: 'street-003', mode: 'touch-drag' });
 } finally {
   vite.stop();
 }

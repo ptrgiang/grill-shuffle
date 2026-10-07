@@ -6,21 +6,44 @@
 //
 // Both paths end in the same call: onMove(move, { dropped }). The input layer only asks the session what is legal;
 // it never changes game state itself.
-const DRAG_PX = 7;
+//
+// Touch differs from mouse in three ways (POINTER_TUNING): a thumb jitters more, so a tap needs a larger drag
+// threshold; it is fat, so grills get a wider hit margin; and it covers what it carries, so a dragged item is drawn
+// `liftPx` above the finger. Everything aims with that lifted point (the "aim"): the hover/snap preview and the drop
+// land where the item is, not where the finger is. Mouse keeps liftPx 0 (aim = cursor).
+
+/** Per pointer type: dragPx = movement (CSS px) that turns a press into a drag; margin = hit margin (world units). */
+export const POINTER_TUNING = Object.freeze({
+  mouse: Object.freeze({ dragPx: 7, margin: 0.25, liftPx: 0, haptics: false }),
+  pen: Object.freeze({ dragPx: 9, margin: 0.3, liftPx: 0, haptics: false }),
+  touch: Object.freeze({ dragPx: 14, margin: 0.45, liftPx: 72, haptics: true }),
+});
+
+/** Tuning for a PointerEvent.pointerType ('' / unknown types behave like a mouse), with optional overrides. */
+export function tuningFor(pointerType, overrides = {}) {
+  const kind = POINTER_TUNING[pointerType] ? pointerType : 'mouse';
+  return { ...POINTER_TUNING[kind], ...overrides[kind] };
+}
+
+/** Screen point the carried item is drawn at and aims with: the pointer, lifted by liftPx. */
+export const aimPoint = (x, y, tuning) => ({ x, y: y - tuning.liftPx });
 
 export class Input {
   /**
    * @param el       element receiving pointer events (the canvas)
    * @param session  () => Session
    * @param view     BoardView
-   * @param hooks    { onMove(move, {dropped}), onSelect(), onInvalid(grill), onDeselect(), enabled(): bool }
+   * @param hooks    { onMove(move, {dropped}), onSelect(), onInvalid(grill), onDeselect(), enabled(): bool,
+   *                   haptics(): bool (vibrate on touch pick-up / drop; default off) }
+   * @param opts     { tuning: { touch: { liftPx, ... }, mouse: {...} } } overrides of POINTER_TUNING
    */
-  constructor(el, session, view, hooks) {
+  constructor(el, session, view, hooks, { tuning = {} } = {}) {
+    this.tuning = tuning;
     this.el = el;
     this.session = session;
     this.view = view;
     this.hooks = hooks;
-    this.press = null; // { id, grill, slot, x, y, wasSelected }
+    this.press = null; // { id, grill, slot, x, y, wasSelected, tune }
     this.dragging = false;
     this.selected = null; // { grill, slot }
     this.handlers = {
@@ -41,6 +64,13 @@ export class Input {
   #xy(e) {
     const r = this.el.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  #haptic(tune) {
+    if (!tune.haptics || !this.hooks.haptics?.()) return;
+    try {
+      navigator.vibrate?.(8);
+    } catch {}
   }
 
   #enabled() {
@@ -78,14 +108,16 @@ export class Input {
   #down(e) {
     if (!this.#enabled() || (e.button !== undefined && e.button > 0)) return;
     this.hooks.onGesture?.();
+    const tune = tuningFor(e.pointerType, this.tuning);
     const { x, y } = this.#xy(e);
-    const hit = this.view.pick(x, y);
+    const hit = this.view.pick(x, y, { margin: tune.margin });
     const s = this.session();
     // a grill tapped while something is selected: send it there
     if (this.selected && hit && hit.grill !== this.selected.grill && !s.canPick(hit.grill, hit.slot)) {
       const from = this.selected;
       this.deselect();
-      if (!this.#commit(from, hit, false)) this.view.cancelDrag();
+      if (this.#commit(from, hit, false)) this.#haptic(tune);
+      else this.view.cancelDrag();
       return;
     }
     if (this.selected && hit && hit.grill !== this.selected.grill && s.canPick(hit.grill, hit.slot)) {
@@ -93,16 +125,19 @@ export class Input {
       if (s.dropSlot(hit.grill, hit.slot) >= 0) {
         const from = this.selected;
         this.deselect();
-        this.#commit(from, hit, false);
+        if (this.#commit(from, hit, false)) this.#haptic(tune);
         return;
       }
     }
     if (hit && s.canPick(hit.grill, hit.slot)) {
       const wasSelected = !!this.selected && this.selected.grill === hit.grill && this.selected.slot === hit.slot;
-      this.press = { id: e.pointerId, grill: hit.grill, slot: hit.slot, x, y, wasSelected };
+      this.press = { id: e.pointerId, grill: hit.grill, slot: hit.slot, x, y, wasSelected, tune };
       this.dragging = false;
       this.el.setPointerCapture?.(e.pointerId);
-      if (!wasSelected) this.#select(hit.grill, hit.slot);
+      if (!wasSelected) {
+        this.#select(hit.grill, hit.slot);
+        this.#haptic(tune);
+      }
       return;
     }
     if (this.selected) this.deselect();
@@ -114,13 +149,15 @@ export class Input {
   #move(e) {
     if (!this.press || e.pointerId !== this.press.id) return;
     const { x, y } = this.#xy(e);
-    if (!this.dragging && Math.hypot(x - this.press.x, y - this.press.y) > DRAG_PX) {
+    const tune = this.press.tune;
+    if (!this.dragging && Math.hypot(x - this.press.x, y - this.press.y) > tune.dragPx) {
       this.dragging = true;
       this.view.beginDrag(this.press.grill, this.press.slot);
     }
     if (this.dragging) {
-      this.view.dragTo(x, y);
-      const hit = this.view.pick(x, y);
+      const aim = aimPoint(x, y, tune);
+      this.view.dragTo(aim.x, aim.y);
+      const hit = this.view.pick(aim.x, aim.y, { margin: tune.margin });
       const valid = !!hit && hit.grill !== this.press.grill && this.session().dropSlot(hit.grill, hit.slot) >= 0;
       this.view.setHover(hit && valid ? { grill: hit.grill, slot: this.session().dropSlot(hit.grill, hit.slot) } : hit, valid);
     }
@@ -134,13 +171,16 @@ export class Input {
     if (this.dragging) {
       this.dragging = false;
       const { x, y } = this.#xy(e);
-      const hit = this.view.pick(x, y);
+      const aim = aimPoint(x, y, p.tune);
+      const hit = this.view.pick(aim.x, aim.y, { margin: p.tune.margin });
       const from = { grill: p.grill, slot: p.slot };
       this.view.setHover(null, false);
       if (hit && hit.grill !== p.grill) {
         const ok = this.#commit(from, hit, true);
-        if (ok) this.view.endDrag();
-        else this.view.cancelDrag({ invalid: true });
+        if (ok) {
+          this.view.endDrag();
+          this.#haptic(p.tune);
+        } else this.view.cancelDrag({ invalid: true });
       } else this.view.cancelDrag();
       this.deselect();
       return;
