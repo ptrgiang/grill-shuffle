@@ -1,5 +1,5 @@
 // Writes dist/sw.js from client/sw.js after `vite build`: the precache list (every build file the game needs) and a
-// version hashed from their contents, so each deploy that changes anything installs a new service worker.
+// version hashed from the worker source and those files, so each deploy that changes anything gets a fresh cache.
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative, sep } from 'node:path';
@@ -16,7 +16,8 @@ const files = walk(DIST)
   .filter(({ url }) => !SKIP.some((re) => re.test(url)))
   .sort((a, b) => a.url.localeCompare(b.url));
 
-const hash = createHash('sha256');
+const template = readFileSync(join(ROOT, 'client', 'sw.js'), 'utf8');
+const hash = createHash('sha256').update(template); // a change to the worker itself is a new version too
 for (const { file, url } of files) hash.update(url).update(readFileSync(file));
 const version = hash.digest('hex').slice(0, 12);
 
@@ -24,7 +25,7 @@ const version = hash.digest('hex').slice(0, 12);
 const precache = files.map(({ url }) => (url === '/index.html' ? '/' : url));
 if (!precache.includes('/')) throw new Error('build-sw: dist/index.html missing, run vite build first');
 
-const src = readFileSync(join(ROOT, 'client', 'sw.js'), 'utf8')
+const src = template
   .replace("'__VERSION__'", JSON.stringify(version))
   .replace('__PRECACHE__', JSON.stringify(precache));
 writeFileSync(join(DIST, 'sw.js'), src);
