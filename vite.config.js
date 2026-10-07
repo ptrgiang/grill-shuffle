@@ -21,11 +21,12 @@ export default defineConfig({
   appType: 'spa',
   plugins: [sandboxRoutes],
   server: {
-    port: 5173,
+    port: 5180, // 5173 / 8787 are the usual defaults other local projects already use
     host: true,
     fs: { allow: ['..'] },
-    // the Worker API (npm run preview / wrangler dev on 8787) when it is running; the game works without it
-    proxy: { '/api': { target: 'http://localhost:8787', changeOrigin: true } },
+    // the Worker API (npm run preview / wrangler dev on 8797, GS_API_PORT overrides) when it is running; the game
+    // works without it
+    proxy: { '/api': { target: `http://localhost:${process.env.GS_API_PORT || 8797}`, changeOrigin: true } },
   },
   worker: { format: 'es' },
   build: {

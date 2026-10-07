@@ -1,6 +1,6 @@
 {
   // Grill Shuffle on Cloudflare: one Worker for /api/*, Workers Static Assets for the Vite build, D1 for progress.
-  // Local:  npm run db:migrate:local && npm run preview   (wrangler dev on :8787 with a local D1 in .wrangler/)
+  // Local:  npm run db:migrate:local && npm run preview   (wrangler dev on :8797 with a local D1 in .wrangler/)
   // Deploy: npm run deploy (CI does it on every push to main). Production: https://grillshuffle.thebuilder.work
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "grill-shuffle",
@@ -8,6 +8,8 @@
   "compatibility_date": "2026-09-01",
   "routes": [{ "pattern": "grillshuffle.thebuilder.work", "custom_domain": true }],
   "workers_dev": false,
+  // not wrangler's default 8787: other local projects listen there. Vite proxies /api here (vite.config.js).
+  "dev": { "port": 8797 },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

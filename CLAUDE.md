@@ -31,5 +31,6 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
 
 - Git Bash rewrites arguments that start with `/` into Windows paths: prefix such commands with `MSYS_NO_PATHCONV=1`
   (e.g. `npm run shot -- /play/street-001`).
-- Port 5173 is used by another local project (pianory). Run this dev server with `npx vite --port 5180 --strictPort`.
+- Ports 5173 (pianory) and 8787 (facebook-studio's shopee proxy, restarts itself) belong to other local projects.
+  This repo defaults to Vite on 5180 and wrangler dev on 8797 (`GS_API_PORT` overrides the Vite `/api` target).
 - Deploys normally go through CI. A manual `npx wrangler deploy` works too (wrangler is logged in).
