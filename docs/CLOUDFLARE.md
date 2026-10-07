@@ -23,8 +23,8 @@ All JSON; players are anonymous device ids sent as `x-player-id` (`[A-Za-z0-9-]{
 | `POST /api/challenge/:code/result` `{ moves, hash }` | replayed; best kept; percentile |
 
 Results are **move lists** replayed with the shared simulation (`verified = 1`), never trusted totals. Generated
-and daily puzzles are built from their code once (solver CPU) and cached in `challenge_links`; on the free plan's
-CPU limit a large one may fail to build: raise `limits.cpu_ms` on a paid plan (commented in wrangler.jsonc).
+and daily puzzles are built from their code once (solver CPU) and cached in `challenge_links`. The account is on Workers Paid
+(30 s CPU per request / cron run by default; a build takes ~150 ms); `limits.cpu_ms` can raise it (commented in wrangler.jsonc).
 No per-move writes.
 
 ## Cron: daily pre-build
