@@ -274,7 +274,7 @@ function carrotGeometry(rng) {
 function salmonGeometry(rng) {
   // a fillet portion: rounded thick back edge (away from the player), flatter belly edge, the two cut ends slanted.
   // A dark silver skin rim shows all round: no other food has a dark outline (steak's rim is white fat).
-  const w = 0.42 + rng() * 0.03, d = 0.27 + rng() * 0.03, slant = 0.08 + rng() * 0.04;
+  const w = 0.38 + rng() * 0.03, d = 0.26 + rng() * 0.03, slant = 0.08 + rng() * 0.04;
   const s = new THREE.Shape();
   s.moveTo(-w + slant, -d * 0.78); // belly edge, near the player
   s.bezierCurveTo(-w * 0.3, -d * 0.92, w * 0.3, -d * 0.92, w - slant, -d * 0.74);
