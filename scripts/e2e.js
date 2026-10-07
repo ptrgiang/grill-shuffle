@@ -3,7 +3,7 @@
 //   desktop: mouse drag-and-drop, plus an invalid drop that must change nothing
 //   mobile:  touch tap-to-select + tap-destination at 390 x 844
 // Each solves the level with its stored optimal solution and expects a 3-star win and the results screen.
-import { launchChrome, startVite, sleep } from './lib/browser.js';
+import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT } from './lib/content.js';
 import { decodeActions } from '../shared/moves.js';
 import { readFileSync } from 'node:fs';
@@ -38,10 +38,9 @@ async function run(name, { w, h, mobile, levelId, mode }) {
   const moves = decodeActions(lvl.solver.solution);
   const { page, close } = await launchChrome({ width: w, height: h, mobile, life: 3 * 60_000 });
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  collectPageErrors(page, errors);
   try {
-    await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     await settle(page, 600);
     const state = () => page.evaluate(() => ({ status: window.__gs.state.status, movesUsed: window.__gs.state.movesUsed, grills: window.__gs.state.grills.map((g) => g.slots.map((x) => x && x.food)) }));

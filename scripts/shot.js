@@ -3,7 +3,7 @@
 //   npm run shot -- --set   the standard visual-regression set (desktop + mobile, seeded) into shots/
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { launchChrome, startVite, sleep } from './lib/browser.js';
+import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT, parseArgs } from './lib/content.js';
 
 const args = parseArgs();
@@ -28,9 +28,8 @@ try {
   for (const job of jobs) {
     const { page, close } = await launchChrome({ width: job.w, height: job.h, mobile: job.mobile, life: 3 * 60_000 });
     try {
-      page.on('console', (m) => m.type() === 'error' && errors.push(`${job.path}: ${m.text()}`));
-      page.on('pageerror', (e) => errors.push(`${job.path}: ${e.message}`));
-      await page.goto(vite.url + job.path, { waitUntil: 'networkidle0', timeout: 60000 });
+      collectPageErrors(page, errors, `${job.path}: `);
+      await page.goto(vite.url + job.path, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction('window.__sandboxReady || window.__gameReady', { timeout: 30000 }).catch(() => {});
       await sleep(Number(args.wait ?? 1500));
       const file = job.out.includes('/') || job.out.includes('\\') ? join(ROOT, job.out) : join(ROOT, 'shots', job.out);

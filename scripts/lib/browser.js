@@ -179,6 +179,21 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
   return { browser, page, close };
 }
 
+/**
+ * Collect page errors into `sink` (strings, each prefixed with `prefix`). A failed load of an `/api/` resource is not
+ * an error: under plain `vite` the Worker is usually not running, the proxy answers 502, and cloud sync is best effort
+ * (client/storage/sync.js). Thrown errors and every other console error still count.
+ */
+export function collectPageErrors(page, sink, prefix = '') {
+  page.on('pageerror', (e) => sink.push(prefix + e.message));
+  page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    const url = m.location()?.url ?? '';
+    if (/^Failed to load resource/.test(m.text()) && new URL(url, 'http://x').pathname.startsWith('/api/')) return;
+    sink.push(prefix + m.text());
+  });
+}
+
 /** Start `vite` on a free port for the duration of a script. Returns { url, stop }. */
 export async function startVite(root) {
   const port = 5190 + Math.floor(Math.random() * 90);
