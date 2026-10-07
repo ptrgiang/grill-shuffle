@@ -52,7 +52,8 @@ solver/        search over the shared simulation
   benchmark.js
 client/        browser game (Vite root)
   main.js        routes, screens, HUD, wiring
-  ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), install.js, update.js
+  ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), coach.js (first-level
+                 onboarding hand), install.js, update.js
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
   game/          session.js (state + undo + action log), input.js (pointer state machine), content.js (packs),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)

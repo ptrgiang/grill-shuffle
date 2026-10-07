@@ -1,6 +1,7 @@
 // Deterministic screenshots of pages (through the safe launcher in scripts/lib/browser.js).
 //   npm run shot -- /sandbox/food?spin=0 [--w 900 --h 600] [--mobile] [--out shots/food.png] [--wait 1500]
 //   npm run shot -- --set   the standard visual-regression set (desktop + mobile, seeded) into shots/
+//   --select   (game pages) tap-select a food first, to capture the drop-target feedback (issue #2)
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
@@ -21,6 +22,9 @@ const SET = [
   { path: '/play/street-001', w: 390, h: 844, mobile: true, out: 'game-mobile.png' },
   { path: '/', w: 1280, h: 800, out: 'menu-desktop.png' },
   // issue #3 viewports: HUD vs board on small, tall and sideways phones
+  // issue #2: an item selected by touch - valid grills pulse, full ones dim; and the first-level onboarding hand
+  ...[[360, 800, 'street-010'], [390, 844, 'street-009'], [430, 932, 'street-008']].map(([w, h, id]) => ({ path: `/play/${id}?coach=0`, w, h, mobile: true, select: true, out: `select-${w}.png` })),
+  { path: '/play/street-001?coach=1', w: 390, h: 844, mobile: true, out: 'coach-390.png', cssAt: 1820 }, // the hand tapping the grill
   ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].flatMap(([w, h]) => [
     { path: '/level/31', w, h, mobile: w < 1000, out: `layout-game-${w}x${h}.png` },
     { path: '/', w, h, mobile: w < 1000, out: `layout-menu-${w}x${h}.png` },
@@ -29,7 +33,26 @@ const SET = [
 
 const jobs = args.set
   ? SET
-  : [{ path: args._[0] ?? '/', w: Number(args.w ?? 900), h: Number(args.h ?? 600), mobile: !!args.mobile, out: args.out ?? 'shot.png' }];
+  : [{ path: args._[0] ?? '/', w: Number(args.w ?? 900), h: Number(args.h ?? 600), mobile: !!args.mobile, select: !!args.select, out: args.out ?? 'shot.png' }];
+
+/** Tap (touch) the first food that has somewhere to go and at least one grill it cannot go to, else any movable food. */
+async function tapSelect(page) {
+  const at = await page.evaluate(() => {
+    const { app, view } = window.__gs;
+    const s = app.session;
+    let pick = null;
+    s.state.grills.forEach((g, gi) =>
+      g.slots.forEach((it, si) => {
+        if (!it || !s.canPick(gi, si)) return;
+        const n = s.targetsFor({ grill: gi, slot: si }).length;
+        const score = n > 0 ? (n < s.state.grills.length - 1 ? 2 : 1) : 0;
+        if (!pick || score > pick.score) pick = { gi, si, score };
+      }),
+    );
+    return pick && view.slotScreen(pick.gi, pick.si, 0.3);
+  });
+  if (at) await page.touchscreen.tap(at.x, at.y);
+}
 
 const vite = await startVite(ROOT);
 const errors = [];
@@ -40,7 +63,12 @@ try {
       collectPageErrors(page, errors, `${job.path}: `);
       await page.goto(vite.url + job.path, { waitUntil: 'load', timeout: 60000 });
       await page.waitForFunction('window.__sandboxReady || window.__gameReady', { timeout: 30000 }).catch(() => {});
-      await sleep(Number(args.wait ?? 1500));
+      await sleep(Number(args.wait ?? job.wait ?? 1500));
+      if (job.cssAt !== undefined) await page.evaluate((t) => document.getAnimations().forEach((a) => (a.pause(), (a.currentTime = t))), job.cssAt);
+      if (job.select) {
+        await tapSelect(page);
+        await sleep(700);
+      }
       const file = job.out.includes('/') || job.out.includes('\\') ? join(ROOT, job.out) : join(ROOT, 'shots', job.out);
       mkdirSync(dirname(file), { recursive: true });
       await page.screenshot({ path: file });

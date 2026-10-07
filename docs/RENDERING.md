@@ -82,6 +82,21 @@ finger. Picking is pure math (`BoardView.pick` → `layout.hitTestSegment`): the
 up to `PICK_TOP` (tallest item incl. lift), so a tap anywhere on a standing item's silhouette hits its slot. Touch
 pick-ups and drops give an 8 ms haptic tick (`navigator.vibrate`) unless `settings.haptics` is `false`.
 
+### Feedback without hover (touch)
+
+Touch has no hover, so a selection alone has to answer "where can this go?" (`BoardView.setTargets(targets, from)`):
+grills that accept the item breathe (pulsing glow rim) and their empty slots show pulsing green discs; every other
+grill except the source gets a dark veil over its grate. Slot rings and the glow rim are sized in screen pixels
+(`layout.markerStyle(pxPerWorld)`: rings at least ~5 px, stronger opacity below 70 px per world unit), so phones get
+legible markers. A refused action (`flashInvalid`) flashes the grill red and shakes it with its food, plays the
+`invalid` sound and buzzes (14-50-14 ms) on touch. Putting a selected item down without a move squashes it as it
+touches the grate.
+
+Onboarding (`ui/coach.js`): on the first story level, until it is won, a touch screen shows an animated hand that taps
+the food, then the grill. The move is the first move of the level's solver `solution` (so it is always legal and
+useful) and needs a level `hint`; after a selection the hand only taps the grill, the first move removes it.
+`?coach=1` / `?coach=0` force it on / off (screenshots).
+
 ## Audio
 
 `audio/synth.js` generates every sound (thud, sizzle with crackle, sparkle, bell notes, metallic clank, whoosh,

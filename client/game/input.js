@@ -66,10 +66,11 @@ export class Input {
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
-  #haptic(tune) {
+  /** Short tick on pick-up / drop; `pattern` for a refused action (buzz-pause-buzz). */
+  #haptic(tune, pattern = 8) {
     if (!tune.haptics || !this.hooks.haptics?.()) return;
     try {
-      navigator.vibrate?.(8);
+      navigator.vibrate?.(pattern);
     } catch {}
   }
 
@@ -78,27 +79,30 @@ export class Input {
   }
 
   deselect() {
+    const had = !!this.selected;
     this.selected = null;
     this.view.select(null);
     this.view.setTargets(null);
     this.view.setHover(null, false);
+    if (had) this.hooks.onDeselect?.();
   }
 
   #select(grill, slot) {
     this.selected = { grill, slot };
     this.view.select(grill, slot);
-    this.view.setTargets(this.session().targetsFor({ grill, slot }));
+    this.view.setTargets(this.session().targetsFor({ grill, slot }), grill);
     this.hooks.onSelect?.(grill, slot);
   }
 
   /** Try to move the selected item to (grill, slot). Returns true if a move was made. */
-  #commit(from, hit, dropped) {
+  #commit(from, hit, dropped, tune) {
     const s = this.session();
     if (!hit || hit.grill === from.grill) return false;
     const slot = s.dropSlot(hit.grill, hit.slot);
     if (slot < 0) {
       this.hooks.onInvalid?.(hit.grill);
       this.view.flashInvalid(hit.grill);
+      this.#haptic(tune, [14, 50, 14]);
       return false;
     }
     this.hooks.onMove({ type: 'move', from: { grill: from.grill, slot: from.slot }, to: { grill: hit.grill, slot } }, { dropped });
@@ -116,7 +120,7 @@ export class Input {
     if (this.selected && hit && hit.grill !== this.selected.grill && !s.canPick(hit.grill, hit.slot)) {
       const from = this.selected;
       this.deselect();
-      if (this.#commit(from, hit, false)) this.#haptic(tune);
+      if (this.#commit(from, hit, false, tune)) this.#haptic(tune);
       else this.view.cancelDrag();
       return;
     }
@@ -125,7 +129,7 @@ export class Input {
       if (s.dropSlot(hit.grill, hit.slot) >= 0) {
         const from = this.selected;
         this.deselect();
-        if (this.#commit(from, hit, false)) this.#haptic(tune);
+        if (this.#commit(from, hit, false, tune)) this.#haptic(tune);
         return;
       }
     }
@@ -176,7 +180,7 @@ export class Input {
       const from = { grill: p.grill, slot: p.slot };
       this.view.setHover(null, false);
       if (hit && hit.grill !== p.grill) {
-        const ok = this.#commit(from, hit, true);
+        const ok = this.#commit(from, hit, true, p.tune);
         if (ok) {
           this.view.endDrag();
           this.#haptic(p.tune);

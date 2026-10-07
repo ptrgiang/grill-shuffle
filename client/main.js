@@ -19,6 +19,7 @@ import * as db from './storage/db.js';
 import { pullProgress, pushProgressSoon, submitResult, fetchDaily, flushOutbox } from './storage/sync.js';
 import { advanceStreak, currentStreak, msUntilNextDaily, formatCountdown, serverDailyLevel, rankLine } from './game/daily.js';
 import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
+import { Coach, coachMove } from './ui/coach.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
 import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js';
@@ -48,6 +49,7 @@ const app = {
   streak: null, // local daily streak { last, count, best }
   settings: { ...DEFAULT_SETTINGS },
   hud: null,
+  coach: null, // first-level onboarding hand (touch)
   busy: false,
 };
 
@@ -58,7 +60,8 @@ new Input(canvas, () => app.session, view, {
   enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal,
   onGesture: () => audio.unlock(),
   haptics: () => app.settings.haptics !== false,
-  onSelect: () => audio.onEvent({ type: 'select' }),
+  onSelect: () => (audio.onEvent({ type: 'select' }), app.coach?.phase('drop')),
+  onDeselect: () => app.coach?.phase('pick'),
   onInvalid: (g, o) => {
     if (!o?.quiet) audio.onEvent({ type: 'invalid' });
   },
@@ -68,6 +71,7 @@ new Input(canvas, () => app.session, view, {
 function doAction(action, opts = {}) {
   const r = app.session.apply(action);
   if (!r.ok) return false;
+  dismissCoach();
   view.showHint(null);
   view.play(r.state, r.events, opts);
   app.hud?.update(r.state, { immediate: true });
@@ -121,6 +125,7 @@ document.addEventListener('click', (e) => {
 async function render() {
   const r = parseRoute();
   closeModal();
+  dismissCoach();
   document.body.classList.toggle('in-game', r.name !== 'menu');
   if (r.name === 'menu') return showMenu();
   if (r.name === 'levels') return showLevels();
@@ -313,8 +318,24 @@ function startLevel(level, { mode, code = null }) {
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
   if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(level.hint);
+  dismissCoach();
+  if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
   if (app.target) app.hud.tip(`A friend finished this in ${app.target} moves. Can you beat it?`);
   window.__gameReady = true;
+}
+
+/** Onboarding hand: first story level, not yet won, on a touch screen (`?coach=1` / `?coach=0` force it). */
+function wantsCoach(level, mode) {
+  const force = new URLSearchParams(location.search).get('coach');
+  if (force === '0' || !coachMove(level)) return false;
+  if (force === '1') return true;
+  const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+  return touch && mode === 'story' && storyIndex(level.id) === 0 && !(app.progress[level.id]?.stars > 0);
+}
+
+function dismissCoach() {
+  app.coach?.dispose();
+  app.coach = null;
 }
 
 function restart() {
@@ -342,7 +363,7 @@ async function hint() {
     app.session.hints++;
     view.showHint(r.move);
     view.select(r.move.from.grill, r.move.from.slot);
-    view.setTargets([r.move.to.grill]);
+    view.setTargets([r.move.to.grill], r.move.from.grill);
     setTimeout(() => {
       view.select(null);
       view.setTargets(null);

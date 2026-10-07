@@ -1,7 +1,8 @@
 // Client modules that are pure (no DOM / WebGL): layout + hit testing, the audio synthesizers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { layoutBoard, hitTest, hitTestSegment, slotOffsetX, SLOT, CAMERA_ELEVATION } from '../../client/render/layout.js';
+import { layoutBoard, hitTest, hitTestSegment, slotOffsetX, SLOT, CAMERA_ELEVATION, markerStyle } from '../../client/render/layout.js';
+import { coachMove } from '../../client/ui/coach.js';
 import { POINTER_TUNING, tuningFor, aimPoint } from '../../client/game/input.js';
 import { SOUNDS, matchSound } from '../../client/audio/synth.js';
 import { marginsFrom } from '../../client/ui/fit.js';
@@ -96,4 +97,23 @@ test('fit: margins clear every HUD rect, never shrink below the base, ignore hid
   assert.deepEqual(l, { marginTop: 10, marginBottom: 10, marginLeft: 194, marginRight: 86 });
   // a hidden element (display: none) does not count; an element inside the base keeps the base
   assert.deepEqual(marginsFrom(390, 844, { top: [r(0, 0, 0, 0), r(0, 0, 50, 1)] }, base), base);
+});
+
+test('slot markers: sized in pixels, so phones get thicker, stronger rings than desktop', () => {
+  const phone = markerStyle(40), desktop = markerStyle(110);
+  assert.ok(phone.ringWidth * 40 >= 4.9, `phone ring ${phone.ringWidth * 40}px`);
+  assert.ok(phone.ringWidth > desktop.ringWidth);
+  assert.ok(phone.ringOpacity > desktop.ringOpacity && phone.candidateOpacity > desktop.candidateOpacity);
+  assert.equal(markerStyle(1000).ringWidth, 0.08); // never thinner than the original world size
+  assert.equal(markerStyle(5).ringWidth, 0.16); // nor fatter than the slot can carry
+  assert.ok(markerStyle(0).ringWidth > 0); // before the first frame
+});
+
+test('coach: shows the first move of the solver solution, only for levels with a hint', () => {
+  const level = { hint: 'Tap, then tap a grill', solver: { solution: 'm1.2-0.2 m2.0-1.2' } };
+  assert.deepEqual(coachMove(level), { type: 'move', from: { grill: 1, slot: 2 }, to: { grill: 0, slot: 2 } });
+  assert.equal(coachMove({ ...level, hint: undefined }), null);
+  assert.equal(coachMove({ hint: 'x', solver: {} }), null);
+  assert.equal(coachMove({ hint: 'x', solver: { solution: 'btongs:0.1 m1.2-0.2' } }), null); // booster first: no hand
+  assert.equal(coachMove({ hint: 'x', solver: { solution: 'garbage' } }), null);
 });
