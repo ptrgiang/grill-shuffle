@@ -16,13 +16,13 @@ inspect → move → match → sizzle → clear → chain → complete goals
 
 ```bash
 npm install
-npm run dev                 # http://localhost:5180  (the game; plays fully offline)
+npm run dev                 # http://localhost:5188  (the game; plays fully offline)
 npm test                    # simulation, solver, fuzz, worker API, pure client tests
 npm run validate:levels     # every production level: schema + solver verification
 npm run solve -- street-004 # min moves, states, branching, dead ends, difficulty, solution
 ```
 
-Pages: `/` menu · `/play` · `/levels` · `/daily` · `/p/<code>` shared challenge ·
+Pages: `/` menu · `/level/<n>` · `/play` (continue) · `/levels` · `/daily` · `/p/<code>` shared challenge ·
 `/sandbox/food` · `/sandbox/board?level=street-009`.
 
 Controls: drag a food onto another grill, or tap it then tap a grill. `Z` undo, `R` restart, `H` hint, `Esc` pause.

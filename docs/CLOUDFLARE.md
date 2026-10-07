@@ -3,7 +3,7 @@
 One Worker (`worker/index.js`) + Workers Static Assets (`dist/`, the Vite build) + D1. Config: `wrangler.jsonc`.
 
 - `run_worker_first: ["/api/*"]`: only the API runs code; everything else is served as static assets.
-- `not_found_handling: "single-page-application"`: `/play/…`, `/p/<code>`, `/daily`, `/levels` serve `index.html`.
+- `not_found_handling: "single-page-application"`: `/level/<n>`, `/play/…`, `/p/<code>`, `/daily`, `/levels` serve `index.html`.
 - `/sandbox/board` resolves to `sandbox/board.html` (default html handling).
 
 ## API
@@ -56,7 +56,7 @@ stores results. `?m=<moves>` carries the sharer's move count as a target.
 ```
 npm run db:migrate:local     # .wrangler/ local D1
 npm run preview              # build + wrangler dev on :8797 (dev.port in wrangler.jsonc)
-npm run dev                  # Vite on :5180 (proxies /api to :8797, or GS_API_PORT; the game works without it)
+npm run dev                  # Vite on :5188 (proxies /api to :8797, or GS_API_PORT; the game works without it)
 ```
 
 ## Deploy
