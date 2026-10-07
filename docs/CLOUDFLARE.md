@@ -56,7 +56,7 @@ stores results. `?m=<moves>` carries the sharer's move count as a target.
 ```
 npm run db:migrate:local     # .wrangler/ local D1
 npm run preview              # build + wrangler dev on :8797 (dev.port in wrangler.jsonc)
-npm run dev                  # Vite on :5180 (proxies /api to :8797, or GS_API_PORT; the game works without it)
+npm run dev                  # Vite on :5188 (proxies /api to :8797, or GS_API_PORT; the game works without it)
 ```
 
 ## Deploy
