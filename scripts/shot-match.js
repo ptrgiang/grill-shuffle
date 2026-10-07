@@ -9,7 +9,7 @@ const vite = await startVite(ROOT);
 const { page, close } = await launchChrome({ width: 700, height: 520 });
 try {
   mkdirSync(join(ROOT, 'shots'), { recursive: true });
-  await page.goto(`${vite.url}/sandbox/board?level=street-001`, { waitUntil: 'networkidle0' });
+  await page.goto(`${vite.url}/sandbox/board?level=street-001`, { waitUntil: 'load' });
   await page.waitForFunction('window.__sandboxReady');
   await page.evaluate(() => document.getElementById('panel').classList.add('min'));
   await sleep(800);
