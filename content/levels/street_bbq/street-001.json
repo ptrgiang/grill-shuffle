@@ -1,0 +1,25 @@
+{
+  "formatVersion": 1,
+  "id": "street-001",
+  "name": "First Flip",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 4,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","shrimp",null]},
+      {"slots":["beef","beef","shrimp"]},
+      {"slots":["beef",null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Drag a shrimp onto the grill that already has two. Three of a kind sizzle away.",
+  "solver": {
+    "minMoves": 2,
+    "difficulty": 15,
+    "rating": "easy",
+    "states": 12,
+    "solution": "m1.2-0.2 m2.0-1.2"
+  }
+}

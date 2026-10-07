@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Food Sandbox</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      html, body { margin: 0; height: 100%; background: #1b1420; color: #f3e6d8; font: 13px system-ui, sans-serif; overflow: hidden; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+      #panel { position: fixed; left: 10px; top: 10px; background: rgba(20, 12, 24, 0.82); padding: 10px 12px; border-radius: 10px; display: grid; gap: 6px; min-width: 210px; }
+      #panel label { display: grid; grid-template-columns: 70px 1fr 34px; align-items: center; gap: 6px; }
+      #panel button { font: inherit; padding: 4px 8px; border-radius: 6px; border: 0; background: #ffb347; color: #2a1a10; cursor: pointer; }
+      #panel .row { display: flex; gap: 6px; flex-wrap: wrap; }
+      h1 { font-size: 14px; margin: 0 0 4px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <div id="panel">
+      <h1>/sandbox/food</h1>
+      <label>cook <input id="cook" type="range" min="0" max="1" step="0.01" /><span id="cookV"></span></label>
+      <label>char <input id="char" type="range" min="0" max="1" step="0.01" value="0" /><span id="charV"></span></label>
+      <label>marks <input id="marks" type="range" min="0" max="1.5" step="0.01" value="1" /><span id="marksV"></span></label>
+      <div class="row"><button id="reseed">new seeds</button><button id="spin">spin</button><button id="grills">on grills</button></div>
+    </div>
+    <script type="module" src="./food.js"></script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-007",
+  "name": "Padlocked",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","shrimp",null]},
+      {"slots":["beef","corn",null]},
+      {"slots":["corn","chicken","chicken"],"lock":2},
+      {"slots":["shrimp","beef","corn"]},
+      {"slots":["chicken","beef",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill"],
+  "hint": "The locked grill opens after two matches anywhere on the board.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 25,
+    "rating": "normal",
+    "states": 234,
+    "solution": "m3.0-0.2 m1.0-3.0 m3.2-1.0 m4.1-3.2 m2.0-1.2 m4.0-2.0"
+  }
+}

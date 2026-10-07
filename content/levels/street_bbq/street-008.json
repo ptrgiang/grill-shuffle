@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "street-008",
+  "name": "Stack Attack",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","corn",null],"layers":[["beef","beef","chicken"]]},
+      {"slots":["chicken","corn","beef"]},
+      {"slots":["shrimp",null,"corn"],"layers":[["shrimp","chicken",null]]},
+      {"slots":[null,null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Two grills hide stacked trays. Which one do you open first?",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 42,
+    "rating": "hard",
+    "states": 3014,
+    "solution": "m0.1-2.1 m2.0-0.1 m1.1-2.0 m1.0-2.2 m2.0-0.2 m0.2-2.0 m1.2-0.2"
+  }
+}

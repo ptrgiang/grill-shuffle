@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-005",
+  "name": "Shrimp Order",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","beef","shrimp"]},
+      {"slots":["corn","beef","shrimp"]},
+      {"slots":["shrimp","corn","shrimp"]},
+      {"slots":["beef","corn",null]},
+      {"slots":["shrimp",null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_food","food":"shrimp","count":6}],
+  "modifiers": [],
+  "hint": "Only the shrimp order matters. Serve six shrimp.",
+  "solver": {
+    "minMoves": 4,
+    "difficulty": 26,
+    "rating": "normal",
+    "states": 361,
+    "solution": "m0.0-4.1 m0.2-4.2 m2.1-0.0 m1.2-2.1"
+  }
+}

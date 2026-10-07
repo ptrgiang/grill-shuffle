@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="icon" href="data:," />
+    <title>Board Sandbox</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      html, body { margin: 0; height: 100%; background: #1b1420; color: #f3e6d8; font: 12px system-ui, sans-serif; overflow: hidden; }
+      canvas { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; }
+      #panel { position: fixed; left: 8px; top: 8px; background: rgba(20, 12, 24, 0.85); padding: 8px 10px; border-radius: 10px; max-width: min(320px, calc(100vw - 32px)); }
+      #panel.min #body { display: none; }
+      #panel select, #panel button { font: inherit; padding: 3px 7px; border-radius: 6px; border: 0; margin: 2px 2px 2px 0; }
+      #panel button { background: #ffb347; color: #2a1a10; cursor: pointer; }
+      #stats { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 11px; margin-top: 6px; color: #f6d9b8; }
+      #status { font-weight: 600; margin-top: 4px; }
+      h1 { font-size: 13px; margin: 0; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+    <div id="panel">
+      <h1 id="title">/sandbox/board ▾</h1>
+      <div id="body">
+        <div><select id="level"></select></div>
+        <div>
+          <button id="restart">restart</button><button id="undo">undo</button><button id="step">step solution</button><button id="auto">auto-play</button><button id="anim">anim on</button>
+        </div>
+        <div><button id="gen">random generated</button> <select id="band"><option>E</option><option selected>N</option><option>H</option><option>V</option></select></div>
+        <div id="status"></div>
+        <div id="stats"></div>
+      </div>
+    </div>
+    <script type="module" src="./board.js"></script>
+  </body>
+</html>

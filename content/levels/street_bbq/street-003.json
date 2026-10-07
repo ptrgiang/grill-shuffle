@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-003",
+  "name": "Drumstick Dash",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 14,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","beef","chicken"]},
+      {"slots":["corn","chicken",null]},
+      {"slots":["beef","shrimp","corn"]},
+      {"slots":["chicken","corn",null]},
+      {"slots":["shrimp","beef",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Four kinds of food now. Plan which grill each one will finish on.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 20,
+    "rating": "easy",
+    "states": 1863,
+    "solution": "m0.0-4.2 m0.2-1.2 m1.0-3.2 m2.0-0.0 m3.0-1.0 m2.2-3.0 m4.1-0.2 m2.1-4.1"
+  }
+}

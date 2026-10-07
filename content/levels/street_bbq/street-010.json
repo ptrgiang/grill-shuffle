@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-010",
+  "name": "Grand Grill",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 14,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","carrot","corn"],"layers":[["beef","chicken","chicken"]]},
+      {"slots":["chicken","beef","shrimp"]},
+      {"slots":["carrot","corn",null],"lock":1},
+      {"slots":["beef","corn","carrot"],"layers":[["shrimp",null,null]]},
+      {"slots":[null,null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Carrots join the party. Five foods, two stacks and a lock.",
+  "solver": {
+    "minMoves": 11,
+    "difficulty": 52,
+    "rating": "hard",
+    "states": 11656,
+    "solution": "m0.1-4.0 m1.0-4.1 m3.0-1.0 m3.1-0.1 m3.2-4.2 m0.0-3.1 m1.2-3.2 m2.1-0.0 m0.0-1.2 m4.1-0.0 m2.0-4.1"
+  }
+}

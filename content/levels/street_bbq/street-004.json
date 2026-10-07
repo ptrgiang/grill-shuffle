@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-004",
+  "name": "Side Tray",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 13,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","beef","corn"]},
+      {"slots":["corn","chicken","beef"]},
+      {"slots":["chicken","shrimp","corn"]},
+      {"slots":["beef","shrimp","chicken"]},
+      {"type":"tray","slots":[null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "Every grill is full. The prep tray holds food but never cooks it: park something there.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 25,
+    "rating": "normal",
+    "states": 4903,
+    "solution": "m0.0-4.0 m1.0-0.0 m0.1-1.0 m2.2-0.1 m1.1-2.2 m3.0-1.1 m2.1-3.0 m3.2-2.1 m4.0-3.2"
+  }
+}

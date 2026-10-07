@@ -1,0 +1,30 @@
+{
+  // Grill Shuffle on Cloudflare: one Worker for /api/*, Workers Static Assets for the Vite build, D1 for progress.
+  // Local:  npm run db:migrate:local && npm run preview   (wrangler dev on :8787 with a local D1 in .wrangler/)
+  // Deploy: npm run deploy (CI does it on every push to main). Production: https://grillshuffle.thebuilder.work
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "grill-shuffle",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-09-01",
+  "routes": [{ "pattern": "grillshuffle.thebuilder.work", "custom_domain": true }],
+  "workers_dev": false,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "grill-shuffle",
+      "database_id": "25ccd2c2-595c-4c22-b13d-62e6e349bb08",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": { "enabled": true }
+  // Building a generated / daily puzzle the first time its result is submitted runs the solver (cached in D1 after),
+  // which can take more than the free plan's CPU allowance. On a paid plan, raise it:
+  // "limits": { "cpu_ms": 30000 }
+  // R2 (audio banks, GLB, share images) and Durable Objects (realtime race) are not used yet: see docs/CLOUDFLARE.md.
+}

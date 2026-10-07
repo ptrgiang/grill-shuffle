@@ -1,0 +1,17 @@
+{
+  "id": "street_bbq",
+  "theme": "street_bbq",
+  "name": "Street BBQ",
+  "levels": [
+    "street-001",
+    "street-002",
+    "street-003",
+    "street-004",
+    "street-005",
+    "street-006",
+    "street-007",
+    "street-008",
+    "street-009",
+    "street-010"
+  ]
+}

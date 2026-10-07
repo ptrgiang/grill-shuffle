@@ -1,0 +1,13 @@
+{
+  "id": "street_bbq",
+  "name": "Street BBQ",
+  "description": "A warm evening street grill: charcoal glow, string lights, a worn wooden counter.",
+  "background": "#1b1420",
+  "skyLight": "#ffd6b0",
+  "groundLight": "#3a2030",
+  "keyLight": "#ffe3c4",
+  "rimLight": "#ff9a5a",
+  "foods": ["shrimp", "beef", "chicken", "corn", "carrot", "salmon", "bread"],
+  "ambience": "grill",
+  "mechanics": ["locked_grill", "stacked_tray", "prep_tray"]
+}

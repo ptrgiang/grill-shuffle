@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>Grill Shuffle – Food Sort &amp; Match Puzzle</title>
+    <meta name="description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Grill Shuffle." />
+    <meta name="theme-color" content="#1b1420" />
+    <link rel="canonical" href="https://grillshuffle.thebuilder.work/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Grill Shuffle – Food Sort & Match Puzzle" />
+    <meta property="og:description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Grill Shuffle." />
+    <meta property="og:url" content="https://grillshuffle.thebuilder.work/" />
+    <meta property="og:image" content="https://grillshuffle.thebuilder.work/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Grill Shuffle",
+        "alternateName": "Grill Shuffle – Food Sort & Match Puzzle",
+        "description": "A tactile food sort and match puzzle: rearrange food across grills, match three of a kind and clear the grill.",
+        "genre": ["Puzzle", "Sorting", "Match 3"],
+        "gamePlatform": ["Web browser"],
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "url": "https://grillshuffle.thebuilder.work/",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="stage" aria-label="Grill Shuffle game board"></canvas>
+      <div id="ui"></div>
+    </div>
+
+    <!-- Landing content: what search engines and players see before the game loads, and below the menu. -->
+    <main id="landing" class="landing">
+      <header class="landing-hero">
+        <h1>Grill Shuffle</h1>
+        <p class="tagline">A food sort &amp; match puzzle you play right in your browser.</p>
+        <a class="cta" href="/play">Play free</a>
+      </header>
+      <section>
+        <h2>Sort the food, match three, clear the grill</h2>
+        <p>
+          Grill Shuffle is a tactile grill puzzle game. Shrimp, steak, corn and drumsticks are scattered across sizzling
+          grills: drag food between grills, put three of a kind together and watch them flame up and get served. Every
+          level is a compact food puzzle with a move limit, and every one has been solved by a computer so you know a
+          clean solution exists.
+        </p>
+      </section>
+      <section>
+        <h2>How to play</h2>
+        <ol>
+          <li>Drag a food item (or tap it, then tap a grill) to move it into an empty slot.</li>
+          <li>Three matching foods on one grill sizzle and clear.</li>
+          <li>Clear consecutive matches for a combo.</li>
+          <li>Finish the order before you run out of moves. Fewer moves earn more stars.</li>
+        </ol>
+      </section>
+      <section>
+        <h2>Daily puzzle and friend challenges</h2>
+        <p>
+          A new BBQ puzzle every day, the same board for everyone. Finish any level and share a challenge link: your
+          friends open the exact same grill and try to beat your move count.
+        </p>
+      </section>
+      <footer>Grill Shuffle — an original food sorting puzzle. No downloads, no sign-up.</footer>
+    </main>
+
+    <noscript>Grill Shuffle needs JavaScript and WebGL to run.</noscript>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

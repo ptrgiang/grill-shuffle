@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "street-006",
+  "name": "Under the Lid",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","beef",null],"layers":[["corn","corn","chicken"]]},
+      {"slots":["beef","shrimp",null]},
+      {"slots":["chicken","shrimp","beef"]},
+      {"slots":["chicken","corn",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "A stacked tray waits under the first grill. Empty that grill to flip the next tray up.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 21,
+    "rating": "normal",
+    "states": 997,
+    "solution": "m0.0-1.2 m1.0-0.0 m2.1-1.0 m2.2-0.2 m0.2-2.1 m3.0-2.2 m3.1-0.2"
+  }
+}
