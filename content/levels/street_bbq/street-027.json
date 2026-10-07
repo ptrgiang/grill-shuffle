@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-027",
+  "name": "Bread Basement",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["chicken",null,"shrimp"]},
+      {"slots":["chicken","bread","shrimp"]},
+      {"slots":["chicken","shrimp","shrimp"]},
+      {"slots":["bread","shrimp",null],"layers":[["bread","corn","corn"]]},
+      {"slots":["corn",null,"shrimp"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "The last bread is under the stack.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 4960,
+    "solution": "m0.2-3.2 m1.0-0.1 m2.0-0.2 m1.2-2.0 m3.0-1.0 m4.2-3.0 m3.0-1.2 m4.0-3.0"
+  }
+}

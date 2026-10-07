@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-032",
+  "name": "Sunday Grill",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["carrot","carrot","beef"]},
+      {"slots":[null,"carrot","carrot"]},
+      {"slots":["corn","carrot","beef"]},
+      {"slots":["corn","corn",null]},
+      {"slots":["beef","carrot",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "An easy one between the hard ones.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 18,
+    "rating": "easy",
+    "states": 364,
+    "solution": "m0.2-4.2 m2.0-3.2 m2.1-0.2 m4.1-1.0 m2.2-4.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-023",
+  "name": "Corn Cellar",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["corn","chicken",null],"layers":[["corn","salmon","corn"]]},
+      {"slots":["salmon",null,"corn"]},
+      {"slots":[null,"chicken",null]},
+      {"slots":[null,"corn","corn"]},
+      {"slots":["chicken",null,"salmon"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "The corn you are missing is underneath. Open the stack.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1049,
+    "solution": "m0.0-3.0 m0.1-2.0 m0.1-1.1 m1.2-0.1 m4.0-2.2 m4.2-1.2"
+  }
+}

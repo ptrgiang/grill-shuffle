@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-022",
+  "name": "Peek Under",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["chicken","shrimp","carrot"],"layers":[[null,"chicken","shrimp"]]},
+      {"slots":["carrot","chicken","chicken"]},
+      {"slots":["shrimp","chicken","carrot"]},
+      {"slots":[null,"chicken",null]},
+      {"slots":[null,null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Clear the top of the stacked grill to see what is hiding.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1188,
+    "solution": "m0.0-3.0 m1.0-0.0 m2.1-1.0 m0.1-2.1 m2.2-0.1 m0.1-3.2 m0.2-2.2"
+  }
+}

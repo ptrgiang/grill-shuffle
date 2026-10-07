@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-044",
+  "name": "Last Orders",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":["corn","corn","chicken"]},
+      {"slots":["beef",null,"bread"],"lock":2},
+      {"slots":["beef","bread","bread"]},
+      {"slots":["chicken","bread","beef"],"layers":[["chicken","chicken","corn"]]},
+      {"slots":["bread",null,"chicken"],"layers":[["chicken",null,"bread"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Two stacks and a lock that needs two matches. Count before you dig.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 56,
+    "rating": "hard",
+    "states": 14351,
+    "solution": "m3.0-4.1 m2.0-3.0 m4.0-2.0 m0.2-4.0 m3.1-1.1 m1.0-3.1 m3.2-0.2 m4.0-3.2 m4.2-1.0"
+  }
+}

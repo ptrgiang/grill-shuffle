@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-046",
+  "name": "Deep Stack",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":[null,"corn",null],"layers":[[null,"bread","corn"]]},
+      {"slots":["carrot","beef","beef"],"layers":[["bread",null,"corn"]]},
+      {"slots":[null,"beef","corn"],"lock":3},
+      {"slots":["bread","carrot","carrot"]},
+      {"slots":["corn","corn",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Three matches to open the lock, two stacks to dig.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 53,
+    "rating": "hard",
+    "states": 2659,
+    "solution": "m0.1-4.2 m1.1-4.0 m1.2-4.1 m3.0-0.0 m1.0-3.0 m0.2-1.1 m1.0-0.2 m2.1-4.2 m2.2-1.0"
+  }
+}

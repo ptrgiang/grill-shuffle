@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "street-031",
+  "name": "Root Cellar",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":[null,"corn",null],"layers":[["carrot","bread",null]]},
+      {"slots":["shrimp","carrot",null]},
+      {"slots":["carrot","bread","shrimp"]},
+      {"slots":["bread","shrimp",null],"layers":[["corn","corn",null]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Carrot, bread and corn wait below. Dig where it helps most.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 46,
+    "rating": "hard",
+    "states": 4052,
+    "solution": "m1.0-3.2 m2.0-1.0 m3.0-2.0 m2.2-3.0 m0.1-3.2 m0.0-1.2 m0.1-2.2"
+  }
+}

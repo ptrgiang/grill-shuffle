@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-043",
+  "name": "Long Haul",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["corn",null,"carrot"],"layers":[["bread","beef","corn"]]},
+      {"slots":["bread",null,"salmon"],"lock":1},
+      {"slots":["carrot","bread",null]},
+      {"slots":["beef","salmon","carrot"]},
+      {"slots":["corn","beef","salmon"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Ten moves at best. Do not waste the empty slots.",
+  "solver": {
+    "minMoves": 10,
+    "difficulty": 51,
+    "rating": "hard",
+    "states": 6179,
+    "solution": "m3.2-0.1 m4.1-3.2 m0.0-4.1 m2.0-0.0 m0.0-2.0 m1.0-2.2 m3.1-1.0 m0.1-3.1 m4.2-1.1 m0.2-4.2"
+  }
+}

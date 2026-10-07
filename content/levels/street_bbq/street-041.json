@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-041",
+  "name": "Full House",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["chicken","salmon","carrot"]},
+      {"slots":["shrimp","shrimp","carrot"],"layers":[["shrimp","salmon","salmon"]]},
+      {"slots":[null,"carrot","chicken"]},
+      {"slots":[null,"shrimp","shrimp"],"lock":1},
+      {"slots":[null,"shrimp","chicken"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Every grill counts. Think three moves ahead.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 49,
+    "rating": "hard",
+    "states": 4980,
+    "solution": "m0.0-2.0 m1.2-0.0 m4.1-1.2 m1.0-3.0 m0.1-1.0 m2.1-0.1 m4.2-2.1"
+  }
+}

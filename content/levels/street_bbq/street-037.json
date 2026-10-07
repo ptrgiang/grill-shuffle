@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-037",
+  "name": "Night Shift",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":[null,"carrot",null],"lock":2},
+      {"slots":["corn","corn","shrimp"]},
+      {"slots":["carrot","chicken","corn"]},
+      {"slots":[null,"chicken","shrimp"],"layers":[["chicken",null,"shrimp"]]},
+      {"slots":[null,"carrot",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The lock needs two matches before that grill opens.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 45,
+    "rating": "hard",
+    "states": 1383,
+    "solution": "m2.0-4.0 m3.1-2.0 m3.2-4.2 m1.2-3.1 m2.2-1.2 m3.0-2.2 m4.2-3.0 m0.1-4.2"
+  }
+}

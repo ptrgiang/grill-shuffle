@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-029",
+  "name": "Quick Pick",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":[null,null,"salmon"]},
+      {"slots":[null,"chicken","chicken"]},
+      {"slots":[null,"carrot","carrot"]},
+      {"slots":[null,"salmon",null],"lock":1},
+      {"slots":["salmon","carrot","chicken"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill"],
+  "hint": "Short and sharp: open the lock with your first match.",
+  "solver": {
+    "minMoves": 4,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 103,
+    "solution": "m4.0-0.0 m4.1-2.0 m3.1-0.1 m4.2-1.0"
+  }
+}

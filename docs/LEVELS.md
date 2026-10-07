@@ -40,7 +40,11 @@ first move, file name = id, no duplicate ids, no structural duplicates — then 
 `minMoves` is the true minimum, `moves` is exactly the tier's budget, stored solution replays to a win in `minMoves`,
 stored difficulty is current.
 
-## Street BBQ (vertical slice) — curve
+`tests/solver/levels.test.js` repeats the core of it inside `npm test`: for every shipped level the stored solution
+replays legally to a win inside the move budget, the solver re-proves the board winnable from scratch with the same
+minimum, and its own line wins too. It also pins Street BBQ at 50 levels, each with a name, tier and hint.
+
+## Street BBQ — curve (50 levels)
 
 | # | Name | Teaches | min | moves | difficulty |
 |---|---|---|---|---|---|
@@ -48,22 +52,56 @@ stored difficulty is current.
 | 2 | Corn Joins In | empty slots are workspace | 6 | 11 | 15 easy |
 | 3 | Drumstick Dash | four foods, planning | 8 | 14 | 20 easy |
 | 4 (`street-014`) | Salmon Slab | **salmon** | 6 | 11 | 19 easy |
-| 5 | Side Tray | prep tray (all grills full) | 9 | 13 | 25 normal |
-| 6 | Shrimp Order | `clear_food` goal | 4 | 6 | 26 normal |
-| 7 (`street-015`) | Orange Trio | **carrot**; shrimp / carrot / salmon side by side, tray | 8 | 12 | 26 normal |
-| 8 | Under the Lid | stacked tray reveal | 7 | 12 | 21 normal |
-| 9 | Padlocked | locked grill | 6 | 9 | 25 normal |
-| 10 (`street-016`) | Toast or Steak | **bread**; steak / toast / salmon slabs, lock | 6 | 9 | 31 normal |
-| 11 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
-| 12 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
-| 13 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
-| 14 (`street-011`) | Sizzle | burn counter: a char loses, serve it first | 6 | 11 | 33 normal |
-| 15 (`street-012`) | Two Timers | two burning foods, order by counter | 6 | 9 | 49 hard |
-| 16 (`street-013`) | Off the Heat | prep tray stops burning: park, set up, bring back | 9 | 13 | 49 hard |
+| 5 (`street-017`) | Fish Fry | salmon in a plain board | 5 | 9 | 18 easy |
+| 6 (`street-018`) | Corn Rows | crowded board, clear to make room | 5 | 9 | 18 easy |
+| 7 (`street-004`) | Side Tray | prep tray (all grills full) | 9 | 13 | 25 normal |
+| 8 (`street-019`) | Tray Service | tray as parking | 6 | 9 | 29 normal |
+| 9 (`street-005`) | Shrimp Order | `clear_food` goal | 4 | 6 | 26 normal |
+| 10 (`street-015`) | Orange Trio | **carrot**; shrimp / carrot / salmon side by side, tray | 8 | 12 | 26 normal |
+| 11 (`street-020`) | Carrot Cake Walk | breather: four foods | 6 | 11 | 18 easy |
+| 12 (`street-021`) | Salmon Shuffle | tray with a doubled food | 6 | 9 | 29 normal |
+| 13 (`street-006`) | Under the Lid | stacked tray reveal | 7 | 12 | 21 normal |
+| 14 (`street-022`) | Peek Under | stack: reveal by clearing | 7 | 10 | 29 normal |
+| 15 (`street-023`) | Corn Cellar | stack hides the missing trio | 6 | 9 | 29 normal |
+| 16 (`street-007`) | Padlocked | locked grill | 6 | 9 | 25 normal |
+| 17 (`street-024`) | Key Ring | lock 1 | 5 | 7 | 29 normal |
+| 18 (`street-016`) | Toast or Steak | **bread**; steak / toast / salmon slabs, lock | 6 | 9 | 31 normal |
+| 19 (`street-025`) | Breather | breather | 5 | 9 | 18 easy |
+| 20 (`street-026`) | Locked Pantry | lock 1, three foods behind it | 7 | 10 | 29 normal |
+| 21 (`street-027`) | Bread Basement | stack with bread | 8 | 12 | 29 normal |
+| 22 (`street-028`) | Beef Rush | tray, doubled beef | 6 | 9 | 29 normal |
+| 23 (`street-029`) | Quick Pick | lock 1, short | 4 | 6 | 29 normal |
+| 24 (`street-008`) | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
+| 25 (`street-030`) | Double Decker | two stacks | 7 | 9 | 45 hard |
+| 26 (`street-031`) | Root Cellar | two stacks, mixed layers | 7 | 9 | 46 hard |
+| 27 (`street-009`) | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
+| 28 (`street-032`) | Sunday Grill | breather | 5 | 9 | 18 easy |
+| 29 (`street-033`) | Triple Lock | two stacks + lock 3 | 7 | 9 | 46 hard |
+| 30 (`street-034`) | Surf and Turf | tray + stack + lock 2 | 6 | 8 | 46 hard |
+| 31 (`street-010`) | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
+| 32 (`street-035`) | Corner Stand | tray + stack | 6 | 8 | 46 hard |
+| 33 (`street-011`) | Sizzle | burn counter: a char loses, serve it first | 6 | 11 | 33 normal |
+| 34 (`street-012`) | Two Timers | two burning foods, order by counter | 6 | 9 | 49 hard |
+| 35 (`street-013`) | Off the Heat | prep tray stops burning: park, set up, bring back | 9 | 13 | 49 hard |
+| 36 (`street-036`) | Two Layers | two stacks, doubled food | 6 | 8 | 46 hard |
+| 37 (`street-037`) | Night Shift | stack + lock 2 | 8 | 10 | 45 hard |
+| 38 (`street-038`) | Five Spice | five foods, stack + lock 3 | 9 | 11 | 50 hard |
+| 39 (`street-039`) | Slow Cook | stack + lock 2 | 7 | 9 | 48 hard |
+| 40 (`street-040`) | Breather Bites | breather: two stacks + lock 1 | 8 | 10 | 46 hard |
+| 41 (`street-041`) | Full House | stack + lock, doubled shrimp | 7 | 9 | 49 hard |
+| 42 (`street-042`) | Market Rush | five foods, two stacks + lock 2 | 7 | 9 | 51 hard |
+| 43 (`street-043`) | Long Haul | 10-move line, stack + lock | 10 | 12 | 51 hard |
+| 44 (`street-049`) | Twelve Steps | 12-move line (long breather) | 12 | 15 | 46 hard |
+| 45 (`street-045`) | Mixed Grill | five foods, stack + lock 2 | 9 | 11 | 50 hard |
+| 46 (`street-046`) | Deep Stack | two stacks + lock 3 | 9 | 11 | 53 hard |
+| 47 (`street-047`) | Chef Special | two stacks + lock 3, 10 moves | 10 | 12 | 54 hard |
+| 48 (`street-048`) | Closing Time | five foods, two stacks + lock 2 | 9 | 11 | 56 hard |
+| 49 (`street-044`) | Last Orders | two stacks + lock 2 | 9 | 11 | 56 hard |
+| 50 (`street-050`) | Street Legend | finale: two stacks + lock | 10 | 12 | 58 hard |
 
-14–16 use the burn counter (rules v3: any char loses). On each, the optimal line of the same board without counters
-chars something, so the counter changes the plan. 15 replaced "Burnt Ends" (v2: six counters of 1, everything charred
-on move 1 and play went on); 16 was rebuilt so the tray is required (9 moves vs 8 without counters).
+Sizzle / Two Timers / Off the Heat (33–35) use the burn counter (rules v3: any char loses). On each, the optimal line
+of the same board without counters chars something, so the counter changes the plan. Two Timers replaced "Burnt Ends"
+(v2: six counters of 1, everything charred on move 1 and play went on); Off the Heat was rebuilt so the tray is required (9 moves vs 8 without counters).
 
 Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. Story share codes (`S…`) encode a
 position in the append-only `content/levels/share-index.json`, not the play order, so levels can be inserted
@@ -75,6 +113,15 @@ and Padlocked / Stack Attack were swapped after the difficulty evaluator ranked 
 the first three foods; carrot with the other oranges; bread with the other slabs plus a lock), were picked by hand,
 renamed, given a tier and hint, and solved with `solve --write`. Inserting a level never locks progress: a won
 level stays open (`isUnlocked`).
+
+`street-017`…`050` (issue #10) came from six `generate:levels` runs, one per stage: plain easy boards (difficulty
+12–24), tray only, stack only, lock only (20–38 each), combinations (38–55: 1–2 stacks, 0–1 lock, 0–1 tray) and late
+boards (52–75 at generation: 5 grills, 1–2 stacks, a lock). Picks were made per slot with food bans, so no level uses
+a food before its teaching level (no carrot or bread before Orange Trio, no bread before Toast or Steak), and every
+mechanic gets solo levels before the first combination (Stack Attack, 24). Breathers (easy boards at 11, 19, 28; lighter
+hard boards at 40 and 44) break up the climb. Late levels use the `hard` tier (min + 20 %), not `expert` (min + 1):
+with hidden stacks an `expert` budget punishes a first look at the board. Burn-counter levels are not generated (the
+generator has no counters yet), so the three hand-made ones stay.
 
 ## Theme food catalogs
 

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-017",
+  "name": "Fish Fry",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":[null,"salmon","salmon"]},
+      {"slots":[null,"salmon","salmon"]},
+      {"slots":["corn","beef","corn"]},
+      {"slots":["corn","beef","salmon"]},
+      {"slots":["beef","salmon",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Salmon, corn and beef: line up one trio at a time.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 18,
+    "rating": "easy",
+    "states": 364,
+    "solution": "m2.1-4.2 m3.0-2.1 m3.2-0.0 m4.1-1.0 m3.1-4.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-019",
+  "name": "Tray Service",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":[null,"shrimp","shrimp"]},
+      {"slots":["chicken","shrimp","salmon"]},
+      {"slots":["shrimp","chicken","salmon"]},
+      {"slots":[null,"shrimp","shrimp"]},
+      {"slots":["salmon","chicken"],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "The tray never matches, but it holds two items while you set up.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1024,
+    "solution": "m1.1-0.0 m2.0-3.0 m1.0-2.0 m2.2-1.0 m4.0-1.1 m4.1-2.2"
+  }
+}

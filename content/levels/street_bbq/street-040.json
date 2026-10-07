@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "street-040",
+  "name": "Breather Bites",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["salmon",null,"corn"],"layers":[["shrimp","carrot","shrimp"]]},
+      {"slots":["corn","carrot",null],"lock":1},
+      {"slots":[null,null,null],"layers":[["corn","carrot","salmon"]]},
+      {"slots":["salmon","shrimp",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "A lighter one: two stacks and a single lock.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 46,
+    "rating": "hard",
+    "states": 637,
+    "solution": "m0.0-3.2 m2.0-0.0 m3.1-2.0 m2.2-3.1 m1.0-0.1 m0.1-1.0 m2.0-0.1 m2.1-1.2"
+  }
+}

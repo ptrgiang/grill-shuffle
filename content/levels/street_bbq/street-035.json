@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-035",
+  "name": "Corner Stand",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 8,
+  "board": {
+    "grills": [
+      {"slots":["chicken","bread","bread"]},
+      {"slots":["chicken","beef","chicken"]},
+      {"slots":[null,"corn",null],"layers":[["bread","beef",null]]},
+      {"slots":[null,null,"corn"]},
+      {"slots":["beef","corn"],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray","stacked_tray"],
+  "hint": "A tray and a stack. Fill the tray only when it buys you a match.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 46,
+    "rating": "hard",
+    "states": 14902,
+    "solution": "m2.1-3.0 m1.1-2.2 m0.0-1.1 m2.0-0.0 m4.0-2.0 m4.1-3.1"
+  }
+}
