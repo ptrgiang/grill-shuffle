@@ -13,7 +13,8 @@ const out = resolve(pub, 'icons');
 mkdirSync(out, { recursive: true });
 
 const logo = readFileSync(resolve(pub, 'favicon.svg'), 'utf8');
-const BG = '#2a1d2e'; // the logo's own background tile
+// the logo's own background tile (a colour or a gradient defined inside the logo), reused full-bleed
+const BG = logo.match(/<rect width="64" height="64"[^>]*fill="([^"]+)"/)[1];
 const inner = logo.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/<rect width="64" height="64"[^>]*\/>/, '');
 
 // the logo's artwork without its rounded tile, scaled by `k` around the centre on a square opaque background
