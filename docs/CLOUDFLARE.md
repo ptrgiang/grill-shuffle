@@ -34,7 +34,7 @@ No per-move writes.
 solver never runs on a player's request and `GET /api/daily` can hand the level to the client, which then skips local
 generation (`client/game/daily.js` `serverDailyLevel` checks code, date, rules version and structure; otherwise the
 client generates the same board itself). Tomorrow is built a day early so midnight players already hit the cache.
-Local test: `npx wrangler dev --test-scheduled`, then `curl "http://localhost:8787/cdn-cgi/handler/scheduled?cron=5+0+*+*+*"`.
+Local test: `npx wrangler dev --test-scheduled`, then `curl "http://localhost:8797/cdn-cgi/handler/scheduled?cron=5+0+*+*+*"`.
 Worker tests call `worker.scheduled(...)` directly.
 
 The daily result screen shows the server's verified rank (percentile, players today, best moves), a local streak
