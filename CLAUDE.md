@@ -1,6 +1,17 @@
 # Grill Shuffle — agent notes
 
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first.
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first. Process: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Starting a session
+
+Work is driven by GitHub issues (`ptrgiang/grill-shuffle`), ordered by the pinned roadmap issue #35.
+When asked to continue development / take the next issue, use the `next-issue` skill (`/next-issue`):
+`git checkout main && git pull`, `npm run next-issue`, claim the pick (`status/in-progress` + assign), work it on the
+branch named in the issue, open a PR with `Closes #n`, get CI green, then stop for the user's review.
+Never push to `main` directly (it is not branch-protected, treat it as if it were). Merge only when the user says so;
+merging deploys to https://grillshuffle.thebuilder.work through CI.
+
+## Rules
 
 - The simulation in `shared/` is authoritative. Never derive game truth from meshes; never put rules in render,
   input or animation code. `shared/` and `solver/` must stay free of three.js, the DOM, `Math.random` and the clock
@@ -12,6 +23,13 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first.
 - Any headless browser goes through `scripts/lib/browser.js` (`launchChrome`). Never launch Chrome/Puppeteer
   directly: on Windows a fresh Chromium profile signs in with an empty password ~40 s after start, and repeated
   failures lock the user's account. The launcher prevents that and checks the failed sign-in counter.
-  `GS_NO_BROWSER=1` disables all browsers. In Git Bash, prefix commands that pass URL paths with `MSYS_NO_PATHCONV=1`.
+  `GS_NO_BROWSER=1` disables all browsers.
 - Workflow per task: inspect → find the owning subsystem → smallest coherent change → tests → sim/solver tests →
   validate levels → look at the change (`/sandbox/*`, `npm run shot`) → mobile input if touched → docs.
+
+## This machine (Windows)
+
+- Git Bash rewrites arguments that start with `/` into Windows paths: prefix such commands with `MSYS_NO_PATHCONV=1`
+  (e.g. `npm run shot -- /play/street-001`).
+- Port 5173 is used by another local project (pianory). Run this dev server with `npx vite --port 5180 --strictPort`.
+- Deploys normally go through CI. A manual `npx wrangler deploy` works too (wrangler is logged in).
