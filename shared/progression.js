@@ -36,9 +36,13 @@ export function starsFor(movesUsed, minMoves, won = true) {
   return movesUsed <= t.three ? 3 : movesUsed <= t.two ? 2 : 1;
 }
 
-/** Linear unlock: level i opens once level i-1 has at least one star. */
+/**
+ * Linear unlock: level i opens once level i-1 has at least one star. A level already won stays open, so inserting a
+ * new level into a pack's curve never locks a player out of levels they have played.
+ */
 export function isUnlocked(levelIds, index, progress) {
   if (index === 0) return true;
+  if ((progress[levelIds[index]]?.stars ?? 0) > 0) return true;
   return (progress[levelIds[index - 1]]?.stars ?? 0) > 0;
 }
 

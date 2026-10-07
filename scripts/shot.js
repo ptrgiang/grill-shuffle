@@ -10,10 +10,14 @@ const args = parseArgs();
 const SET = [
   { path: '/sandbox/food?spin=0&seed=1', w: 1200, h: 700, out: 'food-lineup.png' },
   { path: '/sandbox/food?spin=0&seed=1&grills=1', w: 1200, h: 700, out: 'food-grills.png' },
+  { path: '/sandbox/food?spin=0&seed=1&ui=0', w: 390, h: 844, mobile: true, out: 'food-lineup-390.png' }, // readability check
+  { path: '/sandbox/food?spin=0&seed=1&ui=0&grills=1', w: 360, h: 800, mobile: true, out: 'food-grills-360.png' },
   { path: '/sandbox/board?level=street-003&anim=0', w: 1280, h: 800, out: 'board-desktop.png' },
   { path: '/sandbox/board?level=street-009&anim=0', w: 390, h: 844, mobile: true, out: 'board-mobile-390.png' },
   { path: '/sandbox/board?level=street-010&anim=0', w: 360, h: 800, mobile: true, out: 'board-mobile-360.png' },
   { path: '/sandbox/board?level=street-008&anim=0', w: 430, h: 932, mobile: true, out: 'board-mobile-430.png' },
+  { path: '/sandbox/board?level=street-012&anim=0', w: 390, h: 844, mobile: true, out: 'board-mobile-390-oranges.png' }, // shrimp / carrot / salmon
+  { path: '/sandbox/board?level=street-013&anim=0', w: 360, h: 800, mobile: true, out: 'board-mobile-360-slabs.png' }, // steak / toast / salmon
   { path: '/play/street-001', w: 390, h: 844, mobile: true, out: 'game-mobile.png' },
   { path: '/', w: 1280, h: 800, out: 'menu-desktop.png' },
 ];

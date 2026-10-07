@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Carrots join the party. Five foods, two stacks and a lock.",
+  "hint": "The finale: five foods, two stacks and a lock.",
   "solver": {
     "minMoves": 11,
     "difficulty": 52,

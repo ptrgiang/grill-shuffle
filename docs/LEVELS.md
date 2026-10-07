@@ -46,16 +46,31 @@ stored difficulty is current.
 | 1 | First Flip | three of a kind clears | 2 | 4 | 15 easy |
 | 2 | Corn Joins In | empty slots are workspace | 6 | 11 | 15 easy |
 | 3 | Drumstick Dash | four foods, planning | 8 | 14 | 20 easy |
-| 4 | Side Tray | prep tray (all grills full) | 9 | 13 | 25 normal |
-| 5 | Shrimp Order | `clear_food` goal | 4 | 6 | 26 normal |
-| 6 | Under the Lid | stacked tray reveal | 7 | 12 | 21 normal |
-| 7 | Padlocked | locked grill | 6 | 9 | 25 normal |
-| 8 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
-| 9 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
-| 10 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
+| 4 (`street-011`) | Salmon Slab | **salmon** | 6 | 11 | 19 easy |
+| 5 | Side Tray | prep tray (all grills full) | 9 | 13 | 25 normal |
+| 6 | Shrimp Order | `clear_food` goal | 4 | 6 | 26 normal |
+| 7 (`street-012`) | Orange Trio | **carrot**; shrimp / carrot / salmon side by side, tray | 8 | 12 | 26 normal |
+| 8 | Under the Lid | stacked tray reveal | 7 | 12 | 21 normal |
+| 9 | Padlocked | locked grill | 6 | 9 | 25 normal |
+| 10 (`street-013`) | Toast or Steak | **bread**; steak / toast / salmon slabs, lock | 6 | 9 | 31 normal |
+| 11 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
+| 12 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
+| 13 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
 
-All hand-designed, then solver-checked; level 9's lock was reduced from 2 to 1 after the solver proved the 2-lock
-version impossible, and 7/8 were swapped after the difficulty evaluator ranked "Stack Attack" well above "Padlocked".
+Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. The original ten were hand-designed,
+then solver-checked; level 12's lock was reduced from 2 to 1 after the solver proved the 2-lock version impossible,
+and Padlocked / Stack Attack were swapped after the difficulty evaluator ranked "Stack Attack" well above
+"Padlocked". The three food-teaching levels came from `npm run generate:levels` (food-restricted runs: salmon with
+the first three foods; carrot with the other oranges; bread with the other slabs plus a lock), were picked by hand,
+renamed, given a tier and hint, and solved with `solve --write`. Inserting a level never locks progress: a won
+level stays open (`isUnlocked`).
+
+## Theme food catalogs
+
+Each theme declares the foods it serves (`content/themes/<id>.json` `foods`). `validate:levels` rejects a level that
+uses a food outside its theme's catalog; `generate:levels` draws from the catalog when `--foods` is not given and
+refuses foods outside it (`resolveConfig({ catalog })` in `solver/generator.js`). Shipped challenge presets keep
+their explicit food lists.
 
 ## Growing content (agent workflow)
 

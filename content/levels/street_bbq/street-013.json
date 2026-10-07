@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-013",
+  "name": "Toast or Steak",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["chicken","salmon","salmon"]},
+      {"slots":["salmon","chicken",null]},
+      {"slots":["bread","beef","chicken"]},
+      {"slots":["bread","beef","bread"],"lock":1},
+      {"slots":["beef",null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill"],
+  "hint": "Toast has a golden crust, steak a white fat rim. Do not mix up the slabs.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 31,
+    "rating": "normal",
+    "states": 576,
+    "solution": "m0.0-1.2 m1.0-0.0 m2.1-4.1 m2.2-1.0 m3.1-4.2 m2.0-3.1"
+  }
+}

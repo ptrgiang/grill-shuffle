@@ -6,7 +6,8 @@
 // Per pack: no duplicate ids, no structurally duplicated boards (food relabelling and grill order ignored).
 //   --fast   skip the solver (structure only)
 import { basename } from 'node:path';
-import { loadPacks, parseArgs } from './lib/content.js';
+import { loadPacks, loadThemes, parseArgs } from './lib/content.js';
+import { isFood } from '../shared/foods.js';
 import { validateLevel } from '../shared/levels.js';
 import { solveLevel } from '../solver/solver.js';
 import { boardSignature } from '../solver/canonical.js';
@@ -19,6 +20,16 @@ const errors = [];
 const ids = new Map();
 const sigs = new Map();
 let count = 0;
+const themes = loadThemes();
+
+for (const t of Object.values(themes)) {
+  if (!THEMES.includes(t.id)) errors.push(`${t.file}: unknown theme id ${t.id}`);
+  if (!Array.isArray(t.foods) || !t.foods.length) errors.push(`${t.file}: theme needs a foods[] catalog`);
+  else for (const f of t.foods) if (!isFood(f)) errors.push(`${t.file}: unknown food ${f}`);
+}
+
+/** Every food a level can show: slots and stacked layers. */
+const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).filter(Boolean));
 
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
@@ -37,6 +48,8 @@ for (const { pack, packFile, levels } of loadPacks()) {
     const v = validateLevel(level);
     for (const e of v.errors) err(e);
     if (!v.ok) continue;
+    const catalog = themes[level.theme ?? pack.theme]?.foods;
+    if (catalog) for (const f of levelFoods(level)) if (!catalog.includes(f)) err(`food ${f} is not in the ${level.theme ?? pack.theme} catalog`);
     const sig = boardSignature(level);
     if (sigs.has(sig)) err(`structural duplicate of ${sigs.get(sig)}`);
     sigs.set(sig, at);

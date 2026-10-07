@@ -243,27 +243,27 @@ function carrotGeometry(rng) {
   const prof = [];
   for (let i = 0; i <= 20; i++) {
     const t = i / 20;
-    const r = 0.165 * Math.pow(t, 0.55) * (1 - 0.06 * Math.sin(t * 40)) * (t > 0.92 ? Math.sqrt(1 - (t - 0.92) / 0.08 * 0.9) : 1);
+    const r = 0.195 * Math.pow(t, 0.55) * (1 - 0.06 * Math.sin(t * 40)) * (t > 0.92 ? Math.sqrt(1 - (t - 0.92) / 0.08 * 0.9) : 1);
     prof.push(new THREE.Vector2(Math.max(0.004, r), t * L));
   }
   prof.push(new THREE.Vector2(0, L));
   const root = new THREE.LatheGeometry(prof, 18);
-  const orange = col('#ff8a1d'), deep = col('#d9620c');
+  const orange = col('#ff8410'), deep = col('#d65a06');
   const parts = [part(root, (p) => mix(orange, deep, (Math.sin(p.y * 46) * 0.5 + 0.5) * 0.45), 0.6)];
   for (let i = 0; i < 4; i++) {
-    const stem = new THREE.CylinderGeometry(0.014, 0.02, 0.26, 6);
+    const stem = new THREE.CylinderGeometry(0.018, 0.024, 0.26, 6);
     stem.translate(0, 0.13, 0);
     stem.rotateZ((i - 1.5) * 0.35);
     stem.rotateX(0.25 * (i % 2 ? 1 : -1));
     stem.translate(0, L - 0.01, 0);
-    parts.push(part(stem, '#5aa83a', 0));
-    const tuft = new THREE.SphereGeometry(0.075, 8, 6);
+    parts.push(part(stem, '#4f9e2f', 0));
+    const tuft = new THREE.SphereGeometry(0.09, 8, 6);
     tuft.scale(1, 0.55, 0.7);
     tuft.translate(0, 0.27, 0);
     tuft.rotateZ((i - 1.5) * 0.35);
     tuft.rotateX(0.25 * (i % 2 ? 1 : -1));
     tuft.translate(0, L - 0.01, 0);
-    parts.push(part(tuft, '#6cc04a', 0));
+    parts.push(part(tuft, '#5cc23a', 0));
   }
   const g = merge(parts);
   g.rotateX(-Math.PI / 2); // tip towards the player
@@ -272,23 +272,23 @@ function carrotGeometry(rng) {
 }
 
 function salmonGeometry(rng) {
-  const w = 0.4 + rng() * 0.03, d = 0.27 + rng() * 0.03;
+  // a fillet portion: rounded thick back edge (away from the player), flatter belly edge, the two cut ends slanted.
+  // A dark silver skin rim shows all round: no other food has a dark outline (steak's rim is white fat).
+  const w = 0.42 + rng() * 0.03, d = 0.27 + rng() * 0.03, slant = 0.08 + rng() * 0.04;
   const s = new THREE.Shape();
-  const k = 0.08;
-  s.moveTo(-w + k, -d);
-  s.lineTo(w - k, -d * 0.82);
-  s.quadraticCurveTo(w, -d * 0.82, w, -d * 0.82 + k);
-  s.lineTo(w * 0.96, d * 0.8 - k);
-  s.quadraticCurveTo(w * 0.96, d * 0.8, w * 0.96 - k, d * 0.8);
-  s.lineTo(-w + k, d);
-  s.quadraticCurveTo(-w, d, -w, d - k);
-  s.lineTo(-w, -d + k);
-  s.quadraticCurveTo(-w, -d, -w + k, -d);
-  const flesh = slab(s, 0.13, 0.04, 10);
-  flesh.translate(0, 0.03, 0);
-  const skin = slab(s, 0.03, 0.02, 10);
-  skin.scale(1.02, 1, 1.03);
-  return settle(merge([part(flesh, (p, n) => mix(col('#f7956f'), col('#e86d4c'), n.y < 0.5 ? 0.5 : 0)), part(skin, '#8d929c', 0)]));
+  s.moveTo(-w + slant, -d * 0.78); // belly edge, near the player
+  s.bezierCurveTo(-w * 0.3, -d * 0.92, w * 0.3, -d * 0.92, w - slant, -d * 0.74);
+  s.quadraticCurveTo(w + 0.02, -d * 0.7, w, -d * 0.4); // right cut
+  s.lineTo(w - slant * 0.6, d * 0.45);
+  s.bezierCurveTo(w * 0.7, d * 1.12, -w * 0.6, d * 1.18, -w + slant * 0.4, d * 0.55); // rounded back
+  s.quadraticCurveTo(-w - 0.03, d * 0.2, -w, -d * 0.3); // left cut
+  s.quadraticCurveTo(-w, -d * 0.72, -w + slant, -d * 0.78);
+  const flesh = slab(s, 0.13, 0.04, 14);
+  flesh.translate(0, 0.05, 0);
+  const skin = slab(s, 0.07, 0.025, 14);
+  skin.scale(1.13, 1, 1.17);
+  const coral = col('#f98479'), side = col('#cf544c');
+  return settle(merge([part(flesh, (p, n) => mix(coral, side, n.y < 0.5 ? 0.6 : 0)), part(skin, (p, n) => mix(col('#6b7480'), col('#3a3f49'), n.y < 0.5 ? 0.6 : 0.15), 0)]));
 }
 
 function breadGeometry(rng) {
@@ -320,7 +320,7 @@ export const FOOD_MODELS = Object.freeze({
   chicken: { geometry: drumstickGeometry, material: { roughness: 0.4, marks: 0.8, markAngle: 0.0, markFreq: 5.5, cook: 0.7 } },
   corn: { geometry: cornGeometry, material: { roughness: 0.5, marks: 0.6, markAngle: 1.57, markFreq: 3.2, cook: 0.6 } },
   carrot: { geometry: carrotGeometry, material: { roughness: 0.55, marks: 0.6, markAngle: 1.57, markFreq: 4, cook: 0.6 } },
-  salmon: { geometry: salmonGeometry, material: { roughness: 0.42, marks: 0, cook: 0.5, stripe: 1, stripeAngle: -0.9, stripeFreq: 7 } },
+  salmon: { geometry: salmonGeometry, material: { roughness: 0.38, marks: 0, cook: 0.45, stripe: 1, stripeAngle: -1.15, stripeFreq: 6 } },
   bread: { geometry: breadGeometry, material: { roughness: 0.75, marks: 1, markAngle: 0.8, markFreq: 4.4, cook: 0.9 } },
 });
 

@@ -5,7 +5,7 @@ import { solveLevel } from '../../solver/solver.js';
 import { astar } from '../../solver/search.js';
 import { lowerBound } from '../../solver/heuristic.js';
 import { boardSignature } from '../../solver/canonical.js';
-import { generateLevels, makeCandidate } from '../../solver/generator.js';
+import { generateLevels, makeCandidate, resolveConfig } from '../../solver/generator.js';
 import { replay } from '../../shared/replay.js';
 import { createState } from '../../shared/state.js';
 import { validateLevel } from '../../shared/levels.js';
@@ -106,4 +106,16 @@ test('share code -> same puzzle every time', () => {
   assert.ok(p1);
   assert.deepEqual(p1.level, p2.level);
   assert.equal(replay(p1.level, p1.level.solver.solution).state.status, 'won');
+});
+
+test('generator: a theme catalog is the default food pool and a hard limit', () => {
+  const catalog = ['salmon', 'bread', 'carrot', 'beef'];
+  assert.deepEqual(resolveConfig({ catalog }).foods, catalog);
+  assert.deepEqual(resolveConfig({ catalog, foods: ['salmon', 'bread'] }).foods, ['salmon', 'bread']);
+  assert.throws(() => resolveConfig({ catalog, foods: ['salmon', 'shrimp'] }), /not in the .* catalog: shrimp/);
+  for (let s = 1; s <= 40; s++) {
+    const l = makeCandidate({ catalog, foodCount: [4, 4], grills: [4, 4] }, s);
+    if (!l) continue;
+    for (const g of l.board.grills) for (const f of g.slots) if (f) assert.ok(catalog.includes(f), f);
+  }
 });

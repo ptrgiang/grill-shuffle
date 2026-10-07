@@ -24,6 +24,18 @@ export function loadPacks() {
   return out;
 }
 
+export const THEMES_DIR = join(ROOT, 'content', 'themes');
+
+/** Theme definitions by id (content/themes/*.json): look, ambience and the theme's food catalog (`foods`). */
+export function loadThemes() {
+  const out = {};
+  for (const f of readdirSync(THEMES_DIR)) if (f.endsWith('.json')) {
+    const t = JSON.parse(readFileSync(join(THEMES_DIR, f), 'utf8'));
+    out[t.id] = { ...t, file: join(THEMES_DIR, f) };
+  }
+  return out;
+}
+
 export function allLevels() {
   return loadPacks().flatMap((p) => p.levels.map((l) => ({ ...l, pack: p.pack.id })));
 }
