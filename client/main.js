@@ -22,7 +22,7 @@ import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS } from '../shared/version.js';
 
-const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1 };
+const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true };
 
 const ui = document.getElementById('ui');
 const canvas = document.getElementById('stage');
@@ -52,6 +52,7 @@ const view = new BoardView(stage, { onFx: (ev, at) => onFx(ev, at) });
 new Input(canvas, () => app.session, view, {
   enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal,
   onGesture: () => audio.unlock(),
+  haptics: () => app.settings.haptics !== false,
   onSelect: () => audio.onEvent({ type: 'select' }),
   onInvalid: (g, o) => {
     if (!o?.quiet) audio.onEvent({ type: 'invalid' });

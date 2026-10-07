@@ -2,7 +2,7 @@
 // asynchronously, and never blocks play. Falls back to memory when IndexedDB is unavailable (private mode etc.).
 //
 // keys: 'progress'  { [levelId]: { stars, bestMoves, bestScore, at } }
-//       'settings'  { muted, sfxVolume, ambienceVolume, reducedMotion }
+//       'settings'  { muted, sfxVolume, ambienceVolume, haptics, reducedMotion }
 //       'current'   last story level id
 //       'daily:<date>', 'challenge:<code>'  { stars, moves, score, at }
 //       'dailyStreak'  { last: date, count, best }   consecutive UTC days with a daily win (client/game/daily.js)

@@ -7,7 +7,7 @@
 // fire. Skipping or cutting animations short (skip(), or a new move arriving mid-animation) cannot change the game:
 // reconcile() always converges the view onto the state.
 import * as THREE from 'three';
-import { layoutBoard, hitTest } from './layout.js';
+import { layoutBoard, hitTestSegment } from './layout.js';
 import { GrillView } from './grill.js';
 import { createFood, foodMaterial } from './foods.js';
 import { Particles } from './particles.js';
@@ -25,6 +25,8 @@ export const TIMING = Object.freeze({
 });
 const MATCH_DUR = TIMING.matchPop + TIMING.matchConverge + TIMING.matchServe;
 const LIFT = 0.42; // selected / dragged height
+// top of the tallest standing item incl. the selected lift and bob: picking covers the column from the table up to it
+export const PICK_TOP = 0.75;
 
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -344,13 +346,16 @@ export class BoardView {
 
   // ---------------------------------------------------------------- selection, dragging, hints (input -> view)
 
-  /** Screen pixel -> { grill, slot } under it (rule-free: the controller decides what is legal). */
-  pick(px, py) {
+  /**
+   * Screen pixel -> { grill, slot } under it (rule-free: the controller decides what is legal).
+   * Pure math, no ray-cast: the pixel's ray from the table (y = 0) up to PICK_TOP is tested against the layout, so
+   * a tap on the top of a tall item hits its slot as well as a tap on its foot. `margin` (world units) widens grills.
+   */
+  pick(px, py, { margin = 0.25 } = {}) {
     if (!this.layout) return null;
-    const p = this.stage.toPlane(px, py, 0);
-    // items stand up: aim a little lower on screen so tapping the top of a food still hits its slot
-    const hit = hitTest(this.layout, p.x, p.z + 0.08);
-    return hit;
+    const foot = this.stage.toPlane(px, py, 0);
+    const top = this.stage.toPlane(px, py, PICK_TOP);
+    return hitTestSegment(this.layout, foot.x, foot.z, top.z, { margin });
   }
 
   itemAt(grill, slot) {

@@ -50,11 +50,25 @@ export function layoutBoard(slotCounts, aspect) {
 
 /** World position (on the table plane) -> { grill, slot } under it, or null. Generous: the whole grill cell counts. */
 export function hitTest(layout, x, z, { margin = 0.25 } = {}) {
+  return hitTestSegment(layout, x, z, z, { margin });
+}
+
+/**
+ * Hit test along a stretch of table depth instead of one point: [zA, zB] at x (either order).
+ * A screen point covers a vertical column of the board: under an orthographic camera pitched down, the ray through
+ * it meets the table at zA (y = 0) and passes the top of a standing item at zB (y = item height). Items stand on
+ * their slot centre, so a tap anywhere on an item's visible silhouette has its slot inside [zA, zB]. Each grill is
+ * tested at the point of the segment closest to it; the nearest grill wins (ties: the one met lower on the ray).
+ */
+export function hitTestSegment(layout, x, zA, zB, { margin = 0.25 } = {}) {
+  const lo = Math.min(zA, zB), hi = Math.max(zA, zB);
   let best = null;
   layout.grills.forEach((g, gi) => {
+    const z = Math.max(lo, Math.min(hi, g.z));
     const dx = x - g.x, dz = z - g.z;
     if (Math.abs(dx) > g.w / 2 + margin || Math.abs(dz) > g.d / 2 + margin) return;
-    const dist = Math.abs(dz) + Math.max(0, Math.abs(dx) - g.w / 2);
+    // tie-break towards the table-plane end (zA) of the segment: what is drawn lowest at that pixel
+    const dist = Math.abs(dz) + Math.max(0, Math.abs(dx) - g.w / 2) + Math.abs(z - zA) * 1e-3;
     if (best && best.dist <= dist) return;
     let slot = Math.round(dx / SLOT + (g.slots - 1) / 2);
     slot = Math.max(0, Math.min(g.slots - 1, slot));
