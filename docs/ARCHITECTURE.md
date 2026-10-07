@@ -52,6 +52,7 @@ solver/        search over the shared simulation
   benchmark.js
 client/        browser game (Vite root)
   main.js        routes, screens, HUD, wiring
+  sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
   game/          session.js (state + undo + action log), input.js (pointer state machine), content.js (packs),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
   render/        stage.js (renderer, camera, lights, backdrop), layout.js (pure board layout + hit test),
@@ -59,15 +60,16 @@ client/        browser game (Vite root)
                  particles.js, textures.js, icons.js
   audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,
                  hide/show suspend + ambience fade, sfx/ambience volumes, idle buffer warm-up)
-  storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync)
-  ui/            dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps)
-  public/        favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
+  storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync + offline outbox, flushed on `online`)
+  ui/            dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps),
+                 update.js (registers the service worker in production builds, "new version" bar)
+  public/        fonts/ (self-hosted Fredoka, OFL), favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
                  "Grill Shuffle"; regenerate the PNGs with node scripts/make-icons.js after a logo change)
   sandbox/       /sandbox/food, /sandbox/board
 content/       levels/<pack>/*.json + pack.json, themes/*.json
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema
-scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, build-content, make-icons, lib/browser.js
+scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, build-content, build-sw, make-icons, lib/browser.js
 tests/         node:test suites: sim/, solver/, worker/, client/
 ```
 
@@ -93,3 +95,20 @@ Generators are seeded with `deriveSeed(seed, …)` and versioned.
 `shared/version.js`. A change that can alter the outcome of any action sequence bumps `PUZZLE_RULE_VERSION`. Share
 codes carry `CHALLENGE_VERSION`; `solver/presets.js` keeps one frozen config set per version so old links keep
 producing the same board. Saves carry `SAVE_VERSION`.
+
+## Offline (PWA)
+
+The production build is fully playable offline once it has been opened once:
+
+- `dist/sw.js` (from `client/sw.js` + `scripts/build-sw.js`, part of `npm run build`) precaches every build file
+  except the sandbox, crawler and share-preview files. Navigations get the cached app shell (`/`, the SPA
+  `index.html`); hashed assets are cache-first; `/api/*` is never touched. The cache name carries a hash of the
+  precached files, so every deploy that changes them installs a new worker.
+- Updates: the new worker precaches in the background and waits; `client/ui/update.js` shows "A new version is
+  ready" and on "Update" lets it take over and reloads. The worker is not registered under `vite` dev.
+- Story levels are bundled; the daily is built locally by the solver worker when `/api/daily` is unreachable and
+  saved as `dailyLevel:<date>`; generated challenges are built locally anyway.
+- Writes never wait for the network: a failed progress push sets `syncPending`, a daily / challenge result that
+  could not be sent goes to `outbox` (4xx answers are final and dropped). `flushOutbox` sends both on app start
+  and on the `online` event; the server re-plays each result and keeps the player's best.
+- Fonts are self-hosted (`client/public/fonts`), no third-party request at all.

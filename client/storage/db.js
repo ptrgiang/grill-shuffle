@@ -7,6 +7,9 @@
 //       'daily:<date>', 'challenge:<code>'  { stars, moves, score, at }
 //       'dailyStreak'  { last: date, count, best }   consecutive UTC days with a daily win (client/game/daily.js)
 //       'boosters'  { tongs, fan }
+//       'dailyLevel:<date>'  the daily board once built (server or local), so it opens instantly and offline
+//       'syncPending'  true while a progress push waits for the network; 'outbox'  [{ kind, key, payload, at }]
+//                   results not sent yet (storage/sync.js flushOutbox)
 //       'meta'      { saveVersion, playerId }
 import { SAVE_VERSION } from '../../shared/version.js';
 

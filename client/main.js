@@ -16,14 +16,15 @@ import { STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
-import { pullProgress, pushProgressSoon, submitResult, fetchDaily } from './storage/sync.js';
+import { pullProgress, pushProgressSoon, submitResult, fetchDaily, flushOutbox } from './storage/sync.js';
 import { advanceStreak, currentStreak, msUntilNextDaily, formatCountdown, serverDailyLevel, rankLine } from './game/daily.js';
 import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
 import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js';
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
-import { VERSIONS } from '../shared/version.js';
+import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
+import { registerServiceWorker } from './ui/update.js';
 
 const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true };
 
@@ -262,9 +263,12 @@ async function startCode(code, { mode }) {
   }
   screen(h('div.loading', h('div.spinner'), h('p', d.kind === 'daily' ? "Lighting today's grill…" : 'Prepping your challenge…')));
   app.route = 'loading';
-  // the daily is pre-built on the server (Cron): use it when it is there, else build it here (same code, same board)
-  const pre = d.kind === 'daily' ? serverDailyLevel(await fetchDaily(d.date), d.code, d.date) : null;
+  // the daily: the copy saved on this device, else the server's pre-built one (Cron), else build it here (same code,
+  // same board). Saved once built, so it opens instantly and offline.
+  const saved = d.kind === 'daily' ? serverDailyLevel(await db.get(`dailyLevel:${d.date}`), d.code, d.date) : null;
+  const pre = saved ?? (d.kind === 'daily' ? serverDailyLevel(await fetchDaily(d.date), d.code, d.date) : null);
   const res = pre ? { ok: true, level: pre } : await puzzleFromCode(d.code);
+  if (d.kind === 'daily' && !saved && res?.ok) db.set(`dailyLevel:${d.date}`, { code: d.code, rulesVersion: PUZZLE_RULE_VERSION, level: res.level });
   if (parseRoute().name !== (mode === 'daily' ? 'daily' : 'code')) return; // navigated away meanwhile
   if (!res?.ok) {
     toast('Could not build that puzzle.');
@@ -522,7 +526,11 @@ async function dailyPanel(date, moves, submitted) {
     if (!clock.isConnected || left < 1000) clearInterval(timer); // the modal closed, or the day rolled over
   }, 1000);
   submitted?.then((r) => {
-    if (r?.verified) {
+    if (r?.queued) {
+      verified.className = 'verified off';
+      verified.textContent = 'offline';
+      rank.textContent = 'Saved. Your result joins today’s ranking when you are back online.';
+    } else if (r?.verified) {
       verified.className = 'verified ok';
       verified.textContent = '✓ verified';
       rank.textContent = rankLine({ ...r, moves });
@@ -580,10 +588,17 @@ async function boot() {
   app.streak = await db.get('dailyStreak', null);
   render();
   stage.start((dt) => view.update(dt));
+  syncNow();
+  registerServiceWorker();
+}
+// pull cloud progress, then send whatever waited while offline
+function syncNow() {
   pullProgress().then((p) => {
     if (p) app.progress = p;
+    flushOutbox();
   });
 }
+window.addEventListener('online', syncNow);
 boot();
 
 // test / debugging hooks (the e2e script reads the authoritative state through these, never from meshes)
