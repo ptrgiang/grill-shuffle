@@ -19,6 +19,7 @@ import * as db from './storage/db.js';
 import { pullProgress, pushProgressSoon, submitResult, fetchDaily } from './storage/sync.js';
 import { advanceStreak, currentStreak, msUntilNextDaily, formatCountdown, serverDailyLevel, rankLine } from './game/daily.js';
 import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
+import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
 import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js';
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
@@ -168,9 +169,26 @@ function showMenu() {
         ),
         h('button.btn.ghost', { on: { click: () => challengePicker() } }, "Chef's Challenge"),
       ),
-      h('div.menu-foot', soundToggle(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, 'About the game ↓')),
+      h('div.menu-foot', soundToggle(), installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, 'About the game ↓')),
     ),
   );
+}
+
+// hidden inside the installed app; the browser's own prompt when it has one, else the steps for this device
+function installButton() {
+  if (isInstalled()) return null;
+  const b = h('button.btn.ghost.install-btn', { on: { click: async () => {
+    audio.unlock();
+    audio.onEvent({ type: 'button' });
+    if (canPrompt()) {
+      if (await promptInstall()) toast('Grill Shuffle installed!');
+    } else openModal(...installGuide(), h('button.btn.ghost', { on: { click: closeModal } }, 'Close'));
+  } } }, 'Install app');
+  const off = onInstallChange(() => {
+    if (!b.isConnected) return off();
+    if (installedThisVisit()) b.remove();
+  });
+  return b;
 }
 
 function soundToggle() {
