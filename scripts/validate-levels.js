@@ -4,9 +4,11 @@
 // solver: solvable, the stored minMoves is the true minimum, the move budget is the one its tier gives (never
 // arbitrary), the stored solution replays to a win within the budget, the stored difficulty is current.
 // Per pack: no duplicate ids, no structurally duplicated boards (food relabelling and grill order ignored).
+// Share index (content/levels/share-index.json): every story level listed exactly once, every entry a story level.
 //   --fast   skip the solver (structure only)
-import { basename } from 'node:path';
-import { loadPacks, loadThemes, parseArgs } from './lib/content.js';
+import { basename, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
 import { isFood } from '../shared/foods.js';
 import { validateLevel } from '../shared/levels.js';
 import { solveLevel } from '../solver/solver.js';
@@ -73,6 +75,15 @@ for (const { pack, packFile, levels } of loadPacks()) {
     else if (rep.state.movesUsed !== r.minMoves) err(`stored solution uses ${rep.state.movesUsed} moves, minimum is ${r.minMoves}`);
   }
 }
+
+const share = JSON.parse(readFileSync(join(LEVELS_DIR, 'share-index.json'), 'utf8')).levels;
+const shareSeen = new Set();
+for (const id of share) {
+  if (shareSeen.has(id)) errors.push(`share-index.json: ${id} listed twice`);
+  shareSeen.add(id);
+  if (!ids.has(id)) errors.push(`share-index.json: ${id} is not a level in any pack (entries are never removed: put the level back)`);
+}
+for (const id of ids.keys()) if (!shareSeen.has(id)) errors.push(`share-index.json: story level ${id} missing (append it at the end)`);
 
 if (errors.length) {
   console.log(errors.map((e) => `ERROR ${e}`).join('\n'));

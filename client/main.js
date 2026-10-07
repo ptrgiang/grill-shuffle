@@ -10,7 +10,7 @@ import { BoardView } from './render/board.js';
 import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
-import { STORY, getLevel, storyIndex, themeFor } from './game/content.js';
+import { STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
@@ -227,8 +227,8 @@ async function startCode(code, { mode }) {
     return go('/', { replace: true });
   }
   if (d.kind === 'story') {
-    const id = STORY[d.index];
-    return id ? startLevel(getLevel(id), { mode: 'challenge', code: d.code }) : go('/', { replace: true });
+    const id = SHARE[d.index];
+    return id && getLevel(id) ? startLevel(getLevel(id), { mode: 'challenge', code: d.code }) : go('/', { replace: true });
   }
   screen(h('div.loading', h('div.spinner'), h('p', d.kind === 'daily' ? "Lighting today's grill…" : 'Prepping your challenge…')));
   app.route = 'loading';
@@ -245,7 +245,7 @@ function startLevel(level, { mode, code = null }) {
   app.route = 'game';
   app.mode = mode;
   app.level = level;
-  app.code = code ?? (mode === 'story' ? encodeStory(storyIndex(level.id)) : null);
+  app.code = code ?? (mode === 'story' ? encodeStory(shareIndex(level.id)) : null);
   const m = Number(new URLSearchParams(location.search).get('m'));
   app.target = Number.isFinite(m) && m > 0 ? m : null;
   app.session = new Session(level);
@@ -464,7 +464,7 @@ async function showResult(won, reason) {
 }
 
 async function share(moves) {
-  const code = app.code ?? encodeStory(storyIndex(app.level.id));
+  const code = app.code ?? encodeStory(shareIndex(app.level.id));
   const url = `${location.origin}/p/${code}?m=${moves}`;
   const text = `I cleared this Grill Shuffle board in ${moves} moves. Can you beat it?`;
   try {

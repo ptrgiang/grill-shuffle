@@ -46,18 +46,21 @@ stored difficulty is current.
 | 1 | First Flip | three of a kind clears | 2 | 4 | 15 easy |
 | 2 | Corn Joins In | empty slots are workspace | 6 | 11 | 15 easy |
 | 3 | Drumstick Dash | four foods, planning | 8 | 14 | 20 easy |
-| 4 (`street-011`) | Salmon Slab | **salmon** | 6 | 11 | 19 easy |
+| 4 (`street-014`) | Salmon Slab | **salmon** | 6 | 11 | 19 easy |
 | 5 | Side Tray | prep tray (all grills full) | 9 | 13 | 25 normal |
 | 6 | Shrimp Order | `clear_food` goal | 4 | 6 | 26 normal |
-| 7 (`street-012`) | Orange Trio | **carrot**; shrimp / carrot / salmon side by side, tray | 8 | 12 | 26 normal |
+| 7 (`street-015`) | Orange Trio | **carrot**; shrimp / carrot / salmon side by side, tray | 8 | 12 | 26 normal |
 | 8 | Under the Lid | stacked tray reveal | 7 | 12 | 21 normal |
 | 9 | Padlocked | locked grill | 6 | 9 | 25 normal |
-| 10 (`street-013`) | Toast or Steak | **bread**; steak / toast / salmon slabs, lock | 6 | 9 | 31 normal |
+| 10 (`street-016`) | Toast or Steak | **bread**; steak / toast / salmon slabs, lock | 6 | 9 | 31 normal |
 | 11 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
 | 12 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
 | 13 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
 
-Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. The original ten were hand-designed,
+Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. Story share codes (`S…`) encode a
+position in the append-only `content/levels/share-index.json`, not the play order, so levels can be inserted
+anywhere in a pack without breaking shared links: append every new story level there, never reorder or remove
+(`validate:levels` and `tests/solver/share-index.test.js` enforce it). The original ten were hand-designed,
 then solver-checked; level 12's lock was reduced from 2 to 1 after the solver proved the 2-lock version impossible,
 and Padlocked / Stack Attack were swapped after the difficulty evaluator ranked "Stack Attack" well above
 "Padlocked". The three food-teaching levels came from `npm run generate:levels` (food-restricted runs: salmon with
