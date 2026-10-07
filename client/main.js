@@ -151,7 +151,7 @@ function showMenu() {
   const demo = getLevel(STORY[2] ?? STORY[0]);
   if (demo) {
     app.session = new Session(demo);
-    view.setMargins({ marginTop: stage.size.h < 700 ? 150 : 190, marginBottom: 290, marginSide: 12 });
+    view.setMargins({ marginTop: stage.size.h < 700 ? 150 : 254, marginBottom: 290, marginSide: 12 });
     view.setState(app.session.state);
   }
   const stars = totalStars(app.progress);
@@ -160,7 +160,7 @@ function showMenu() {
   const nextIdx = storyIndex(next) + 1;
   screen(
     h('div.menu',
-      h('div.logo', h('h1.title', 'Grill Shuffle'), h('p.subtitle', 'Food Sort & Match Puzzle')),
+      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', 'Grill Shuffle'), h('p.subtitle', 'Food Sort & Match Puzzle')),
       h('div.menu-spacer'),
       h('div.menu-buttons',
         h('a.btn.big.primary', { href: levelPath(STORY, next) ?? '/play', 'data-nav': true }, stars ? `Continue · Level ${nextIdx}` : 'Play'),
