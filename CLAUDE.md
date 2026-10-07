@@ -23,7 +23,9 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
 - Any headless browser goes through `scripts/lib/browser.js` (`launchChrome`). Never launch Chrome/Puppeteer
   directly: on Windows a fresh Chromium profile signs in with an empty password ~40 s after start, and repeated
   failures lock the user's account. The launcher prevents that and checks the failed sign-in counter.
-  `GS_NO_BROWSER=1` disables all browsers.
+  `GS_NO_BROWSER=1` disables all browsers. If `gs-chrome.blocked` appears, read it: it lists the browsers that were up
+  as OURS / FOREIGN. Other automation on this machine (facebook-studio's Playwright, threads-topic) fails the
+  blank-password check several times a day; a FOREIGN-only block is not ours (issue #55), tell the user before deleting it.
 - Workflow per task: inspect → find the owning subsystem → smallest coherent change → tests → sim/solver tests →
   validate levels → look at the change (`/sandbox/*`, `npm run shot`) → mobile input if touched → docs.
 
