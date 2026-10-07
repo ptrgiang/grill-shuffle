@@ -5,8 +5,16 @@
 `OrthographicCamera` pitched 58° above the table (`render/layout.js` `CAMERA_ELEVATION`). Ortho keeps every grill
 the same size wherever it sits, which matters more than depth on a phone. `layoutBoard` tries 1–4 columns and keeps
 the one that shows the board largest in the area the HUD leaves free: portrait phones get one column (≈ 80 px slots
-at 390 × 844), desktops two or three. `Stage.frame` fits that box with an asymmetric frustum so the board centres
-between the HUD bars. `hitTest` uses the same numbers, so input never ray-casts meshes.
+at 390 × 844), desktops two or three. `Stage.frame` fits that box with an asymmetric frustum (vertical and
+horizontal) so the board centres in the free area. `hitTest` uses the same numbers, so input never ray-casts meshes.
+
+The free area is measured, not guessed (`ui/fit.js`): after layout, the HUD (or menu) rects push the margins
+(`marginsFrom`), on top of the safe-area insets. It is re-measured on `resize`, `orientationchange`,
+`visualViewport` resize (address bar) and when the web font arrives. Phones held sideways (`SHORT_LANDSCAPE`,
+landscape and ≤ 520 px tall) get side columns: pause / moves / level / goals / tip on the left, tools on the right,
+so the board keeps the full height. The level hint sits over the goal chips, never over the board. `npm run test:e2e`
+checks at 360×640, 390×844, 430×932, 844×390 and 1280×800 that no HUD or menu element covers the board and every
+control is at least 44 × 44 px.
 
 ## Food
 

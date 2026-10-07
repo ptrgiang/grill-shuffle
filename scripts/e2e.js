@@ -6,6 +6,9 @@
 //                item (not the finger) is released
 //   burn-*: the burn levels (rules v3) won through tap / drag, the tray level included
 //   burn-char: lets an item char on purpose and expects the level lost with the "Burnt!" screen
+//   landscape: tap play on a phone held sideways (844 x 390, HUD in side columns, asymmetric camera frustum)
+//   layout-*: at 360x640, 390x844, 430x932, 844x390 and 1280x800 the game HUD and the menu never cover the board, the
+//             board stays on screen, and every control is a tap target of at least 44 x 44 px
 // Each winning case solves the level with its stored optimal solution and expects a 3-star win and the results screen.
 import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT } from './lib/content.js';
@@ -45,6 +48,59 @@ const dragXY = (page, target = false) =>
     const p = target ? v.drag?.target : v.drag?.view?.holder.position;
     return p ? v.stage.toScreen(p) : null;
   }, target);
+
+/** The board's screen box: every slot centre of every grill, padded by half an item. */
+const boardBox = (page) =>
+  page.evaluate(() => {
+    const v = window.__gs.view;
+    const xs = [], ys = [];
+    v.layout.grills.forEach((L, g) => {
+      for (let s = 0; s < L.slots; s++) {
+        for (const dx of [-0.5, 0.5]) for (const dz of [-0.45, 0.45]) {
+          const p = v.slotPos(g, s);
+          p.x += dx;
+          p.z += dz;
+          const q = v.stage.toScreen(p);
+          xs.push(q.x);
+          ys.push(q.y);
+        }
+      }
+    });
+    return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+  });
+
+const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+async function runLayout(w, h) {
+  const name = `layout-${w}x${h}`;
+  const mobile = w < 1000;
+  const { page, close } = await launchChrome({ width: w, height: h, mobile, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  const covers = (sel) =>
+    page.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => { const r = e.getBoundingClientRect(); return { sel, left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height, label: e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24) }; }).filter((r) => r.w > 0 && r.h > 0), sel);
+  try {
+    for (const [path, ui, controls] of [
+      ['/level/31', '.hud-top, .goal, .tool', '.hud button'],
+      ['/', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'],
+    ]) {
+      await page.goto(vite.url + path, { waitUntil: 'load' });
+      if (path !== '/') await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+      else await page.waitForSelector('.menu');
+      await settle(page, 900);
+      const where = path === '/' ? 'menu' : 'game';
+      const box = await boardBox(page);
+      check(box.left >= 0 && box.top >= 0 && box.right <= w && box.bottom <= h, `${name} ${where}: board fully on screen ${JSON.stringify(box, (k, v) => (typeof v === 'number' ? Math.round(v) : v))}`);
+      const hit = (await covers(ui)).filter((r) => overlaps(r, box));
+      check(hit.length === 0, `${name} ${where}: no UI over the board ${hit.map((r) => r.label).join(', ')}`);
+      const small = (await covers(controls)).filter((r) => r.w < 44 || r.h < 44);
+      check(small.length === 0, `${name} ${where}: every control at least 44 px ${small.map((r) => `${r.label} ${Math.round(r.w)}x${Math.round(r.h)}`).join(', ')}`);
+    }
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
 
 async function settle(page, ms = 700) {
   await sleep(ms);
@@ -218,6 +274,8 @@ try {
   await run('burn-two', { w: 1280, h: 800, mobile: false, levelId: 'street-012', mode: 'drag' });
   await run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' });
   await runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' });
+  await run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' });
+  for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
 } finally {
   vite.stop();
 }

@@ -25,6 +25,7 @@ import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
 import { registerServiceWorker } from './ui/update.js';
+import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 
 const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true };
 
@@ -149,11 +150,6 @@ function showMenu() {
   app.hud = null;
   // an idle board behind the menu, as a live preview
   const demo = getLevel(STORY[2] ?? STORY[0]);
-  if (demo) {
-    app.session = new Session(demo);
-    view.setMargins({ marginTop: stage.size.h < 700 ? 150 : 254, marginBottom: 290, marginSide: 12 });
-    view.setState(app.session.state);
-  }
   const stars = totalStars(app.progress);
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
@@ -173,6 +169,28 @@ function showMenu() {
       h('div.menu-foot', soundToggle(), installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, 'About the game ↓')),
     ),
   );
+  app.fit = demo ? menuMargins : null;
+  if (demo) {
+    app.session = new Session(demo);
+    view.setMargins(menuMargins());
+    view.setState(app.session.state);
+  }
+}
+
+// the idle preview board sits between the title and the buttons (beside the buttons on a sideways phone)
+function menuMargins() {
+  const menu = ui.querySelector('.menu');
+  const { w: W, h: H } = stage.size;
+  const q = (sel) => rects(menu, sel);
+  return isShortLandscape()
+    ? marginsFrom(W, H, { top: q('.logo'), right: [...q('.menu-buttons'), ...q('.menu-foot')] }, baseMargins(16, 10), 12)
+    : marginsFrom(W, H, { top: q('.logo'), bottom: [...q('.menu-buttons'), ...q('.menu-foot')] }, baseMargins(12, 10), 12);
+}
+
+/** Re-measure what the UI covers and re-frame the board (resize, rotation, address bar, late fonts). */
+function refit() {
+  if (app.fit) view.setMargins(app.fit());
+  else view.relayout();
 }
 
 // hidden inside the installed app; the browser's own prompt when it has one, else the steps for this device
@@ -233,6 +251,7 @@ function challengePicker() {
 function showLevels() {
   app.route = 'levels';
   app.hud = null;
+  app.fit = null;
   const cards = STORY.map((id, i) => {
     const lvl = getLevel(id);
     const open = isUnlocked(STORY, i, app.progress);
@@ -263,6 +282,7 @@ async function startCode(code, { mode }) {
   }
   screen(h('div.loading', h('div.spinner'), h('p', d.kind === 'daily' ? "Lighting today's grill…" : 'Prepping your challenge…')));
   app.route = 'loading';
+  app.fit = null;
   // the daily: the copy saved on this device, else the server's pre-built one (Cron), else build it here (same code,
   // same board). Saved once built, so it opens instantly and offline.
   const saved = d.kind === 'daily' ? serverDailyLevel(await db.get(`dailyLevel:${d.date}`), d.code, d.date) : null;
@@ -288,9 +308,10 @@ function startLevel(level, { mode, code = null }) {
   if (mode === 'story') db.set('current', level.id);
   app.hud = new Hud(level);
   screen(app.hud.el);
+  app.hud.update(app.session.state, { immediate: true }); // goals first: their chips are part of what the HUD covers
+  app.fit = () => app.hud.margins();
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
-  app.hud.update(app.session.state, { immediate: true });
   if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(level.hint);
   if (app.target) app.hud.tip(`A friend finished this in ${app.target} moves. Can you beat it?`);
   window.__gameReady = true;
@@ -356,9 +377,14 @@ class Hud {
     this.goalEls = [];
   }
 
+  /** Board margins from the HUD as laid out now: bars above and below, or side columns on a sideways phone. */
   margins() {
-    const w = stage.size.w;
-    return { marginTop: w < 600 ? 128 : 118, marginBottom: w < 600 ? 92 : 86, marginSide: 10 };
+    const { w: W, h: H } = stage.size;
+    const q = (sel) => rects(this.el, sel);
+    const base = baseMargins();
+    return isShortLandscape()
+      ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
+      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal')], bottom: q('.tool') }, base, 6);
   }
 
   update(s, { immediate = false } = {}) {
@@ -574,11 +600,20 @@ window.addEventListener('keydown', (e) => {
 
 // ---------------------------------------------------------------- boot
 
-window.addEventListener('resize', () => {
-  stage.resize();
-  if (app.hud) view.setMargins(app.hud.margins());
-  else view.relayout();
-});
+let refitQueued = false;
+function onViewportChange() {
+  if (refitQueued) return;
+  refitQueued = true;
+  requestAnimationFrame(() => {
+    refitQueued = false;
+    stage.resize();
+    refit();
+  });
+}
+window.addEventListener('resize', onViewportChange);
+window.addEventListener('orientationchange', onViewportChange);
+window.visualViewport?.addEventListener('resize', onViewportChange); // mobile address bar showing / hiding
+document.fonts?.ready.then(onViewportChange); // Fredoka arriving changes the HUD's size
 
 async function boot() {
   app.settings = { ...DEFAULT_SETTINGS, ...(await db.get('settings', {})) };

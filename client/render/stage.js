@@ -26,7 +26,7 @@ export class Stage {
     this.camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 100);
     this.cameraDistance = 30;
     this.focus = new THREE.Vector3();
-    this.viewBox = { width: 8, depth: 6, height: 1, marginTop: 0, marginBottom: 0, marginSide: 0 };
+    this.viewBox = { width: 8, depth: 6, height: 1, marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0 };
     this.shake = 0;
 
     this.#lights();
@@ -101,26 +101,27 @@ export class Stage {
     this.scene.add(this.vignette);
   }
 
-  /** Frame a board of this size (world units) inside the screen area left free by the HUD (pixels). */
-  frame({ width, depth, height = 1.2, marginTop = 0, marginBottom = 0, marginSide = 0 }) {
-    this.viewBox = { width, depth, height, marginTop, marginBottom, marginSide };
+  /** Frame a board of this size (world units) inside the screen area left free by the HUD (pixels).
+   *  marginSide sets both sides; marginLeft / marginRight override it (landscape HUD columns). */
+  frame({ width, depth, height = 1.2, marginTop = 0, marginBottom = 0, marginSide = 0, marginLeft = marginSide, marginRight = marginSide }) {
+    this.viewBox = { width, depth, height, marginTop, marginBottom, marginLeft, marginRight };
     this.#fit();
   }
 
   #fit() {
-    const { width, depth, height, marginTop, marginBottom, marginSide } = this.viewBox;
+    const { width, depth, height, marginTop, marginBottom, marginLeft, marginRight } = this.viewBox;
     const W = this.size.w, H = this.size.h;
-    const availW = Math.max(100, W - marginSide * 2), availH = Math.max(100, H - marginTop - marginBottom);
+    const availW = Math.max(100, W - marginLeft - marginRight), availH = Math.max(100, H - marginTop - marginBottom);
     const s = Math.sin(CAMERA_ELEVATION), c = Math.cos(CAMERA_ELEVATION);
     const projW = width + 0.6;
     const projH = depth * s + height * c + 0.6;
     const wpp = Math.max(projW / availW, projH / availH); // world units per pixel
     this.worldPerPixel = wpp;
     // asymmetric frustum so the board centres in the free area, not the whole screen
-    const shiftPx = (marginTop - marginBottom) / 2;
+    const shiftPx = (marginTop - marginBottom) / 2, shiftX = (marginLeft - marginRight) / 2;
     const halfW = (W * wpp) / 2, halfH = (H * wpp) / 2;
-    this.camera.left = -halfW;
-    this.camera.right = halfW;
+    this.camera.left = -halfW - shiftX * wpp;
+    this.camera.right = halfW - shiftX * wpp;
     this.camera.top = halfH + shiftPx * wpp;
     this.camera.bottom = -halfH + shiftPx * wpp;
     const dir = new THREE.Vector3(0, s, c);
