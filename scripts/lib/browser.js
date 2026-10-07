@@ -10,6 +10,12 @@
 //   - reads the account's failed sign-in counter before launching and after closing: refuses to launch at >= 3, and if
 //     the counter rose while its browser was up, writes BLOCK_FILE (refusing every later launch until a person deletes
 //     it) and throws;
+//   - runs a sentinel while the browser is up (Windows): the counter is machine-wide, so when it rises the sentinel
+//     snapshots every Chrome / Edge started since launch, marks ours (by profile dir) and names the parent of the
+//     others. BLOCK_FILE carries that snapshot, so a person can tell our browser from another program's automation.
+//     (Issue #55: on this machine other scheduled automation fails the blank-password check several times a day; a
+//     pair of those landed during an e2e run and the launcher blamed itself. The seed was verified to work: Chrome 153
+//     reads it ~15 s after start, skips LogonUser, and rewrites os_password_last_changed with the real value.)
 //   - touches no credentials (fresh empty profile, password manager / sync / NTLM all off);
 //   - is always headless, muted, software-rendered (SwiftShader), one browser per machine (lock file), killed by a
 //     detached watchdog after `life` ms even if this script hangs, and its temporary profile is deleted;
@@ -105,6 +111,56 @@ function startWatchdog(pid, profile, life) {
   w.unref();
 }
 
+// Polls the failed sign-in counter; on every rise appends a snapshot of the Chrome / Edge processes started since
+// launch: OURS when the command line holds our profile dir, else FOREIGN with its parent's command line.
+const SENTINEL_PS = `
+param([string]$Log, [string]$Profile, [int]$Owner, [int]$Start = -1)
+$u = [ADSI]("WinNT://./" + $env:USERNAME + ",user")
+$t0 = (Get-Date).AddSeconds(-5); $last = $Start
+while (Get-Process -Id $Owner -ErrorAction SilentlyContinue) {
+  $u.RefreshCache(); $n = [int]$u.BadPasswordAttempts.Value
+  if ($last -ge 0 -and $n -gt $last) {
+    $lines = @("{0:HH:mm:ss} counter $last -> $n" -f (Get-Date))
+    $all = Get-CimInstance Win32_Process -Filter "Name='chrome.exe' OR Name='msedge.exe'"
+    foreach ($p in $all | Where-Object { $_.CreationDate -ge $t0 -and $_.CommandLine -notmatch '--type=' }) {
+      if ($p.CommandLine -like "*$Profile*") { $lines += "  OURS     $($p.Name) pid=$($p.ProcessId)" }
+      else {
+        $par = Get-CimInstance Win32_Process -Filter "ProcessId=$($p.ParentProcessId)" -ErrorAction SilentlyContinue
+        $pc = if ($par) { "$($par.Name): $($par.CommandLine)" } else { "gone" }
+        $cl = "$($p.CommandLine)"
+        $lines += "  FOREIGN  $($p.Name) pid=$($p.ProcessId) started $($p.CreationDate.ToString('HH:mm:ss')) [$($cl.Substring(0, [Math]::Min(200, $cl.Length)))]"
+        $lines += "           parent pid=$($p.ParentProcessId) [$($pc.Substring(0, [Math]::Min(200, $pc.Length)))]"
+      }
+    }
+    Add-Content -Path $Log -Value $lines -Encoding utf8
+  }
+  $last = $n
+  Start-Sleep -Milliseconds 700
+}`;
+
+function startSentinel(profile, start) {
+  if (process.platform !== 'win32') return null;
+  const log = join(tmpdir(), `gs-chrome-sentinel-${process.pid}.log`);
+  rmSync(log, { force: true });
+  const script = `& {${SENTINEL_PS}} -Log '${log}' -Profile '${profile}' -Owner ${process.pid} -Start ${start ?? -1}`;
+  const enc = Buffer.from(script, 'utf16le').toString('base64');
+  const child = spawn('powershell', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', enc], { stdio: 'ignore', windowsHide: true });
+  child.unref();
+  return {
+    report() {
+      try {
+        execFileSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+      } catch {}
+      let text = '';
+      try {
+        text = readFileSync(log, 'utf8').trim();
+      } catch {}
+      rmSync(log, { force: true });
+      return text;
+    },
+  };
+}
+
 function SAFE_STUBS() {
   const ok = () => Promise.resolve();
   const def = (o, n, f) => {
@@ -125,7 +181,7 @@ function SAFE_STUBS() {
  */
 export async function launchChrome({ width = 900, height = 600, life = 4 * 60_000, mobile = false } = {}) {
   if (process.env.GS_NO_BROWSER === '1') throw new Error('GS_NO_BROWSER=1: no browser may be started now');
-  if (existsSync(BLOCK_FILE)) throw new Error(`blocked by ${BLOCK_FILE}: the failed sign-in counter rose while a browser was up. Find out why, then delete it.`);
+  if (existsSync(BLOCK_FILE)) throw new Error(`blocked by ${BLOCK_FILE}: the failed sign-in counter rose while a browser was up. The file lists the browsers that were up (OURS / FOREIGN): find out why, then delete it.`);
   const before = badPasswordAttempts();
   if (before !== null && before >= BAD_ATTEMPTS_MAX) throw new Error(`the Windows account has ${before} failed sign-ins: no launch at ${BAD_ATTEMPTS_MAX} or more (the counter clears ~10 minutes after the last failure)`);
   takeLock();
@@ -133,6 +189,7 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
   writeFileSync(join(profile, 'Local State'), LOCAL_STATE_SEED);
   mkdirSync(join(profile, 'Default'), { recursive: true });
   writeFileSync(join(profile, 'Default', 'Preferences'), JSON.stringify(SAFE_PREFS));
+  const sentinel = startSentinel(profile, before);
   let browser;
   try {
     browser = await puppeteer.launch({
@@ -145,6 +202,7 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
     });
   } catch (e) {
     rmSync(profile, { recursive: true, force: true });
+    sentinel?.report();
     dropLock();
     throw e;
   }
@@ -164,13 +222,17 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
       if (pid) execFileSync(process.platform === 'win32' ? 'taskkill' : 'kill', process.platform === 'win32' ? ['/pid', String(pid), '/T', '/F'] : ['-9', String(pid)], { stdio: 'ignore' });
     } catch {}
     await sleep(300);
-    rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    try {
+      rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+    } catch {} // Windows may still hold a file: the watchdog deletes the profile once Chrome is gone
     dropLock();
     const after = badPasswordAttempts();
+    const seen = sentinel?.report() ?? '';
     if (before !== null && after !== null && after > before) {
       const msg = `failed sign-in counter rose from ${before} to ${after} while a headless browser was up (${new Date().toISOString()})`;
-      writeFileSync(BLOCK_FILE, msg + '\n');
-      throw new Error(`STOP: ${msg}. ${BLOCK_FILE} now blocks every launch.`);
+      const who = seen || '(no sentinel snapshot)';
+      writeFileSync(BLOCK_FILE, `${msg}\nChrome / Edge started meanwhile (OURS = this launcher, FOREIGN = another program):\n${who}\n`);
+      throw new Error(`STOP: ${msg}. ${BLOCK_FILE} now blocks every launch.\n${who}`);
     }
   };
   process.once('exit', () => {
