@@ -4,7 +4,7 @@
 // Slot positions inside a grill do not matter. When a grill holds more than matchSize items of a key
 // (only possible with capacity > matchSize), the lowest slot indices clear first, deterministically.
 
-import { MATCHERS, GRILL_TYPES, CHARRED_KEY } from './rules.js';
+import { MATCHERS, GRILL_TYPES } from './rules.js';
 
 /** @returns {{grill:number, key:string, slots:number[]}[]} in grill order */
 export function findMatches(state) {
@@ -22,9 +22,9 @@ export function findMatches(state) {
     let used = 0; // bitmask of slots already grouped
     for (let s = 0; s < slots.length; s++) {
       if (!slots[s] || used & (1 << s)) continue;
-      const k = slots[s].charred ? CHARRED_KEY : keyOf(slots[s]);
+      const k = keyOf(slots[s]);
       const group = [s];
-      for (let t = s + 1; t < slots.length; t++) if (slots[t] && !(used & (1 << t)) && (slots[t].charred ? CHARRED_KEY : keyOf(slots[t])) === k) group.push(t);
+      for (let t = s + 1; t < slots.length; t++) if (slots[t] && !(used & (1 << t)) && keyOf(slots[t]) === k) group.push(t);
       for (const t of group) used |= 1 << t;
       for (let i = 0; i + matchSize <= group.length; i += matchSize) out.push({ grill: g, key: k, slots: group.slice(i, i + matchSize) });
     }

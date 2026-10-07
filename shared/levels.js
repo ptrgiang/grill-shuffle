@@ -34,11 +34,11 @@ export const cellBurn = (cell) => (cell && typeof cell === 'object' ? cell.burn 
 
 /**
  * The puzzle rule version a level is played under: the lowest one that has every mechanic it uses. Boards without
- * v2 mechanics stay v1, so their state hashes (and the fan booster's seed, which comes from the hash) and every
+ * burn counters stay v1, so their state hashes (and the fan booster's seed, which comes from the hash) and every
  * stored replay stay exactly what they were before v2 existed.
  */
 export function ruleVersionOf(level) {
-  return level.board.grills.some((g) => g.slots.some((c) => cellBurn(c) > 0)) ? 2 : 1;
+  return level.board.grills.some((g) => g.slots.some((c) => cellBurn(c) > 0)) ? 3 : 1;
 }
 
 /** Every food id on the board, including hidden layers, with counts. */
@@ -152,8 +152,6 @@ export function validateLevel(level) {
       const problem = spec.validate(goal, level, totals, size);
       if (problem) err(`goal ${i} (${goal.type}): ${problem}`);
     });
-  if (Array.isArray(level.goals) && level.goals.length && level.goals.every((goal) => GOAL_TYPES[goal?.type]?.constraint))
-    err('goals: needs at least one goal besides constraints like protect_food');
 
   for (const m of level.modifiers ?? []) if (!MODIFIERS.includes(m)) err(`unknown modifier ${m}`);
   const declared = new Set(level.modifiers ?? []);

@@ -41,8 +41,8 @@ export function invariants(level, state, ctx) {
   check(visible + hidden + cleared === total, `item conservation ${visible}+${hidden}+${cleared} != ${total}`, ctx); // charred included
   const burnable = level.board.grills.reduce((n, g) => n + g.slots.filter((c) => c && typeof c === 'object').length, 0);
   check(charred <= burnable, `${charred} charred items but only ${burnable} could burn`, ctx);
-  if (state.goals.some((g) => g.failed)) check(state.status === 'lost' && state.failReason === 'charred', 'failed goal but not lost (charred)', ctx);
-  if (state.failReason === 'charred') check(state.goals.some((g) => g.failed), 'lost (charred) without a failed goal', ctx);
+  if (charred) check(state.status === 'lost' && state.failReason === 'charred', 'charred item but the level is not lost (charred)', ctx);
+  if (state.failReason === 'charred') check(charred > 0, 'lost (charred) with nothing charred', ctx);
   check(findMatches(state).length === 0, 'unresolved match left on board', ctx);
   for (const g of state.goals) check(g.progress >= 0 && g.progress <= g.target, 'goal progress out of range', ctx);
   if (state.status === 'playing') check(state.movesLeft > 0 && (hasLegalMove(state) || hasUsableBooster(state)), 'playing without a move', ctx);
@@ -64,7 +64,7 @@ function tongsActions(state) {
   return out;
 }
 
-/** Half the boards get burning items (and sometimes the burn goals). Mutates the level; keeps it valid. */
+/** Half the boards get burning items. Mutates the level; keeps it valid. */
 function addBurn(level, rng) {
   if (rng.chance(0.5)) return;
   const burning = [];
@@ -77,8 +77,6 @@ function addBurn(level, rng) {
     });
   if (!burning.length) return;
   level.modifiers = usedModifiers(level);
-  if (rng.chance(0.3)) level.goals.push({ type: 'protect_food', food: rng.pick(burning) });
-  if (rng.chance(0.3)) level.goals.push({ type: 'clear_before_char', ...(rng.chance(0.5) ? { food: rng.pick(burning) } : {}) });
   if (!validateLevel(level).ok) throw new Error(`fuzz: burn made an invalid level: ${validateLevel(level).errors.join()}`);
 }
 

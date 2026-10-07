@@ -4,23 +4,24 @@
   "name": "Off the Heat",
   "theme": "street_bbq",
   "tier": "normal",
-  "moves": 12,
+  "moves": 13,
   "board": {
     "grills": [
       {"type":"tray","slots":[null,null]},
-      {"slots":[{"food":"shrimp","burn":2},{"food":"corn","burn":2},"beef"]},
-      {"slots":["corn","beef","shrimp"]},
-      {"slots":["beef","corn","shrimp"]}
+      {"slots":[{"food":"corn","burn":3},{"food":"shrimp","burn":3},"beef"]},
+      {"slots":["corn","shrimp","beef"]},
+      {"slots":["beef","corn","chicken"]},
+      {"slots":["chicken","chicken","shrimp"]}
     ]
   },
-  "goals": [{"type":"clear_before_char"},{"type":"clear_all"}],
+  "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter","prep_tray"],
-  "hint": "Food on the prep tray stops cooking. Park what is burning while you set up its match.",
+  "hint": "Food on the prep tray stops cooking. Park what is burning there while you set up its match.",
   "solver": {
-    "minMoves": 8,
-    "difficulty": 46,
+    "minMoves": 9,
+    "difficulty": 49,
     "rating": "hard",
-    "states": 975,
-    "solution": "m1.0-0.0 m1.1-0.1 m2.1-1.0 m3.0-1.1 m2.0-3.0 m0.0-2.0 m3.2-2.1 m0.1-3.2"
+    "states": 58867,
+    "solution": "m1.0-0.0 m1.1-0.1 m2.2-1.0 m3.0-1.1 m2.0-3.0 m0.1-2.0 m4.2-2.2 m3.2-4.2 m0.0-3.2"
   }
 }

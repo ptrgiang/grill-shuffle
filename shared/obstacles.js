@@ -7,7 +7,7 @@
 // Prep tray     - grill.type = 'tray': holds food, never matches (see rules.js GRILL_TYPES).
 // Burn counter  - item.burn = N (rules v2): after every move that leaves the level unfinished, every burning item on
 //                 a heated grill loses burnHeat(grill) from its counter; at 0 it becomes charred ({ charred: true },
-//                 no burn). Charred food never matches fresh food, only other charred items (rules.js CHARRED_KEY).
+//                 no burn) and the level is lost at the end of that move (rules v3, resolve.js).
 //                 Prep trays and locked (covered) grills have no heat: food parked there stops burning.
 
 import { GRILL_TYPES } from './rules.js';

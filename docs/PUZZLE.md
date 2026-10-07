@@ -30,15 +30,15 @@ source slot holds an item, both grills are unlocked, the target slot is empty, a
      Per match: combo +1, score += `matchScore × combo`, goal progress, every locked grill's counter −1.
    - every empty, unlocked grill with stacked trays reveals its next layer.
    Matches produced by an unlock or a reveal are **chain** matches (`chain` > 0 in the event).
-3. **Burn** (moves only, v2): unless every goal is already met, every burning item on a heated grill ticks down;
-   at 0 it chars. If anything charred, step 2 runs again (charred items can complete a charred match: a chain match).
+3. **Burn** (moves only, v3): unless every goal is already met, every burning item on a heated grill ticks down;
+   at 0 it chars.
 4. No match during the move → combo resets to 0.
-5. A goal failed (something charred that had to be saved) → `lost ('charred')`. Else all goals met → `won`. Else no
-   moves left → `lost ('moves')`. Else no legal move and no usable booster → `lost ('stuck')`.
+5. Anything charred → `lost ('charred')`. Else all goals met → `won`. Else no moves left → `lost ('moves')`. Else no
+   legal move and no usable booster → `lost ('stuck')`.
 
 ## Events
 
-`move, match {grill, food, foods, itemIds, slots, chain, combo, charred?, burning?}, score, goal_progress, goal_failed,
+`move, match {grill, food, foods, itemIds, slots, chain, combo, burning?}, score, goal_progress,
 lock_progress, unlock, reveal {grill, items, layersLeft}, burn_tick {items: [{grill, slot, itemId, food, burn}]},
 charred {grill, slot, itemId, food}, combo, combo_reset, booster, level_complete, level_failed {reason}`.
 The renderer and audio consume these; nothing else does.
@@ -61,11 +61,15 @@ Planned: grill heat states, frozen item, chain link, covered grill.
 - After every **move** that leaves the level unfinished, every burning item on a heated grill loses the grill's heat
   (`burnHeat`: 1 on an open grill; 0 on a prep tray or a locked, covered grill). The moved item ticks too. Boosters
   cost no move and never tick. An item matched during the move is gone before the tick.
-- At 0 the item becomes **charred** `{ id, food, charred: true }`: it never matches fresh food again, but any
-  `matchSize` charred items on one grill clear together, whatever food they were (`clear_all` counts them,
-  `clear_food`/`serve_food` do not).
+- At 0 the item becomes **charred** `{ id, food, charred: true }` and **the level is lost** at the end of that move
+  (`failReason: 'charred'`), whatever the goals. No goal is needed to make burning matter.
+- History: v2 (2026-10-07, a few hours live) let charred food stay on the board and clear with any other charred
+  food, plus `protect_food` / `clear_before_char` goals to make charring cost anything. Play-testing showed boards
+  where everything charred on move 1 with no consequence (#47); v3 replaced all of it with "a char loses".
 - Rule version: a board stamps the lowest rule version it needs (`ruleVersionOf`): boards without burning items are
-  still v1, so their hashes, fan-booster seeds and stored replays are unchanged.
+  still v1, so their hashes, fan-booster seeds and stored replays are unchanged. Burn boards are v3.
+- Level design: counters of 3 or more, and the board's no-burn optimal line should char something (so the counter
+  changes the plan, not just the colour). Trays and locked grills are the tools for buying time.
 - Visuals (minimal for now): a counter badge on burning items, the charred material on charred ones. Staged
   cook/char visuals and grill heat build on `burnHeat` and the `burn_tick`/`charred` events.
 
@@ -77,10 +81,7 @@ No timers, no reflexes.
 ## Goals
 
 `clear_all`, `clear_food {food, count}`, `serve_food {food, count}`, `complete_matches {count}`, `reach_score {count}`,
-`clear_blocker` (open every lock), `reveal_hidden` (flip every stacked tray), `clear_before_char {food?}` (serve every
-burning item, of `food` if given, while fresh; fails when one chars), `protect_food {food}` (a constraint: fails when
-an item of `food` chars; target 0, so a level needs another goal too). Several goals compose; all must be met and
-none failed.
+`clear_blocker` (open every lock), `reveal_hidden` (flip every stacked tray). Several goals compose; all must be met.
 
 ## Boosters
 

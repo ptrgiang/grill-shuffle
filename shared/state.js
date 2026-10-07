@@ -6,7 +6,7 @@
 //   movesLeft, movesUsed, score, combo, maxCombo, matches,
 //   nextItemId,                       item ids are a deterministic sequence: rendering identity, never game logic
 //   grills: [ { id, type, lock, slots: [ {id, food, burn?, charred?} | null ], layers: [ [food|null, ...], ... ] } ],
-//   goals: [ { type, food?, target, progress, failed? } ],
+//   goals: [ { type, food?, target, progress } ],
 //   boosters: { [id]: count },
 //   status: 'playing' | 'won' | 'lost', failReason?: 'moves' | 'stuck' | 'charred'
 // }

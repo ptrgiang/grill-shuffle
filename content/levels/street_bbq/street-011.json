@@ -13,9 +13,9 @@
       {"slots":["corn","beef",null]}
     ]
   },
-  "goals": [{"type":"clear_all"},{"type":"protect_food","food":"shrimp"}],
+  "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter"],
-  "hint": "That shrimp chars after 5 moves on the grill. Serve it before the counter hits zero!",
+  "hint": "The number on that shrimp is how many moves it can stay on the heat. Anything that chars ends the level, so serve it first!",
   "solver": {
     "minMoves": 6,
     "difficulty": 33,
