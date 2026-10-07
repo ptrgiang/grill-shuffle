@@ -10,7 +10,7 @@ import { basename, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
 import { isFood } from '../shared/foods.js';
-import { validateLevel } from '../shared/levels.js';
+import { validateLevel, cellFood } from '../shared/levels.js';
 import { solveLevel } from '../solver/solver.js';
 import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
@@ -31,7 +31,7 @@ for (const t of Object.values(themes)) {
 }
 
 /** Every food a level can show: slots and stacked layers. */
-const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).filter(Boolean));
+const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).map(cellFood).filter(Boolean));
 
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
