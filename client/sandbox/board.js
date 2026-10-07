@@ -108,6 +108,8 @@ $('level').value = start?.id ?? STORY[0];
 load(start ?? getLevel(STORY[0]));
 if (stage.size.w < 500) $('panel').classList.add('min');
 if (params.get('auto') === '1') $('auto').onclick();
+// ?steps=N plays the first N moves of the solver's solution (deterministic shots of mid-level states)
+for (let i = 0; i < Number(params.get('steps') ?? 0); i++) $('step').onclick();
 
 window.addEventListener('resize', () => {
   stage.resize();

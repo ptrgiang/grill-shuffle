@@ -6,7 +6,9 @@
 // GENERATOR_VERSION    - the seeded level generator (same seed + same version => same level).
 // SAVE_VERSION         - the IndexedDB save layout.
 
-export const PUZZLE_RULE_VERSION = 1;
+// v2: burn counters + charred food. Opt-in per item: a board without them is still stamped v1 (levels.js ruleVersionOf)
+//     and plays, hashes and replays exactly as before.
+export const PUZZLE_RULE_VERSION = 2;
 export const LEVEL_FORMAT_VERSION = 1;
 export const CHALLENGE_VERSION = 1;
 export const GENERATOR_VERSION = 1;

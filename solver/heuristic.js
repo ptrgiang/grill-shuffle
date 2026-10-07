@@ -1,5 +1,6 @@
 // Admissible lower bound on the moves still needed (for A*). Returns 0 whenever a cheap bound is not provably
-// admissible (stacked trays can deliver food for free; score/blocker goals are not about placement).
+// admissible (stacked trays can deliver food for free; score/blocker goals are not about placement; burning food
+// can turn into charred items that match across foods).
 //
 // For a food f of which r more items must clear, in t = r / matchSize matches: at most min(c_g, matchSize) items
 // can stay put on each matching grill g, and only t grills' worth of them can be part of those matches, so at least
@@ -11,6 +12,8 @@ export function lowerBound(state) {
   const size = state.rules.matchSize;
   if (state.rules.matcher !== 'same_food') return 0;
   if (state.grills.some((g) => g.layers.length)) return 0;
+  // burning/charred food changes which items can match each other: the per-food argument no longer holds
+  if (state.grills.some((g) => g.slots.some((it) => it && (it.burn || it.charred)))) return 0;
   const need = {};
   for (const goal of state.goals) {
     const left = goal.target - goal.progress;

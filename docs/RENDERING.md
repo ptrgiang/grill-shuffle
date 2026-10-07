@@ -37,6 +37,9 @@ Material (`render/materials.js`): `MeshStandardMaterial` + shader patch with `uC
 `uGrillMarkStrength`, `uGrillMarkAngle`, `uMarkFreq`, `uStripe*`. Grill marks are computed from object-space
 position, only on upward faces, masked by the per-vertex `aSear` attribute (meat sears, bone/husk/leaves don't).
 No texture per food.
+Burn state (rules v2) is read from the item in `BoardView.reconcile`: a burning item carries a small counter badge
+sprite, a charred item swaps to the cached `foodMaterial(food, { char: 1 })`; a `charred` event adds a smoke poof.
+`/sandbox/board?level=street-012&anim=0&steps=1` shows charred food (`steps=N` plays N solution moves).
 
 ## Grills
 

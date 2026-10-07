@@ -6,6 +6,7 @@
 // over every relabelling of the foods present (k! relabellings; boards use at most 7 foods).
 
 import { cyrb53 } from '../shared/rng.js';
+import { cellFood, cellBurn } from '../shared/levels.js';
 
 export { canonicalKey, hashState, hashBoard } from '../shared/hash.js';
 
@@ -19,7 +20,7 @@ function permutations(arr) {
 }
 
 function grillForm(g, label) {
-  const cells = g.slots.map((f) => (f ? label[f] : '')).sort().join('');
+  const cells = g.slots.map((c) => (c ? label[cellFood(c)] + (cellBurn(c) || '') : '')).sort().join('');
   const layers = (g.layers ?? []).map((l) => l.map((f) => (f ? label[f] : '')).sort().join('')).join('/');
   return `${g.type === 'tray' ? 'T' : 'G'}${g.slots.length}${g.lock ? `L${g.lock}` : ''}:${cells}${layers ? '|' + layers : ''}`;
 }
@@ -27,7 +28,7 @@ function grillForm(g, label) {
 export function boardSignature(level) {
   const present = new Set();
   for (const g of level.board.grills) {
-    for (const f of g.slots) if (f) present.add(f);
+    for (const c of g.slots) if (c) present.add(cellFood(c));
     for (const l of g.layers ?? []) for (const f of l) if (f) present.add(f);
   }
   const foods = [...present].sort();

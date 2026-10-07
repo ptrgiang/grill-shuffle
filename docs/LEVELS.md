@@ -25,7 +25,8 @@
 }
 ```
 Grill fields: `type` (`grill` | `tray`), `slots`, optional `layers` (each exactly as long as `slots`), optional
-`lock`. `tier` decides the move budget from the solver minimum; `moves` and `solver` are **written by tooling**
+`lock`. A slot is `null`, a food id, or a burning item `{"food": "shrimp", "burn": 4}` (rules v2, modifier
+`burn_counter`; see docs/PUZZLE.md). `tier` decides the move budget from the solver minimum; `moves` and `solver` are **written by tooling**
 (`npm run solve -- <id> --write`), never by hand. No level carries code.
 
 ## Packs
@@ -56,6 +57,12 @@ stored difficulty is current.
 | 11 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
 | 12 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
 | 13 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
+| 14 (`street-011`) | Sizzle | burn counter, `protect_food` | 6 | 11 | 33 normal |
+| 15 (`street-012`) | Burnt Ends | charred food clears with charred food (any food) | 6 | 9 | 27 normal |
+| 16 (`street-013`) | Off the Heat | prep tray stops burning, `clear_before_char` | 8 | 12 | 46 hard |
+
+14–16 were added with rules v2 (burn counter). Their difficulty is driven by dead ends: once a protected item chars,
+every later state is lost.
 
 Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. Story share codes (`S…`) encode a
 position in the append-only `content/levels/share-index.json`, not the play order, so levels can be inserted

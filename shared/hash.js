@@ -2,7 +2,7 @@
 //
 // Slot order inside a grill never affects the rules, and two grills with identical type/lock/contents/layers are
 // interchangeable, so the canonical form sorts each grill's foods and then sorts the grills themselves.
-// Item ids (rendering identity) are excluded.
+// Item ids (rendering identity) are excluded; burn counters, charred items and failed goals are included.
 //
 // canonicalKey(state, { solver: true }) is the solver's transposition key: it drops what the search tracks
 // itself (moves left/used) and what cannot change the outcome for the level's goals (score/combo unless a
@@ -30,7 +30,8 @@ function grillKey(g) {
   for (let i = 0; i < slots.length; i++) {
     const it = slots[i];
     if (!it) continue;
-    const c = foodCode(it.food);
+    // food code, then the burn counter (digits) or '*' for charred: unambiguous since food codes are letters
+    const c = it.burn ? foodCode(it.food) + it.burn : it.charred ? foodCode(it.food) + '*' : foodCode(it.food);
     let j = n++;
     while (j > 0 && codes[j - 1] > c) {
       codes[j] = codes[j - 1];
@@ -47,7 +48,7 @@ function grillKey(g) {
 export function canonicalKey(state, { solver = false } = {}) {
   const grills = state.grills.map(grillKey).sort().join(';');
   let goals = '';
-  for (const g of state.goals) goals += g.progress + ',';
+  for (const g of state.goals) goals += g.progress + (g.failed ? 'x,' : ',');
   if (solver) {
     const scoreMatters = state.goals.some((g) => g.type === 'reach_score');
     return `${grills}#${goals}${scoreMatters ? `#${state.score},${state.combo}` : ''}`;
