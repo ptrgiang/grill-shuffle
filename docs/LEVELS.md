@@ -57,12 +57,13 @@ stored difficulty is current.
 | 11 | Stack Attack | two stacks, ordering | 7 | 10 | 42 hard |
 | 12 | Hot Seat | lock + stack + tray | 9 | 11 | 43 hard |
 | 13 | Grand Grill | five foods, all mechanics | 11 | 14 | 52 hard |
-| 14 (`street-011`) | Sizzle | burn counter, `protect_food` | 6 | 11 | 33 normal |
-| 15 (`street-012`) | Burnt Ends | charred food clears with charred food (any food) | 6 | 9 | 27 normal |
-| 16 (`street-013`) | Off the Heat | prep tray stops burning, `clear_before_char` | 8 | 12 | 46 hard |
+| 14 (`street-011`) | Sizzle | burn counter: a char loses, serve it first | 6 | 11 | 33 normal |
+| 15 (`street-012`) | Two Timers | two burning foods, order by counter | 6 | 9 | 49 hard |
+| 16 (`street-013`) | Off the Heat | prep tray stops burning: park, set up, bring back | 9 | 13 | 49 hard |
 
-14–16 were added with rules v2 (burn counter). Their difficulty is driven by dead ends: once a protected item chars,
-every later state is lost.
+14–16 use the burn counter (rules v3: any char loses). On each, the optimal line of the same board without counters
+chars something, so the counter changes the plan. 15 replaced "Burnt Ends" (v2: six counters of 1, everything charred
+on move 1 and play went on); 16 was rebuilt so the tray is required (9 moves vs 8 without counters).
 
 Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. Story share codes (`S…`) encode a
 position in the append-only `content/levels/share-index.json`, not the play order, so levels can be inserted

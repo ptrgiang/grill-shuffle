@@ -2,18 +2,17 @@
 //
 //   applyAction(state, action) -> { ok, state: nextState, events, reason? }
 //
-// The input state is never mutated. Resolution order after a move (rules v2):
+// The input state is never mutated. Resolution order after a move (rules v3):
 //   1. the item moves (movesLeft - 1)
 //   2. loop until stable:
 //        a. every match on the board clears (grill order, then slot order); each match:
 //           combo + 1, score += matchScore * combo, goal progress, every locked grill's counter - 1
 //        b. every empty unlocked grill with stacked trays reveals its next layer
 //      (an unlock or a reveal can create new matches: those are chain matches, chain index > 0)
-//   3. burn (v2): unless every goal is already met, every burning item on a heated grill ticks down; items reaching
-//      0 char. If anything charred, step 2 runs again (charred items can complete a charred match: chain matches)
+//   3. burn: unless every goal is already met, every burning item on a heated grill ticks down; items reaching
+//      0 char
 //   4. no match at all during the move -> combo resets
-//   5. status: a goal failed (something charred that must not) -> lost ('charred'); all goals done -> won;
-//      else no moves left or no legal move -> lost
+//   5. status: anything charred -> lost ('charred'); all goals done -> won; else no moves left or no legal move -> lost
 // Boosters cost no move, so they never tick burn counters.
 // Events describe every step, in order, for the renderer/audio. Skipping them changes nothing.
 
@@ -22,7 +21,7 @@ import { isLegalMove, hasLegalMove } from './moves.js';
 import { findMatches } from './match.js';
 import { tickLocks, revealLayers, tickBurns } from './obstacles.js';
 import { comboOnMatch, comboOnQuietMove } from './combo.js';
-import { goalsOnEvent, goalsDone, goalsFailed } from './goals.js';
+import { goalsOnEvent, goalsDone } from './goals.js';
 import { canUseBooster, applyBoosterEffect, hasUsableBooster } from './boosters.js';
 
 /**
@@ -48,7 +47,6 @@ export function resolveMatches(s, chain = 0) {
       const points = s.rules.matchScore * combo;
       s.score += points;
       const ev = { type: 'match', grill: m.grill, key: m.key, food: items[0].food, foods: items.map((it) => it.food), itemIds: items.map((it) => it.id), slots: m.slots, chain, combo };
-      if (items[0].charred) ev.charred = true; // charred items only ever match each other
       for (const it of items) if (it.burn) (ev.burning ??= []).push(it.food); // foods saved before they charred
       emit(ev);
       emit({ type: 'score', points, total: s.score, combo });
@@ -62,28 +60,21 @@ export function resolveMatches(s, chain = 0) {
   return { events, matchCount, chain };
 }
 
-/** Step 3: one move's heat. Mutates `s`, appends events; returns the matches charring caused. */
-function burnTurn(s, events, chain) {
-  if (goalsDone(s.goals)) return 0; // the move already won: nothing burns after the last bite
+/** Step 3: one move's heat. Mutates `s`, appends events; returns true when something charred. */
+function burnTurn(s, events) {
+  if (goalsDone(s.goals)) return false; // the move already won: nothing burns after the last bite
   const ticks = tickBurns(s);
-  if (!ticks.length) return 0;
-  for (const ev of ticks) {
-    events.push(ev);
-    events.push(...goalsOnEvent(s.goals, ev, s.score));
-  }
-  if (ticks.length === 1) return 0; // a burn_tick and nothing charred
-  const r = resolveMatches(s, Math.max(1, chain));
-  events.push(...r.events);
-  return r.matchCount;
+  events.push(...ticks);
+  return ticks.length > 1; // a burn_tick, then one charred event per item
 }
 
-function finishTurn(s, events, matchCount, { countsAsMove }) {
+function finishTurn(s, events, matchCount, { countsAsMove, charred = false }) {
   if (countsAsMove && matchCount === 0) {
     const ev = comboOnQuietMove(s);
     if (ev) events.push(ev);
   }
   if (matchCount > 0) events.push({ type: 'combo', combo: s.combo });
-  if (goalsFailed(s.goals)) {
+  if (charred) {
     s.status = 'lost';
     s.failReason = 'charred';
     events.push({ type: 'level_failed', reason: 'charred' });
@@ -115,8 +106,8 @@ export function applyAction(state, action) {
     const events = [{ type: 'move', itemId: item.id, food: item.food, from, to }];
     const r = resolveMatches(s);
     events.push(...r.events);
-    const charMatches = burnTurn(s, events, r.chain);
-    finishTurn(s, events, r.matchCount + charMatches, { countsAsMove: true });
+    const charred = burnTurn(s, events);
+    finishTurn(s, events, r.matchCount, { countsAsMove: true, charred });
     return { ok: true, state: s, events };
   }
   if (action?.type === 'booster') {

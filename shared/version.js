@@ -8,7 +8,9 @@
 
 // v2: burn counters + charred food. Opt-in per item: a board without them is still stamped v1 (levels.js ruleVersionOf)
 //     and plays, hashes and replays exactly as before.
-export const PUZZLE_RULE_VERSION = 2;
+// v3: charring any item loses the level (v2 let charred food stay and clear with other charred food). Only boards with
+//     burning items change; they are stamped v3.
+export const PUZZLE_RULE_VERSION = 3;
 export const LEVEL_FORMAT_VERSION = 1;
 export const CHALLENGE_VERSION = 1;
 export const GENERATOR_VERSION = 1;
