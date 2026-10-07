@@ -57,7 +57,8 @@ client/        browser game (Vite root)
   render/        stage.js (renderer, camera, lights, backdrop), layout.js (pure board layout + hit test),
                  board.js (BoardView: state + events -> animation), grill.js, foods.js, materials.js,
                  particles.js, textures.js, icons.js
-  audio/         synth.js (pure generators), audio.js (Web Audio engine)
+  audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,
+                 hide/show suspend + ambience fade, sfx/ambience volumes, idle buffer warm-up)
   storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync)
   ui/            dom.js (tiny DOM helpers)
   sandbox/       /sandbox/food, /sandbox/board

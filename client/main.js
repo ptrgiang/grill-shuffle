@@ -22,9 +22,12 @@ import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS } from '../shared/version.js';
 
+const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1 };
+
 const ui = document.getElementById('ui');
 const canvas = document.getElementById('stage');
 const audio = new Audio();
+audio.attach(document, window); // unlock on any gesture; fade + suspend while the page is hidden
 const stage = new Stage(canvas, { theme: themeFor(null) });
 const fxLayer = h('div.fx-layer');
 document.getElementById('app').append(fxLayer);
@@ -38,7 +41,7 @@ const app = {
   target: null, // moves to beat (shared links)
   progress: {},
   streak: null, // local daily streak { last, count, best }
-  settings: { muted: false },
+  settings: { ...DEFAULT_SETTINGS },
   hud: null,
   busy: false,
 };
@@ -188,6 +191,18 @@ async function setMuted(m, btn) {
   audio.setMuted(m);
   btn?.replaceChildren(iconEl(m ? 'mute' : 'sound'));
   await db.set('settings', app.settings);
+}
+
+let saveSettingsTimer = 0;
+function volumeSlider(label, key) {
+  const apply = (v) => {
+    app.settings[key] = v;
+    audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });
+    clearTimeout(saveSettingsTimer);
+    saveSettingsTimer = setTimeout(() => db.set('settings', app.settings), 250);
+  };
+  const input = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(app.settings[key] * 100), 'aria-label': `${label} volume`, on: { input: (e) => apply(e.target.value / 100) } });
+  return h('label.volume', h('span', label), input);
 }
 
 function challengePicker() {
@@ -422,6 +437,7 @@ function pauseMenu() {
       h('a.btn', { href: '/levels', 'data-nav': true }, 'Levels'),
       h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
     ),
+    h('div.volumes', volumeSlider('Effects', 'sfxVolume'), volumeSlider('Ambience', 'ambienceVolume')),
     h('div.modal-foot', soundToggle()),
   );
 }
@@ -550,8 +566,9 @@ window.addEventListener('resize', () => {
 });
 
 async function boot() {
-  app.settings = { muted: false, ...(await db.get('settings', {})) };
+  app.settings = { ...DEFAULT_SETTINGS, ...(await db.get('settings', {})) };
   audio.setMuted(app.settings.muted);
+  audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });
   app.progress = await db.get('progress', {});
   app.streak = await db.get('dailyStreak', null);
   render();
@@ -563,4 +580,4 @@ async function boot() {
 boot();
 
 // test / debugging hooks (the e2e script reads the authoritative state through these, never from meshes)
-window.__gs = { app, view, stage, go, doAction, get state() { return app.session?.state; } };
+window.__gs = { app, view, stage, audio, go, doAction, get state() { return app.session?.state; } };
