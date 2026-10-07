@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-015",
+  "name": "Orange Trio",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":[null,"corn","shrimp"]},
+      {"slots":["carrot","corn","salmon"]},
+      {"slots":[null,"salmon","carrot"]},
+      {"slots":["corn","salmon","carrot"]},
+      {"type":"tray","slots":["shrimp","shrimp"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "Shrimp curl, carrots point, salmon lies flat. Sort the oranges.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 26,
+    "rating": "normal",
+    "states": 4903,
+    "solution": "m1.0-2.0 m2.1-1.0 m3.2-2.1 m1.1-3.2 m3.1-1.1 m0.1-3.1 m4.0-0.0 m4.1-0.1"
+  }
+}

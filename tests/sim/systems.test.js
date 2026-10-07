@@ -125,6 +125,10 @@ test('progression: budgets and stars follow the solver minimum', () => {
   assert.equal(starsFor(15, 10, false), 0);
   assert.equal(isUnlocked(['a', 'b'], 1, {}), false);
   assert.equal(isUnlocked(['a', 'b'], 1, { a: { stars: 1 } }), true);
+  // a level inserted before an already-won one does not lock the won one
+  assert.equal(isUnlocked(['a', 'new', 'b'], 2, { a: { stars: 3 }, b: { stars: 2 } }), true);
+  assert.equal(isUnlocked(['a', 'new', 'b'], 1, { a: { stars: 3 }, b: { stars: 2 } }), true);
+  assert.equal(isUnlocked(['a', 'new', 'b', 'c'], 3, { a: { stars: 3 } }), false);
 });
 
 test('challenge codes round-trip and reject typos', () => {

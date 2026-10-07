@@ -88,6 +88,15 @@ test('story challenge result: replayed server-side, best kept, stats + percentil
   assert.equal(s.data.kind, 'story');
 });
 
+test('story codes resolve through the share index, not the play order', async () => {
+  const { levelForCode } = await import('../../worker/index.js');
+  const { SHARE } = await import('../../worker/content.gen.js');
+  for (let i = 0; i < SHARE.length; i++) assert.equal((await levelForCode(env, encodeStory(i))).level.id, SHARE[i]);
+  // a code shipped for position 3 still opens street-004, wherever the pack now plays it
+  assert.equal((await levelForCode(env, encodeStory(3))).level.id, 'street-004');
+  assert.equal(await levelForCode(env, encodeStory(SHARE.length)), null);
+});
+
 test('generated challenge: built once from its code, cached, verified', async () => {
   const create = await call('POST', '/api/challenge', { body: { band: 'E' } });
   assert.equal(create.status, 201);

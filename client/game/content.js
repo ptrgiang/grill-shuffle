@@ -1,5 +1,7 @@
 // Level packs and themes, bundled at build time from content/ (Vite glob import). Adding a level is adding a JSON
 // file and listing it in its pack.json: no code changes.
+import shareIndexFile from '../../content/levels/share-index.json';
+
 const levelFiles = import.meta.glob('../../content/levels/*/*.json', { eager: true, import: 'default' });
 const themeFiles = import.meta.glob('../../content/themes/*.json', { eager: true, import: 'default' });
 
@@ -19,4 +21,8 @@ export const STORY = packs.flatMap((p) => p.levels.filter((id) => levels.has(id)
 export const getLevel = (id) => levels.get(id) ?? null;
 export const getPacks = () => packs;
 export const storyIndex = (id) => STORY.indexOf(id);
+
+/** Story share codes: a position in the append-only content/levels/share-index.json, never the play order. */
+export const SHARE = shareIndexFile.levels;
+export const shareIndex = (id) => SHARE.indexOf(id);
 export const themeFor = (level) => THEMES[level?.theme] ?? THEMES.street_bbq;

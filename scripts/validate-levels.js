@@ -4,9 +4,12 @@
 // solver: solvable, the stored minMoves is the true minimum, the move budget is the one its tier gives (never
 // arbitrary), the stored solution replays to a win within the budget, the stored difficulty is current.
 // Per pack: no duplicate ids, no structurally duplicated boards (food relabelling and grill order ignored).
+// Share index (content/levels/share-index.json): every story level listed exactly once, every entry a story level.
 //   --fast   skip the solver (structure only)
-import { basename } from 'node:path';
-import { loadPacks, parseArgs } from './lib/content.js';
+import { basename, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
+import { isFood } from '../shared/foods.js';
 import { validateLevel } from '../shared/levels.js';
 import { solveLevel } from '../solver/solver.js';
 import { boardSignature } from '../solver/canonical.js';
@@ -19,6 +22,16 @@ const errors = [];
 const ids = new Map();
 const sigs = new Map();
 let count = 0;
+const themes = loadThemes();
+
+for (const t of Object.values(themes)) {
+  if (!THEMES.includes(t.id)) errors.push(`${t.file}: unknown theme id ${t.id}`);
+  if (!Array.isArray(t.foods) || !t.foods.length) errors.push(`${t.file}: theme needs a foods[] catalog`);
+  else for (const f of t.foods) if (!isFood(f)) errors.push(`${t.file}: unknown food ${f}`);
+}
+
+/** Every food a level can show: slots and stacked layers. */
+const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).filter(Boolean));
 
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
@@ -37,6 +50,8 @@ for (const { pack, packFile, levels } of loadPacks()) {
     const v = validateLevel(level);
     for (const e of v.errors) err(e);
     if (!v.ok) continue;
+    const catalog = themes[level.theme ?? pack.theme]?.foods;
+    if (catalog) for (const f of levelFoods(level)) if (!catalog.includes(f)) err(`food ${f} is not in the ${level.theme ?? pack.theme} catalog`);
     const sig = boardSignature(level);
     if (sigs.has(sig)) err(`structural duplicate of ${sigs.get(sig)}`);
     sigs.set(sig, at);
@@ -60,6 +75,15 @@ for (const { pack, packFile, levels } of loadPacks()) {
     else if (rep.state.movesUsed !== r.minMoves) err(`stored solution uses ${rep.state.movesUsed} moves, minimum is ${r.minMoves}`);
   }
 }
+
+const share = JSON.parse(readFileSync(join(LEVELS_DIR, 'share-index.json'), 'utf8')).levels;
+const shareSeen = new Set();
+for (const id of share) {
+  if (shareSeen.has(id)) errors.push(`share-index.json: ${id} listed twice`);
+  shareSeen.add(id);
+  if (!ids.has(id)) errors.push(`share-index.json: ${id} is not a level in any pack (entries are never removed: put the level back)`);
+}
+for (const id of ids.keys()) if (!shareSeen.has(id)) errors.push(`share-index.json: story level ${id} missing (append it at the end)`);
 
 if (errors.length) {
   console.log(errors.map((e) => `ERROR ${e}`).join('\n'));

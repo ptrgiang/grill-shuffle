@@ -3,7 +3,7 @@
 //
 // The game never needs this to play: it runs locally and syncs here asynchronously. Results are stored as move
 // lists and re-played on the server with the same shared simulation before they count (`verified`).
-import { STORY, LEVELS } from './content.gen.js';
+import { STORY, SHARE, LEVELS } from './content.gen.js';
 import { replay } from '../shared/replay.js';
 import { mergeProgressRecords } from './progress.js';
 import { decodeCode, encodeDaily, encodeGenerated, dailySeed, dailyBand, todayUTC, BANDS } from '../shared/challenge.js';
@@ -56,8 +56,8 @@ export async function levelForCode(env, code, { allowBuild = true } = {}) {
   const d = decodeCode(code);
   if (!d) return null;
   if (d.kind === 'story') {
-    const id = STORY[d.index];
-    return id ? { decoded: d, level: LEVELS[id] } : null;
+    const id = SHARE[d.index];
+    return id && LEVELS[id] ? { decoded: d, level: LEVELS[id] } : null;
   }
   const cached = await env.DB.prepare('SELECT level_json FROM challenge_links WHERE code = ?1').bind(d.code).first();
   if (cached) return { decoded: d, level: JSON.parse(cached.level_json) };

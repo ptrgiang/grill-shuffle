@@ -1,0 +1,18 @@
+{
+  "about": "Story share codes encode a position in this list (shared/challenge.js encodeStory). APPEND ONLY: never reorder, remove or rename an entry, or every shared link from that position on opens a different level. Play order is each pack.json; this list is independent of it.",
+  "levels": [
+    "street-001",
+    "street-002",
+    "street-003",
+    "street-004",
+    "street-005",
+    "street-006",
+    "street-007",
+    "street-008",
+    "street-009",
+    "street-010",
+    "street-014",
+    "street-015",
+    "street-016"
+  ]
+}

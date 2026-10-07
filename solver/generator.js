@@ -28,7 +28,20 @@ export const DEFAULT_CONFIG = Object.freeze({
   minDeadEndRatio: 0.01, // reject boards where no decision matters
   maxStates: 250_000,
   idPrefix: 'gen',
+  // catalog: optional theme food catalog (content/themes/<id>.json `foods`). Without `foods`, the generator draws
+  // from the whole catalog; `foods` outside it is a config error.
 });
+
+/** Merge a config with the defaults and its theme catalog. Throws on foods the theme does not serve. */
+export function resolveConfig(config = {}) {
+  const c = { ...DEFAULT_CONFIG, ...config };
+  if (config.catalog) {
+    if (!config.foods) c.foods = config.catalog.slice();
+    const off = c.foods.filter((f) => !config.catalog.includes(f));
+    if (off.length) throw new Error(`foods not in the ${c.theme} catalog: ${off.join(', ')}`);
+  }
+  return c;
+}
 
 const between = (rng, [lo, hi]) => rng.int(lo, hi);
 
@@ -39,7 +52,7 @@ export function tierForDifficulty(lo, hi) {
 
 /** One random candidate board (may be invalid / unsolvable: the pipeline checks). */
 export function makeCandidate(config, seed) {
-  const c = { ...DEFAULT_CONFIG, ...config };
+  const c = resolveConfig(config);
   const rng = mulberry32(seed);
   const nGrills = between(rng, c.grills);
   const nTrays = between(rng, c.trays);
@@ -119,7 +132,7 @@ export function rejectReason(report, c) {
  * Returns { levels: [{ level, report, signature, seed }], stats: { candidates, rejected: {reason: n} } }.
  */
 export function generateLevels(config, { count = 10, maxCandidates = 500, seed = 1, mode = 'rank', exclude = new Set(), onProgress = null } = {}) {
-  const c = { ...DEFAULT_CONFIG, ...config };
+  const c = resolveConfig(config);
   const tier = c.tier ?? tierForDifficulty(c.difficulty[0], c.difficulty[1]);
   const accepted = [];
   const seen = new Set(exclude);

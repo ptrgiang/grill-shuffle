@@ -1,7 +1,7 @@
 // Level generation CLI. Generates many candidates, keeps only solver-verified, in-band, non-duplicate ones.
 //
 //   npm run generate:levels -- --theme street_bbq --count 100 --difficulty 20:40
-//     [--foods shrimp,beef,corn,chicken] [--grills 4:5] [--trays 0:1] [--empty 2:4] [--layers 0:2] [--locks 0:1]
+//     [--foods shrimp,beef,corn,chicken]  (default: the theme's food catalog; foods outside it are refused) [--grills 4:5] [--trays 0:1] [--empty 2:4] [--layers 0:2] [--locks 0:1]
 //     [--lock-matches 1:3] [--food-count 3:4] [--min-moves 5:18] [--seed 1] [--candidates 2000]
 //     [--out content/generated/<name>]   write level files + pack.json there (default: print a summary only)
 //     [--prefix gen]                     id prefix
@@ -10,7 +10,7 @@
 // the good ones into content/levels/<pack>/ and runs validate:levels.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { parseArgs, formatLevel, allLevels, ROOT } from './lib/content.js';
+import { parseArgs, formatLevel, allLevels, loadThemes, ROOT } from './lib/content.js';
 import { generateLevels } from '../solver/generator.js';
 import { boardSignature } from '../solver/canonical.js';
 import { validateLevel } from '../shared/levels.js';
@@ -18,8 +18,11 @@ import { validateLevel } from '../shared/levels.js';
 const args = parseArgs();
 const range = (v, d) => (v === undefined ? d : String(v).split(':').map(Number).concat(String(v).includes(':') ? [] : [Number(v)]).slice(0, 2));
 
+const theme = args.theme ?? 'street_bbq';
+const catalog = loadThemes()[theme]?.foods; // the theme's food catalog: default food pool, and a hard limit
 const config = {
-  theme: args.theme ?? 'street_bbq',
+  theme,
+  ...(catalog ? { catalog } : {}),
   ...(args.foods ? { foods: String(args.foods).split(',') } : {}),
   foodCount: range(args['food-count'], [3, 4]),
   grills: range(args.grills, [4, 5]),
