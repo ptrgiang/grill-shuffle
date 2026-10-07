@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "street-036",
+  "name": "Two Layers",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 8,
+  "board": {
+    "grills": [
+      {"slots":[null,"beef","beef"],"layers":[["beef","chicken","beef"]]},
+      {"slots":["corn",null,"corn"]},
+      {"slots":["salmon","salmon",null]},
+      {"slots":["beef","corn","salmon"],"layers":[["chicken","chicken","beef"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Two hidden trays and no lock. Count what is still missing.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 46,
+    "rating": "hard",
+    "states": 3406,
+    "solution": "m3.0-0.0 m3.1-1.1 m0.1-1.0 m3.2-2.2 m3.2-0.1 m1.0-3.2"
+  }
+}

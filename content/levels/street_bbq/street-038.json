@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-038",
+  "name": "Five Spice",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":["bread","corn","beef"]},
+      {"slots":["chicken",null,"corn"],"lock":3},
+      {"slots":["bread","beef","beef"],"layers":[["chicken","carrot","corn"]]},
+      {"slots":["bread","chicken","carrot"]},
+      {"slots":[null,"carrot",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Five foods and a lock. Keep one grill free as workspace.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 50,
+    "rating": "hard",
+    "states": 2514,
+    "solution": "m3.2-4.0 m2.0-3.2 m0.2-2.0 m2.1-4.2 m2.2-0.2 m3.1-2.1 m0.0-3.1 m1.0-2.2 m1.2-0.0"
+  }
+}

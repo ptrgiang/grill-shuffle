@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-021",
+  "name": "Salmon Shuffle",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":[null,"corn","carrot"]},
+      {"slots":[null,"salmon","salmon"]},
+      {"slots":["salmon","corn","corn"]},
+      {"slots":["salmon","carrot","carrot"]},
+      {"slots":["salmon","salmon"],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "Six salmon and a busy tray. Which pair goes first?",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1024,
+    "solution": "m2.0-0.0 m0.1-2.0 m3.0-0.1 m0.2-3.0 m4.0-0.2 m4.1-1.0"
+  }
+}

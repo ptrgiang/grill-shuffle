@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "The finale: five foods, two stacks and a lock.",
+  "hint": "Five foods, two stacks and a lock: everything so far at once.",
   "solver": {
     "minMoves": 11,
     "difficulty": 52,

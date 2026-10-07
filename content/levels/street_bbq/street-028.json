@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-028",
+  "name": "Beef Rush",
+  "theme": "street_bbq",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","chicken","shrimp"]},
+      {"slots":["beef","beef","chicken"]},
+      {"slots":["chicken","beef","beef"]},
+      {"slots":[null,"shrimp","beef"]},
+      {"slots":["beef",null],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "Six beef, one free tray slot. Park wisely.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1024,
+    "solution": "m0.0-3.0 m1.2-0.0 m3.2-1.2 m0.2-3.2 m2.0-0.2 m4.0-2.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-020",
+  "name": "Carrot Cake Walk",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":[null,"beef","shrimp"]},
+      {"slots":["carrot","beef",null]},
+      {"slots":["beef","corn","corn"]},
+      {"slots":["corn",null,"carrot"]},
+      {"slots":["shrimp","shrimp","carrot"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Four foods, three empty slots. Finish one trio before starting the next.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 18,
+    "rating": "easy",
+    "states": 1863,
+    "solution": "m0.1-1.2 m1.0-3.1 m2.0-1.0 m3.0-2.0 m4.2-3.0 m0.2-4.2"
+  }
+}

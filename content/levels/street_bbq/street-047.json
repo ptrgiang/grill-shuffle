@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-047",
+  "name": "Chef Special",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["beef","beef",null],"lock":3},
+      {"slots":["bread","chicken","shrimp"],"layers":[["beef","carrot",null]]},
+      {"slots":["carrot","bread","shrimp"]},
+      {"slots":["carrot","chicken","bread"]},
+      {"slots":["shrimp",null,"bread"],"layers":[["bread","bread","chicken"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Ten moves through stacks and a triple lock.",
+  "solver": {
+    "minMoves": 10,
+    "difficulty": 54,
+    "rating": "hard",
+    "states": 9699,
+    "solution": "m1.0-4.1 m2.2-1.0 m3.0-2.2 m1.1-3.0 m4.0-1.1 m3.2-4.0 m4.2-3.2 m1.0-0.2 m2.1-4.2 m1.1-2.1"
+  }
+}

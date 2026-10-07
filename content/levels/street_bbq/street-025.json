@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-025",
+  "name": "Breather",
+  "theme": "street_bbq",
+  "tier": "easy",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["chicken","carrot","chicken"]},
+      {"slots":["corn",null,"carrot"]},
+      {"slots":["corn","corn","chicken"]},
+      {"slots":["chicken","chicken",null]},
+      {"slots":["carrot","chicken",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Chicken, carrot, corn. Take a breath.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 18,
+    "rating": "easy",
+    "states": 364,
+    "solution": "m0.1-1.1 m2.2-0.1 m1.0-2.2 m4.0-1.0 m4.1-3.2"
+  }
+}

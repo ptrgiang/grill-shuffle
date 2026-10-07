@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-034",
+  "name": "Surf and Turf",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 8,
+  "board": {
+    "grills": [
+      {"slots":[null,"bread","beef"],"lock":2},
+      {"slots":["carrot",null,"beef"]},
+      {"slots":["salmon","salmon",null],"layers":[[null,"beef","bread"]]},
+      {"slots":["salmon","carrot","carrot"]},
+      {"slots":[null,"bread"],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","prep_tray","stacked_tray"],
+  "hint": "Tray, stack and lock together. Use the tray as a bridge.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 46,
+    "rating": "hard",
+    "states": 1644,
+    "solution": "m3.0-2.2 m1.0-3.0 m0.1-2.0 m0.2-1.0 m2.1-1.1 m4.1-2.1"
+  }
+}

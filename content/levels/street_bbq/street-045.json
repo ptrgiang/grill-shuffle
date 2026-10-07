@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-045",
+  "name": "Mixed Grill",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":[null,"beef","salmon"]},
+      {"slots":["shrimp","bread","bread"],"lock":2},
+      {"slots":["salmon",null,"shrimp"]},
+      {"slots":["beef","shrimp",null],"layers":[["carrot","carrot","beef"]]},
+      {"slots":["carrot","bread","salmon"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Five foods. The stack hides the key piece.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 50,
+    "rating": "hard",
+    "states": 2223,
+    "solution": "m0.2-3.2 m3.0-0.0 m2.0-3.0 m3.1-2.0 m4.2-3.1 m3.2-0.2 m1.0-2.1 m4.0-3.2 m4.1-1.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "street-039",
+  "name": "Slow Cook",
+  "theme": "street_bbq",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["carrot","carrot","bread"]},
+      {"slots":[null,null,"bread"]},
+      {"slots":["beef","beef","corn"]},
+      {"slots":[null,null,"corn"],"layers":[["carrot","bread",null]]},
+      {"slots":["corn","beef",null],"lock":2}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The lock needs two matches. Plan them before you dig.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 1110,
+    "solution": "m2.2-1.0 m3.2-1.1 m0.2-3.2 m3.0-0.2 m1.2-3.0 m4.0-1.2 m4.1-2.2"
+  }
+}
