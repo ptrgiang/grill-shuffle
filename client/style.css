@@ -135,6 +135,15 @@ body.in-game .landing { display: none; }
 .result-stats b { font-size: 24px; }
 .result-stats span { font-size: 12px; color: var(--muted); }
 .beat { color: var(--good); font-weight: 600; }
+.daily-panel { background: rgba(255, 255, 255, 0.05); border-radius: 14px; padding: 10px 12px; margin: 6px 0 2px; }
+.daily-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.streak { font-size: 17px; }
+.streak b { color: var(--accent); font-size: 20px; }
+.verified { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 9px; background: rgba(255, 255, 255, 0.08); color: var(--muted); white-space: nowrap; }
+.verified.ok { background: rgba(143, 227, 136, 0.16); color: var(--good); }
+.daily-rank { margin: 8px 0 4px; font-size: 15px; line-height: 1.35; min-height: 2.7em; }
+.next-daily { margin: 0; font-size: 13px; color: var(--muted); }
+.countdown { color: var(--ink); font-variant-numeric: tabular-nums; }
 
 .loading { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; background: rgba(20, 12, 22, 0.7); color: var(--muted); font-size: 18px; }
 .spinner { width: 44px; height: 44px; border-radius: 50%; border: 5px solid rgba(255, 179, 71, 0.25); border-top-color: var(--accent); animation: spin 0.9s linear infinite; }

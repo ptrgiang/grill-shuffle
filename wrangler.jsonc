@@ -24,9 +24,12 @@
       "migrations_dir": "migrations"
     }
   ],
-  "observability": { "enabled": true }
-  // Building a generated / daily puzzle the first time its result is submitted runs the solver (cached in D1 after),
-  // which can take more than the free plan's CPU allowance. On a paid plan, raise it:
-  // "limits": { "cpu_ms": 30000 }
+  "observability": { "enabled": true },
+  // 00:05 UTC: pre-build today's and tomorrow's daily puzzle into D1 (worker/index.js prebuildDaily).
+  // Local test: npx wrangler dev --test-scheduled, then GET /cdn-cgi/handler/scheduled?cron=5+0+*+*+*
+  "triggers": { "crons": ["5 0 * * *"] }
+  // Building a generated / daily puzzle runs the solver (cached in D1 after). The account is on Workers Paid:
+  // 30 s CPU per request / cron run by default, far above a build (~150 ms). Raise only if needed (max 300000):
+  // "limits": { "cpu_ms": 60000 }
   // R2 (audio banks, GLB, share images) and Durable Objects (realtime race) are not used yet: see docs/CLOUDFLARE.md.
 }

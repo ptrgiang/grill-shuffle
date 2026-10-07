@@ -6,7 +6,7 @@
 import { STORY, SHARE, LEVELS } from './content.gen.js';
 import { replay } from '../shared/replay.js';
 import { mergeProgressRecords } from './progress.js';
-import { decodeCode, encodeDaily, encodeGenerated, dailySeed, dailyBand, todayUTC, BANDS } from '../shared/challenge.js';
+import { decodeCode, encodeDaily, encodeGenerated, dailySeed, dailyBand, todayUTC, dayNumber, dateOfDay, BANDS } from '../shared/challenge.js';
 import { createState } from '../shared/state.js';
 import { hashBoard } from '../shared/hash.js';
 import { starsFor } from '../shared/progression.js';
@@ -137,8 +137,10 @@ const routes = [
     const date = url.searchParams.get('date') ?? todayUTC();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, 'bad date');
     const code = encodeDaily(date);
-    const link = await env.DB.prepare('SELECT board_hash, min_moves FROM challenge_links WHERE code = ?1').bind(code).first();
-    return json({ date, code, seed: dailySeed(date), band: dailyBand(date), rulesVersion: PUZZLE_RULE_VERSION, challengeVersion: VERSIONS.challengeVersion, boardHash: link?.board_hash ?? null, minMoves: link?.min_moves ?? null, ...(await stats(env, 'daily_results', 'date', date)) });
+    const link = await env.DB.prepare('SELECT level_json, board_hash, min_moves, rules_version FROM challenge_links WHERE code = ?1').bind(code).first();
+    // the pre-built level (Cron), so the client can skip generating it; only when built under the current rules
+    const level = link && link.rules_version === PUZZLE_RULE_VERSION ? JSON.parse(link.level_json) : null;
+    return json({ date, code, seed: dailySeed(date), band: dailyBand(date), rulesVersion: PUZZLE_RULE_VERSION, challengeVersion: VERSIONS.challengeVersion, boardHash: link?.board_hash ?? null, minMoves: link?.min_moves ?? null, level, ...(await stats(env, 'daily_results', 'date', date)) });
   }],
 
   ['POST', /^\/api\/daily\/result$/, async (req, env) => {
@@ -204,10 +206,36 @@ export async function handleApi(request, env) {
   return routes.some(([, re]) => re.test(url.pathname)) ? fail(405, 'method not allowed') : fail(404, 'not found');
 }
 
+/**
+ * Cron (wrangler.jsonc `triggers.crons`, 00:05 UTC): build today's and tomorrow's daily puzzles into
+ * `challenge_links` ahead of time, so the solver CPU never runs on a player's request and `/api/daily` can hand the
+ * level to clients. Already-cached days are a cheap lookup. Returns what each day did, for logs and tests.
+ */
+export async function prebuildDaily(env, now = Date.now()) {
+  const today = todayUTC(now);
+  const out = [];
+  for (const date of [today, dateOfDay(dayNumber(today) + 1)]) {
+    const code = encodeDaily(date);
+    try {
+      const had = await env.DB.prepare('SELECT 1 AS x FROM challenge_links WHERE code = ?1').bind(code).first();
+      const found = await levelForCode(env, code);
+      out.push({ date, code, status: had ? 'cached' : found?.level ? 'built' : 'failed' });
+    } catch (e) {
+      console.error(`daily prebuild ${date}`, e);
+      out.push({ date, code, status: 'failed' });
+    }
+  }
+  console.log('daily prebuild', JSON.stringify(out));
+  return out;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) return handleApi(request, env);
     return env.ASSETS.fetch(request);
+  },
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(prebuildDaily(env, controller.scheduledTime));
   },
 };

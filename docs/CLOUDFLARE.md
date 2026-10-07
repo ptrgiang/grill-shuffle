@@ -16,16 +16,29 @@ All JSON; players are anonymous device ids sent as `x-player-id` (`[A-Za-z0-9-]{
 | `GET /api/me` | registers / touches the player |
 | `GET /api/progress` | best per story level |
 | `POST /api/progress` `{ progress }` | merged per level (max stars, min moves); only story levels; stars capped by what the claimed moves earn |
-| `GET /api/daily[?date=]` | `{ date, code, seed, band, rulesVersion, challengeVersion, boardHash, minMoves, players, bestMoves, avgMoves }` |
+| `GET /api/daily[?date=]` | `{ date, code, seed, band, rulesVersion, challengeVersion, boardHash, minMoves, level, players, bestMoves, avgMoves }`; `level` is the pre-built puzzle (null until built, or when built under older rules) |
 | `POST /api/daily/result` `{ date, moves, hash }` | replayed on the server; keeps the player's best; returns percentile |
 | `POST /api/challenge` `{ band }` | a fresh generated code |
 | `GET /api/challenge/:code` | stats for a code |
 | `POST /api/challenge/:code/result` `{ moves, hash }` | replayed; best kept; percentile |
 
 Results are **move lists** replayed with the shared simulation (`verified = 1`), never trusted totals. Generated
-and daily puzzles are built from their code once (solver CPU) and cached in `challenge_links`; on the free plan's
-CPU limit a large one may fail to build: raise `limits.cpu_ms` on a paid plan (commented in wrangler.jsonc).
+and daily puzzles are built from their code once (solver CPU) and cached in `challenge_links`. The account is on Workers Paid
+(30 s CPU per request / cron run by default; a build takes ~150 ms); `limits.cpu_ms` can raise it (commented in wrangler.jsonc).
 No per-move writes.
+
+## Cron: daily pre-build
+
+`triggers.crons: ["5 0 * * *"]` runs the Worker's `scheduled` handler (`prebuildDaily` in `worker/index.js`) at
+00:05 UTC: it builds today's and tomorrow's daily into `challenge_links` (already cached days are a lookup), so the
+solver never runs on a player's request and `GET /api/daily` can hand the level to the client, which then skips local
+generation (`client/game/daily.js` `serverDailyLevel` checks code, date, rules version and structure; otherwise the
+client generates the same board itself). Tomorrow is built a day early so midnight players already hit the cache.
+Local test: `npx wrangler dev --test-scheduled`, then `curl "http://localhost:8797/cdn-cgi/handler/scheduled?cron=5+0+*+*+*"`.
+Worker tests call `worker.scheduled(...)` directly.
+
+The daily result screen shows the server's verified rank (percentile, players today, best moves), a local streak
+(`dailyStreak` in IndexedDB: consecutive UTC days with a daily win) and the countdown to the next daily.
 
 ## D1 schema (`migrations/0001_init.sql`)
 
