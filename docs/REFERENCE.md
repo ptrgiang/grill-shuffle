@@ -11,7 +11,7 @@ Node/uWebSockets.js server, binary protocol, PostgreSQL, Railway. Very different
 | `mulberry32` seeded PRNG + integer hash noise, identical everywhere | `shared/rng.js` (mulberry32, cyrb53, `deriveSeed`). Pinned values are unit-tested: changing them changes every seeded level and share link. |
 | Procedural canvas textures, no image files | `client/render/textures.js`: wood, embers, metal, badges, particle dot. |
 | Procedural models built from primitives | `client/render/foods.js`, `grill.js`: every food and grill is code. |
-| Procedural audio synthesised as pure functions `(sampleRate, …) => Float32Array`, testable in Node | `client/audio/synth.js` (tested in `tests/client/pure.test.js`); `audio.js` only wraps Web Audio. |
+| Procedural audio synthesised as pure functions `(sampleRate, …) => Float32Array`, testable in Node | `client/audio/synth.js` (tested in `tests/client/pure.test.js`); `audio.js` only wraps Web Audio (lifecycle tested against a fake context in `tests/client/audio.test.js`). |
 | Shared geometry/materials, fixed light count, no per-frame allocation | One merged geometry per food variant, one material per look, fixed 3-light rig, pooled particles. |
 | Sandbox pages per subsystem (`client/sandbox/*`) | `/sandbox/food`, `/sandbox/board`. |
 | Tiny dependency list, many plain `node` test scripts, a `node --check` sweep | `three` only at runtime; tests use `node:test`; `scripts/check.js`. |
