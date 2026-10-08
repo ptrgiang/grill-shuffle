@@ -7,3 +7,4 @@ shots/
 content/generated/
 worker/content.gen.js
 .pr-base/
+.claude/worktrees/
