@@ -3,7 +3,8 @@
 // materials per (food, cook, char). Item-level variation (rotation, scale) is applied by whoever places the mesh.
 //
 //   createShrimp({ seed, cook, char, scale, variant })  -> THREE.Mesh
-//   ... createBeef, createChicken, createCorn, createCarrot, createSalmon, createBread
+//   ... createBeef, createChicken, createCorn, createCarrot, createSalmon, createBread,
+//       createSausage, createMushroom, createPepper, createSkewer
 //   createFood(foodId, opts)
 //
 // Every model sits on y = 0, is centred on x/z, and fits a ~0.95 x 1.2 footprint (x across the grill, z along it).
@@ -312,6 +313,165 @@ function breadGeometry(rng) {
   );
 }
 
+/** Tube along `curve` whose radius follows radius(t); returns the raw geometry and the per-ring t for colouring. */
+function tubeAlong(curve, radius, TS, RS, squashY = 1) {
+  const tube = new THREE.TubeGeometry(curve, TS, 1, RS, false);
+  const pos = tube.attributes.position;
+  const centre = new THREE.Vector3(), v = new THREE.Vector3();
+  for (let i = 0; i <= TS; i++) {
+    curve.getPoint(i / TS, centre);
+    const r = radius(i / TS);
+    for (let j = 0; j <= RS; j++) {
+      const k = i * (RS + 1) + j;
+      v.fromBufferAttribute(pos, k).sub(centre).multiplyScalar(r);
+      v.y *= squashY;
+      v.add(centre);
+      pos.setXYZ(k, v.x, v.y, v.z);
+    }
+  }
+  return tube;
+}
+
+function sausageGeometry(rng) {
+  // a gentle arc lying diagonally, rounded ends with a small twisted tie, scored across the top.
+  // The only food that is long AND curved without a curl (shrimp curls into a C), and the only glossy dark red one.
+  const L = 0.95 + rng() * 0.05, bend = 0.1 + rng() * 0.04, R = 0.145;
+  const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, 0, -L / 2), new THREE.Vector3(bend * 2, 0, 0), new THREE.Vector3(0, 0, L / 2));
+  const radius = (t) => {
+    const e = Math.min(t, 1 - t) / 0.11; // rounded ends over the last 11 %
+    return 0.004 + R * (e >= 1 ? 1 : Math.sqrt(1 - (1 - e) * (1 - e)));
+  };
+  const casing = col('#a8472c'), under = col('#6e2615'), score = col('#5a1c10'), shine = col('#c8684a');
+  const tOf = (p) => Math.max(0, Math.min(1, p.z / L + 0.5));
+  const body = part(tubeAlong(curve, radius, 40, 14, 0.85), (p, n) => {
+    const t = tOf(p);
+    let c = mix(under, casing, (n.y + 0.4) * 1.3);
+    if (n.y > 0.75) c = mix(c, shine, 0.35);
+    const cut = ((t * 5 + 0.5) % 1 + 1) % 1; // four diagonal scores on the top
+    if (t > 0.15 && t < 0.85 && n.y > 0.45 && Math.abs(cut - 0.5 - p.x * 1.6) < 0.06) c = mix(c, score, 0.8);
+    return c;
+  });
+  const parts = [body];
+  for (const end of [0, 1]) {
+    const tie = new THREE.ConeGeometry(0.028, 0.07, 6);
+    const p = curve.getPoint(end), tan = curve.getTangent(end).normalize();
+    tie.translate(0, 0.03, 0);
+    tie.rotateX(Math.PI / 2); // cone axis y -> z, then aim z outward along the link
+    tie.lookAt(tan.clone().multiplyScalar(end ? 1 : -1));
+    tie.translate(p.x, 0, p.z);
+    parts.push(part(tie, '#4a170d', 0));
+  }
+  const g = merge(parts);
+  g.rotateY(0.55 + rng() * 0.1); // lies diagonally: the long foods all run straight along the grill
+  return settle(g);
+}
+
+function mushroomGeometry(rng) {
+  // a whole mushroom lying on its side: brown domed cap away from the player, cream gills and stem towards them.
+  // Side-on is the shape everyone reads as "mushroom"; top-down it would be just a brown disc.
+  const R = 0.38 + rng() * 0.025, H = 0.28 + rng() * 0.02;
+  const prof = [
+    [0.0, 0.06], [0.1, 0.055], [0.2, 0.04], [0.29, 0.02], [0.33, 0.04], [0.35, 0.09], [0.33, 0.16], [0.27, 0.22], [0.17, 0.27], [0.08, 0.29], [0.0, 0.3],
+  ].map(([r, h]) => new THREE.Vector2((r * R) / 0.35, (h * H) / 0.3));
+  const cap = new THREE.LatheGeometry(prof, 30);
+  const capTop = col('#9a7258'), capRim = col('#c8a684'), gill = col('#dcc3a1'), gillLine = col('#a88566');
+  const capPart = part(cap, (p, n) => {
+    const a = Math.atan2(p.z, p.x), r = Math.hypot(p.x, p.z);
+    if (n.y < 0.05 && p.y < H * 0.25) return (Math.sin(a * 28) > 0.55 ? gillLine : gill).clone(); // underside: gills
+    let c = mix(capTop, capRim, Math.max(0, (r / R - 0.7) * 3));
+    if (hash2(Math.floor(p.x * 18), Math.floor(p.z * 18), 5) > 0.88) c = mix(c, col('#e9d8bf'), 0.5); // a few flecks
+    return c;
+  }, 0.7);
+  const stemR = 0.105 + rng() * 0.01, stemL = 0.3;
+  const stem = new THREE.CylinderGeometry(stemR * 0.92, stemR * 1.05, stemL, 14, 1);
+  stem.translate(0, 0.06 - stemL / 2, 0);
+  const foot = new THREE.SphereGeometry(stemR * 1.05, 14, 8, 0, TAU, Math.PI / 2, Math.PI / 2);
+  foot.translate(0, 0.06 - stemL, 0);
+  const g = merge([capPart, part(stem, (p) => mix(col('#f3ead9'), col('#d9c8ad'), hash2(Math.floor(p.y * 30), 1, 2) * 0.4), 0.3), part(foot, '#cdb999', 0.2)]);
+  g.rotateX(-Math.PI / 2 + 0.25); // on its side, cap away from the player, tipped a little so the dome faces the camera
+  g.scale(1, 0.8, 1);
+  return settle(g);
+}
+
+function pepperGeometry(rng) {
+  // an upright green bell pepper: four lobes, a dark crease between them, a short stem on a calyx.
+  // The only mostly-green food (corn's husk is pale, carrot's greens are small).
+  const H = 0.4 + rng() * 0.03, W = 0.33 + rng() * 0.02, twist = rng() * TAU;
+  const prof = [[0.0, 0.0], [0.6, 0.02], [0.88, 0.12], [1.0, 0.32], [0.98, 0.6], [0.9, 0.85], [0.62, 0.98], [0.3, 0.97], [0.12, 0.9], [0.0, 0.9]];
+  const body = new THREE.LatheGeometry(prof.map(([r, h]) => new THREE.Vector2(r * W, h * H)), 32);
+  const pos = body.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const a = Math.atan2(v.z, v.x) + twist;
+    const lobe = 1 + 0.1 * Math.cos(4 * a) - 0.04 * Math.cos(8 * a);
+    const low = v.y < H * 0.15 ? 0.5 + 0.5 * Math.cos(4 * a) : 1; // lobed bottom, four feet
+    pos.setXYZ(i, v.x * lobe, v.y * (v.y < H * 0.15 ? 0.6 + 0.4 * low : 1), v.z * lobe);
+  }
+  const green = col('#3c9a3a'), light = col('#7ccf5e'), crease = col('#1f5d22');
+  const parts = [
+    part(body, (p, n) => {
+      const a = Math.atan2(p.z, p.x) + twist;
+      let c = mix(green, light, Math.max(0, n.y - 0.3) * 1.2);
+      return mix(c, crease, Math.max(0, -Math.cos(4 * a) - 0.55) * 1.6);
+    }, 0.6),
+  ];
+  const calyx = new THREE.CylinderGeometry(0.09, 0.11, 0.03, 10);
+  calyx.translate(0, H * 0.91, 0);
+  const stem = new THREE.CylinderGeometry(0.03, 0.038, 0.13, 8);
+  stem.translate(0, 0.065, 0);
+  stem.rotateZ(0.35 + rng() * 0.2);
+  stem.translate(0, H * 0.92, 0);
+  parts.push(part(calyx, '#2f6b22', 0), part(stem, (p) => mix(col('#6f8a3a'), col('#a3b46a'), (p.y - H) * 6), 0));
+  return settle(merge(parts));
+}
+
+function skewerGeometry(rng) {
+  // a kebab: a thin wooden stick along the grill, pointed at the far end, threaded with meat, pepper and onion.
+  // Long like drumstick / corn / carrot, but segmented into chunks and with bare stick at both ends.
+  const len = 1.14, rs = 0.026;
+  const stick = new THREE.CylinderGeometry(rs, rs, len - 0.08, 6);
+  stick.rotateX(Math.PI / 2);
+  stick.translate(0, 0, 0.04);
+  const tip = new THREE.ConeGeometry(rs, 0.08, 6);
+  tip.rotateX(-Math.PI / 2);
+  tip.translate(0, 0, -len / 2 + 0.04);
+  const wood = (p) => mix(col('#e2c08a'), col('#b58c55'), hash2(Math.floor(p.z * 40), 0, 7) * 0.5);
+  const parts = [part(stick, wood, 0), part(tip, wood, 0)];
+  const order = ['meat', 'pepper', 'meat', 'onion', 'meat'];
+  const meat = col('#8b4a2b'), meatDark = col('#5e2c17');
+  order.forEach((kind, i) => {
+    const z = (i - 2) * 0.19 - 0.02;
+    let g;
+    if (kind === 'meat') {
+      const s = 0.22 + rng() * 0.02;
+      g = new THREE.BoxGeometry(s, s * 0.95, s * 0.9, 3, 3, 3);
+      const p = g.attributes.position, v = new THREE.Vector3();
+      for (let k = 0; k < p.count; k++) {
+        v.fromBufferAttribute(p, k);
+        const n = v.clone().normalize().multiplyScalar(v.length());
+        v.lerp(n.setLength(s * 0.62), 0.35); // round the cube a little
+        p.setXYZ(k, v.x, v.y, v.z);
+      }
+      g.rotateZ((rng() - 0.5) * 0.5);
+      g.rotateY((rng() - 0.5) * 0.4);
+      g.translate(0, 0, z);
+      parts.push(part(g, (q, n) => mix(meat, meatDark, n.y < 0.4 ? 0.55 : hash2(Math.floor(q.x * 30), Math.floor(q.z * 30), 11) * 0.35), 1));
+    } else if (kind === 'pepper') {
+      g = new THREE.BoxGeometry(0.27, 0.22, 0.07);
+      g.rotateZ((rng() - 0.5) * 0.4);
+      g.translate(0, 0, z);
+      parts.push(part(g, (q, n) => mix(col('#e0402c'), col('#9e1f14'), n.y < 0.4 ? 0.5 : 0), 0.4));
+    } else {
+      g = new THREE.CylinderGeometry(0.13, 0.13, 0.08, 16, 1, false);
+      g.rotateX(Math.PI / 2);
+      g.rotateZ((rng() - 0.5) * 0.4);
+      g.translate(0, 0, z);
+      parts.push(part(g, (q, n) => (Math.abs(n.z) > 0.7 && Math.sin(Math.hypot(q.x, q.y) * 90) > 0.4 ? col('#d9cdb0') : col('#f4ecd8')), 0.3));
+    }
+  });
+  return settle(merge(parts));
+}
+
 // ------------------------------------------------------------------ registry
 
 export const FOOD_MODELS = Object.freeze({
@@ -322,6 +482,10 @@ export const FOOD_MODELS = Object.freeze({
   carrot: { geometry: carrotGeometry, material: { roughness: 0.55, marks: 0.6, markAngle: 1.57, markFreq: 4, cook: 0.6 } },
   salmon: { geometry: salmonGeometry, material: { roughness: 0.38, marks: 0, cook: 0.45, stripe: 1, stripeAngle: -1.15, stripeFreq: 6 } },
   bread: { geometry: breadGeometry, material: { roughness: 0.75, marks: 1, markAngle: 0.8, markFreq: 4.4, cook: 0.9 } },
+  sausage: { geometry: sausageGeometry, material: { roughness: 0.28, marks: 0.8, markAngle: 0.0, markFreq: 5, cook: 0.6 } },
+  mushroom: { geometry: mushroomGeometry, material: { roughness: 0.65, marks: 0.5, markAngle: 1.2, markFreq: 5, cook: 0.5 } },
+  pepper: { geometry: pepperGeometry, material: { roughness: 0.22, marks: 0.5, markAngle: 0.4, markFreq: 4.5, cook: 0.35 } },
+  skewer: { geometry: skewerGeometry, material: { roughness: 0.5, marks: 0.7, markAngle: 1.57, markFreq: 9, cook: 0.6 } },
 });
 
 const geoCache = new Map();
@@ -367,3 +531,7 @@ export const createCorn = (o) => createFood('corn', o);
 export const createCarrot = (o) => createFood('carrot', o);
 export const createSalmon = (o) => createFood('salmon', o);
 export const createBread = (o) => createFood('bread', o);
+export const createSausage = (o) => createFood('sausage', o);
+export const createMushroom = (o) => createFood('mushroom', o);
+export const createPepper = (o) => createFood('pepper', o);
+export const createSkewer = (o) => createFood('skewer', o);

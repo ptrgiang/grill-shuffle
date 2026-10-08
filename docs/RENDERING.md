@@ -18,9 +18,10 @@ control is at least 44 × 44 px.
 
 ## Food
 
-`render/foods.js`: `createShrimp/Beef/Chicken/Corn/Carrot/Salmon/Bread({ seed, cook, char, scale, variant })`.
-Each food is one merged, vertex-coloured geometry built from primitives (tube with variable radius for the shrimp,
-extruded noisy outlines for steak/salmon/toast, lathe for drumstick/carrot, displaced capsule for corn). Three
+`render/foods.js`: `createShrimp/Beef/Chicken/Corn/Carrot/Salmon/Bread/Sausage/Mushroom/Pepper/Skewer({ seed, cook,
+char, scale, variant })`. Each food is one merged, vertex-coloured geometry built from primitives (tube with variable
+radius for shrimp and sausage, extruded noisy outlines for steak/salmon/toast, lathe for drumstick/carrot/mushroom,
+lobed lathe for the pepper, displaced capsule for corn, rounded boxes and discs on a stick for the skewer). Three
 geometry variants per food; per item the seed picks a variant, a small yaw and ±4 % scale.
 
 ### Food lineup and palette
@@ -37,9 +38,16 @@ Every pair must be told apart at phone size (≈ 80 px slots at 390 px) by silho
 | Carrot | `r` | **pointed cone + bushy greens** | `#ff8410` / `#d65a06` rings, `#4f9e2f`/`#5cc23a` greens | shrimp, drumstick, corn |
 | Salmon | `l` | fillet with rounded back, **dark skin rim**, white fat lines | `#f98479` coral-pink, `#cf544c` sides, `#3a3f49`–`#6b7480` skin | shrimp (hue), steak/toast (slab) |
 | Toast (`bread`) | `d` | square slice with **two-lobed crust top** | `#f6e0a8` crumb, `#b4702f` crust | steak, salmon (slabs) |
+| Sausage | `u` | **gentle arc lying diagonally**, rounded tied ends, scored top, glossy | `#a8472c` casing, `#6e2615` underside, `#5a1c10` scores | shrimp (curl vs arc), steak (red), drumstick / carrot (long) |
+| Mushroom | `m` | **lying on its side**: domed cap away from the player, cream stem towards them | `#9a7258` cap, `#c8a684` rim, `#dcc3a1` gills, `#f3ead9` stem | toast (beige), steak (round) |
+| Bell pepper (`pepper`) | `p` | upright, **four lobes**, stem on a dark calyx | `#3c9a3a` green, `#7ccf5e` highlight, `#1f5d22` creases | corn husk / carrot greens (only mostly-green food) |
+| Skewer | `w` | thin **wooden stick** along the grill, pointed tip, five chunks | `#8b4a2b` meat, `#e0402c` pepper, `#f4ecd8` onion, `#e2c08a` stick | drumstick / corn / carrot (long: bare stick at both ends, segmented) |
 
-Rules of thumb: only steak has a light rim, only salmon a dark one; only shrimp curls; long foods (drumstick, corn,
-carrot) differ in their ends (bone / husk / greens). New foods (#20 follow-up) must keep this table unambiguous.
+Rules of thumb: only steak has a light rim, only salmon a dark one; only shrimp curls, only the sausage lies
+diagonally; long foods (drumstick, corn, carrot, skewer) differ in their ends (bone / husk / greens / bare stick);
+only the pepper is green, only the mushroom stands out side-on. A new food must keep this table unambiguous: check it
+against every row at 360 / 390 px (`/sandbox/food?spin=0&ui=0`, `?grills=1`) and append its code, never reuse one
+(`tests/sim/foods.test.js` pins them).
 
 Material (`render/materials.js`): `MeshStandardMaterial` + shader patch with `uCook`, `uChar`,
 `uGrillMarkStrength`, `uGrillMarkAngle`, `uMarkFreq`, `uStripe*`. Grill marks are computed from object-space
