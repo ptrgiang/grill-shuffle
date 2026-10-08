@@ -31,7 +31,8 @@
     "deploy": "npm run ci && wrangler deploy",
     "visual": "node scripts/visual.js",
     "visual:accept": "node scripts/visual-accept.js",
-    "pr-shots": "node scripts/pr-shots.js"
+    "pr-shots": "node scripts/pr-shots.js",
+    "variant-shots": "node scripts/variant-shots.js"
   },
   "dependencies": {
     "three": "^0.186.1"

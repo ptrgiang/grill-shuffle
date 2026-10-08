@@ -35,6 +35,7 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
+import { initVariant } from './ui/variant.js';
 
 // quality: 'auto' | 'high' | 'medium' | 'low'; autoTier: where auto mode settled on this device
 const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null };
@@ -986,6 +987,7 @@ window.visualViewport?.addEventListener('resize', onViewportChange); // mobile a
 document.fonts?.ready.then(onViewportChange); // Fredoka arriving changes the HUD's size
 
 async function boot() {
+  initVariant(); // ?variant=<n>: design prototypes (CONTRIBUTING.md step 0)
   app.settings = { ...DEFAULT_SETTINGS, ...(await db.get('settings', {})) };
   audio.setMuted(app.settings.muted);
   audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });

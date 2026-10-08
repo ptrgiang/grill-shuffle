@@ -67,6 +67,13 @@ gh pr checks <pr> --watch
 ```
 Fix CI until green.
 
+### 5a. Design variants (before the PR)
+
+A UI change the owner chooses from: build the variants behind `?variant=1..5` (read through `client/ui/variant.js`:
+`variant()`, or `<html data-variant>` in CSS), run `npm run variant-shots -- --issue <n> --pages "<spec>,..."
+--labels "1:…,2:…"`, Read the sheets in `shots/variants/<n>/`, then STOP and wait for the owner's number in the
+issue. After the pick: remove the other variants and the switch, build the pick, then the PR with 5b.
+
 ### 5b. Before / after screenshots (UI PRs: default ON)
 
 The reviewer should see the change without checking out the branch. `npm run pr-shots` captures each page on

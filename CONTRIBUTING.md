@@ -19,6 +19,10 @@
    ```
    After opening the PR, for any UI change: `npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,..."` puts
    before / after pairs (main vs the branch) into the PR body, so the reviewer sees the change without a checkout.
+   Design variants (a UI change the owner picks from, before the PR): prototypes read `?variant=<n>` through
+   `client/ui/variant.js` (`variant()`; `<html data-variant>` for CSS), then
+   `npm run variant-shots -- --issue <n> --pages "/levels@390x844m,..." --labels "1:Road,2:Scroll,..."` posts one
+   numbered sheet per page as a single issue comment (updated in place on re-runs; `--no-publish` = local only).
 4. **Pull request** into `main`, using the template, with `Closes #<issue>`. CI (`checks` job) must be green; on
    PRs touching `client/`, `content/` or `shared/` the `visual` workflow pixel-compares frozen captures against
    `tests/visual/` (see `docs/RENDERING.md`, "Visual regression"). An intended look change: `npm run visual:accept`,
