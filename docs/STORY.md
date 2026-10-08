@@ -18,14 +18,40 @@ start (one pass for both languages).
 |---|---|
 | **Question** | Will Út catch up with Bà Năm, and will the alley survive? |
 | **Út wants** | to find Bà Năm and keep the cart (and the alley) alive |
-| **Út needs** | to understand who Bà Năm was, and find a place to belong outside an office |
+| **Út needs** | to understand who Bà Năm was, and to stop living a life measured in deadlines and other people's slogans |
 | **Flaw** | cannot cook, gives up fast, sees food as fuel; the first beat burns a skewer |
 | **Clock** | the clearance notice on the alley wall; each stop, the date gets closer |
 | **Mystery** | each page reveals a piece of Bà Năm's life nobody in the family knew |
-| **Ending** | the reunion on the rooftop of the very tower that replaces the alley; Bà Năm hands over the cart; the last page is blank and Út writes the first recipe of their own |
+| **The wound** | the cart fed Út every afternoon after school; once the job started, Út stopped coming. The phone in the cold open shows a string of missed calls from Bà Năm, never returned. The postcard is her last message |
+| **Ending** | the reunion on the rooftop of the very tower that replaces the alley, where Út and Khang have won a night market for the alley's vendors; Bà Năm hands over the cart; the last page is blank and Út writes the first recipe of their own |
 
 Bà Năm is alive and on her own journey (owner decision): she is saying goodbye to old friends, leaving a page with
 each. The tone stays warm; loss is present (the alley, time) but nobody dies.
+
+## Why Út leaves the office
+
+Út does not quit in the cold open. The decision is earned across Street BBQ, the classic refusal → commitment arc,
+and every step is shown with objects, not words:
+
+| Where | What happens | Shown by |
+|---|---|---|
+| cold open | Út is a **marketing executive at a real-estate developer**, comes on a weekday evening meaning to "keep the cart for a few days" as the postcard asks | lanyard, laptop bag, phone buzzing with work; missed calls from Bà Năm |
+| levels 1–9 | grills after office hours (Street BBQ is an evening pack for that reason) | laptop open on the cart, red notification badges |
+| level 10 | burns a skewer; Cô Sáu shows the woven-fan trick; Út smiles for the first time | the phone face-down |
+| level 20 | the regulars come back; Út forgets to check the phone for a whole evening | the laptop bag left behind |
+| level 30 | **the reveal**: Khang's tasting visit; his flyer for the tower restaurant carries Út's company logo and the slogan Út wrote. Út's own campaign is clearing the alley | the flyer next to Út's laptop with the same slide |
+| level 40 | the clearance date is set; the boss calls; Út hangs the lanyard on Cô Sáu's nail and lets the phone ring out. **Út quits** and decides to follow Bà Năm | the lanyard on the nail, the phone going dark |
+| level 50 | Cô Sáu gives the first page; Út pushes the cart out of the alley at dawn | the cart on the open road |
+
+Three reasons, stacked so no single one feels convenient:
+
+1. **Guilt and love** (the wound): the missed calls, the postcard. Út owes Bà Năm a visit, years late.
+2. **Meaning**: for the first time Út makes something that people enjoy in front of them; the office never gave that.
+3. **Complicity**: Út's job is literally selling the tower that erases the alley. Staying would mean writing its slogans.
+
+The story is **not** "office bad, tradition good". Út's office skills pay off in the finale: Út knows how the
+developer thinks, pitches the rooftop night market to them with Khang, and the alley's vendors get a home in the
+tower. Old and new make a deal; that is the ending.
 
 ## Cast
 
@@ -33,10 +59,10 @@ Keep the recurring cast small: a wordless story can carry only a few faces.
 
 | Who | Role | Look / acting |
 |---|---|---|
-| **Út** | the player's cook; city office worker, never cooked | office shirt under an apron that is too big; laptop bag on the cart in the first stops, gone by the end; clumsy → sure hands |
+| **Út** | the player's cook; marketing executive at a real-estate developer, never cooked | office shirt under an apron that is too big; lanyard and laptop bag in the first levels, gone after level 40; clumsy → sure hands |
 | **Bà Năm** | grandma, always one stop ahead | seen in old photos, postcards, flashbacks (warmer, paper grain); in person only in the finale |
 | **Mực** | black alley cat that jumps onto the cart in the opening and travels along | the micro layer's comic relief: reacts to combos, steals a shrimp on a loss, sleeps on the notebook |
-| **Khang** | head chef of the restaurant planned in the new tower | seeded in stop 1 (a sleek flyer, a tasting visit), rival through the middle, ally in the finale |
+| **Khang** | head chef of the restaurant planned in the new tower | seeded in stop 1 (a tasting visit; his flyer reveals Út's company), rival through the middle, ally in the finale (pitches the rooftop market with Út) |
 | **Cô Sáu** | sugarcane-juice cart next door, Bà Năm's oldest friend | the voice of the alley; the clearance notice is on her wall |
 | one **page keeper per stop** | someone Bà Năm once cooked for; holds her page | see below |
 
