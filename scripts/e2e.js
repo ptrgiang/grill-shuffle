@@ -333,7 +333,7 @@ async function runPacks(name, { w, h }) {
     await page.waitForFunction(() => location.pathname === '/levels/beach-grill', { timeout: 10000 });
     st = await tabState();
     check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Street BBQ/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill tab (/levels/beach-grill) shows its requirement (${st.reason})`);
-    check(st.cards === 12 && st.links === 0, `${name}: its levels are not playable (${st.links}/${st.cards} links)`);
+    check(st.cards === 50 && st.links === 0, `${name}: its levels are not playable (${st.links}/${st.cards} links)`);
     await sleep(300);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
 

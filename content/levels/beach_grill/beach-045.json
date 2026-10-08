@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-045",
+  "name": "Golden Hour",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 13,
+  "board": {
+    "grills": [
+      {"slots":["sausage","pepper","skewer"]},
+      {"slots":["corn","skewer","sausage"],"layers":[["skewer","pineapple","corn"]]},
+      {"slots":["pepper",null,null],"lock":3},
+      {"slots":["pepper","pineapple",null]},
+      {"slots":[null,null,"corn"],"layers":[["sausage","pineapple",null]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Pineapple, peppers and a lock. Keep calm.",
+  "solver": {
+    "minMoves": 12,
+    "difficulty": 69,
+    "rating": "very_hard",
+    "states": 9177,
+    "solution": "m0.1-3.2 m1.0-0.1 m0.0-1.0 m4.2-0.0 m1.1-4.2 m4.0-1.1 m0.2-4.0 m1.2-0.2 m4.1-1.2 m1.0-4.1 m3.1-1.0 m2.0-3.1"
+  }
+}

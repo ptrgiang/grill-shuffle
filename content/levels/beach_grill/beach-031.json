@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-031",
+  "name": "Sun Deck",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":["squid","scallop","squid"]},
+      {"slots":[null,"squid","scallop"],"layers":[["corn","squid","corn"]]},
+      {"slots":["pineapple","squid",null]},
+      {"slots":["corn","squid","corn"],"lock":1},
+      {"slots":["corn","pineapple","corn"],"layers":[[null,"scallop","pineapple"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Nine moves and a lock. Pineapple first.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 57,
+    "rating": "hard",
+    "states": 27644,
+    "solution": "m0.1-1.0 m1.1-0.1 m4.1-2.2 m3.0-4.1 m4.1-1.1 m1.1-3.0 m3.2-1.1 m2.1-3.2 m4.2-2.1"
+  }
+}

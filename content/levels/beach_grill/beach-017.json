@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-017",
+  "name": "Tide Pools",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["squid","corn",null]},
+      {"slots":["shrimp","corn","corn"]},
+      {"slots":["squid","salmon","salmon"]},
+      {"slots":["corn","squid","salmon"]},
+      {"slots":["shrimp",null,null],"layers":[["corn","corn","shrimp"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Keep one grill free while you dig the plate out.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 9197,
+    "solution": "m2.0-0.2 m3.2-2.0 m1.0-2.0 m0.1-1.0 m3.1-0.1 m4.0-2.1 m4.2-2.2 m3.0-4.2"
+  }
+}

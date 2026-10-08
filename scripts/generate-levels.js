@@ -3,6 +3,8 @@
 //   npm run generate:levels -- --theme street_bbq --count 100 --difficulty 20:40
 //     [--foods shrimp,beef,corn,chicken]  (default: the theme's food catalog; foods outside it are refused) [--grills 4:5] [--trays 0:1] [--empty 2:4] [--layers 0:2] [--locks 0:1]
 //     [--lock-matches 1:3] [--food-count 3:4] [--min-moves 5:18] [--seed 1] [--candidates 2000]
+//     [--tier hard]                      move budget the boards are rated under (easy/normal/hard/expert; default:
+//                                        from the difficulty range, expert above 60). Ship the level with that tier.
 //     [--out content/generated/<name>]   write level files + pack.json there (default: print a summary only)
 //     [--prefix gen]                     id prefix
 //     [--append <pack>]                  candidates to append to that pack (content rules, #62): the difficulty
@@ -42,6 +44,7 @@ const config = {
   lockMatches: range(args['lock-matches'], [1, 3]),
   difficulty: appendTo ? [appendMin, args.difficulty ? range(args.difficulty).at(-1) : appendMin + 15] : range(args.difficulty, [20, 40]),
   minMoves: range(args['min-moves'], [4, 22]),
+  ...(args.tier ? { tier: String(args.tier) } : {}),
 };
 const count = Number(args.count ?? 10);
 const maxCandidates = Number(args.candidates ?? Math.max(200, count * 40));

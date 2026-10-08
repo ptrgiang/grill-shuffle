@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-020",
+  "name": "Rip Current",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["squid","pepper","pepper"]},
+      {"slots":["skewer","skewer","skewer"],"lock":2},
+      {"slots":["squid","sausage","sausage"],"layers":[["pepper","squid",null]]},
+      {"slots":[null,"sausage",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The lock comes first. Then everything else falls into place.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 50,
+    "rating": "hard",
+    "states": 83,
+    "solution": "m0.0-3.0 m2.0-3.2 m3.1-2.0 m2.0-0.0 m2.1-3.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-033",
+  "name": "Coconut Shy",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["scallop","scallop",null],"layers":[["squid",null,"squid"]]},
+      {"slots":["corn","pineapple",null]},
+      {"slots":[null,"pineapple","pineapple"],"layers":[[null,"squid","corn"]]},
+      {"slots":[null,"corn","corn"]},
+      {"slots":["corn","scallop","corn"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "No lock this time. Use every gap.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 58,
+    "rating": "hard",
+    "states": 10990,
+    "solution": "m1.0-3.0 m1.1-2.0 m4.1-0.2 m2.1-0.1 m2.2-4.1"
+  }
+}

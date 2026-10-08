@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-021",
+  "name": "Sea Glass",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 5,
+  "board": {
+    "grills": [
+      {"slots":["squid","squid","pepper"]},
+      {"slots":["skewer",null,"skewer"]},
+      {"slots":["pepper",null,null]},
+      {"slots":[null,"squid",null],"layers":[[null,"pepper","skewer"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "A short one. Watch what the plate hides.",
+  "solver": {
+    "minMoves": 4,
+    "difficulty": 52,
+    "rating": "hard",
+    "states": 305,
+    "solution": "m0.2-2.1 m3.1-0.2 m3.1-2.2 m3.2-1.1"
+  }
+}

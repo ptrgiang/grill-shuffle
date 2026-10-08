@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-043",
+  "name": "Long Pier",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 13,
+  "board": {
+    "grills": [
+      {"slots":["squid","scallop","corn"]},
+      {"slots":[null,"scallop",null],"lock":3},
+      {"slots":[null,"salmon","scallop"],"layers":[["corn","salmon","squid"]]},
+      {"slots":["skewer","corn","skewer"],"layers":[["salmon","squid","corn"]]},
+      {"slots":["corn","skewer","corn"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Twelve moves. Every empty slot is precious.",
+  "solver": {
+    "minMoves": 12,
+    "difficulty": 68,
+    "rating": "very_hard",
+    "states": 6513,
+    "solution": "m0.2-2.0 m2.2-0.2 m3.1-2.2 m4.1-3.1 m2.1-4.1 m3.2-2.1 m2.1-3.2 m3.1-2.1 m4.1-3.1 m2.0-4.1 m0.0-2.0 m1.1-0.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-019",
+  "name": "Undertow",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":[null,"corn","squid"]},
+      {"slots":["corn","corn",null],"lock":2},
+      {"slots":[null,null,"squid"],"layers":[[null,"salmon","squid"]]},
+      {"slots":["salmon",null,"salmon"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Few moves, one lock. Plan the opening matches.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 49,
+    "rating": "hard",
+    "states": 64,
+    "solution": "m2.2-0.0 m0.0-2.0 m2.1-3.1 m0.2-2.1 m0.1-1.2"
+  }
+}

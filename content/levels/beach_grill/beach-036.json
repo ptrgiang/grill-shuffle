@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-036",
+  "name": "Salt Spray",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["corn","scallop","scallop"]},
+      {"slots":["squid","squid","squid"],"lock":1},
+      {"slots":["pineapple","corn",null]},
+      {"slots":["pineapple","squid","pineapple"]},
+      {"slots":[null,"corn",null],"layers":[["scallop","squid","squid"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Short, but every move counts.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 59,
+    "rating": "hard",
+    "states": 1236,
+    "solution": "m0.0-4.0 m2.1-4.2 m4.0-0.0 m3.1-4.0 m2.0-3.1"
+  }
+}
