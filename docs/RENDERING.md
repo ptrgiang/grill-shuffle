@@ -26,7 +26,7 @@ Street BBQ is the default look; the `board-desktop` and game visual captures gua
 
 ## Food
 
-`render/foods.js`: `createShrimp/Beef/Chicken/Corn/Carrot/Salmon/Bread/Sausage/Mushroom/Pepper/Skewer({ seed, cook,
+`render/foods.js`: `createShrimp/Beef/Chicken/Corn/Carrot/Salmon/Bread/Sausage/Mushroom/Pepper/Skewer/Squid/Scallop/Pineapple({ seed, cook,
 char, scale, variant })`. Each food is one merged, vertex-coloured geometry built from primitives (tube with variable
 radius for shrimp and sausage, extruded noisy outlines for steak/salmon/toast, lathe for drumstick/carrot/mushroom,
 lobed lathe for the pepper, displaced capsule for corn, rounded boxes and discs on a stick for the skewer). Three
@@ -50,10 +50,14 @@ Every pair must be told apart at phone size (≈ 80 px slots at 390 px) by silho
 | Mushroom | `m` | **lying on its side**: domed cap away from the player, cream stem towards them | `#9a7258` cap, `#c8a684` rim, `#dcc3a1` gills, `#f3ead9` stem | toast (beige), steak (round) |
 | Bell pepper (`pepper`) | `p` | upright, **four lobes**, stem on a dark calyx | `#3c9a3a` green, `#7ccf5e` highlight, `#1f5d22` creases | corn husk / carrot greens (only mostly-green food) |
 | Skewer | `w` | thin **wooden stick** along the grill, pointed tip, five chunks | `#8b4a2b` meat, `#e0402c` pepper, `#f4ecd8` onion, `#e2c08a` stick | drumstick / corn / carrot (long: bare stick at both ends, segmented) |
+| Squid | `q` | **pale tapered mantle with side fins** away from the player, eyes, **curling tentacles** towards them | `#f4e6da` cream, `#e9c2c0` blush, `#9a5a8a` purple flecks / tips | carrot (cone: orange + greens), corn (yellow), skewer (stick) |
+| Scallop | `v` | **ribbed coral fan** (hinge and two ears towards the player) holding a **round white muscle** | `#f08a5d` coral, `#f8e4cf` pale, `#c9603f` ribs, `#fbf3e6` muscle | salmon (coral slab, dark rim), shrimp (curl) |
+| Pineapple | `n` | thick **golden ring with a hole**, pale core ring, orange rind edge | `#f7cf4a` gold, `#fbe9a6` core, `#c98a1c` rind | corn (yellow but a long cob), toast (square) |
 
 Rules of thumb: only steak has a light rim, only salmon a dark one; only shrimp curls, only the sausage lies
 diagonally; long foods (drumstick, corn, carrot, skewer) differ in their ends (bone / husk / greens / bare stick);
-only the pepper is green, only the mushroom stands out side-on. A new food must keep this table unambiguous: check it
+only the pepper is green, only the mushroom stands out side-on, only the pineapple has a hole, only the scallop is a
+fan, only the squid is pale with tentacles. A new food must keep this table unambiguous: check it
 against every row at 360 / 390 px (`/sandbox/food?spin=0&ui=0`, `?grills=1`) and append its code, never reuse one
 (`tests/sim/foods.test.js` pins them).
 

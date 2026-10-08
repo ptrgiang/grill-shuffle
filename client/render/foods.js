@@ -4,7 +4,7 @@
 //
 //   createShrimp({ seed, cook, char, scale, variant })  -> THREE.Mesh
 //   ... createBeef, createChicken, createCorn, createCarrot, createSalmon, createBread,
-//       createSausage, createMushroom, createPepper, createSkewer
+//       createSausage, createMushroom, createPepper, createSkewer, createSquid, createScallop, createPineapple
 //   createFood(foodId, opts)
 //
 // Every model sits on y = 0, is centred on x/z, and fits a ~0.95 x 1.2 footprint (x across the grill, z along it).
@@ -472,6 +472,122 @@ function skewerGeometry(rng) {
   return settle(merge(parts));
 }
 
+function squidGeometry(rng) {
+  // a whole grilled squid: pale tapered mantle with side fins away from the player, head and curling tentacles
+  // towards them. The only pale-white long food; purple flecks and tentacle tips set it apart from carrot and corn.
+  const L = 0.62 + rng() * 0.05, R = 0.165;
+  const prof = [];
+  for (let i = 0; i <= 18; i++) {
+    const t = i / 18; // 0 = open end (near the head), 1 = tip
+    const r = R * (t < 0.08 ? 0.86 + t * 1.75 : Math.pow(1 - (t - 0.08) / 0.92, 0.7)) * (1 + 0.03 * Math.sin(t * 30));
+    prof.push(new THREE.Vector2(Math.max(0.004, r), t * L));
+  }
+  const mantle = new THREE.LatheGeometry(prof, 20);
+  mantle.scale(1, 1, 0.72);
+  const cream = col('#f4e6da'), blush = col('#e9c2c0'), fleck = col('#9a5a8a');
+  const seedF = Math.floor(rng() * 1000);
+  const parts = [
+    part(mantle, (p, n) => {
+      let c = mix(blush, cream, n.y * 0.5 + 0.6);
+      if (hash2(Math.floor(p.y * 26), Math.floor(Math.atan2(p.z, p.x) * 4), seedF) > 0.8) c = mix(c, fleck, 0.55);
+      return c;
+    }, 0.9),
+  ];
+  // fins: two flat lobes either side of the tip
+  for (const side of [-1, 1]) {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0);
+    s.quadraticCurveTo(0.2, 0.06, 0.03, 0.26);
+    s.lineTo(0, 0.24);
+    const fin = new THREE.ExtrudeGeometry(s, { depth: 0.02, bevelEnabled: false, curveSegments: 8 });
+    fin.scale(side, 1, 1);
+    fin.translate(side * 0.035, L * 0.62, -0.01);
+    parts.push(part(fin, (p) => mix(cream, blush, 0.35), 0.6));
+  }
+  const head = new THREE.SphereGeometry(0.115, 14, 10);
+  head.scale(1, 0.8, 0.75);
+  head.translate(0, -0.06, 0);
+  parts.push(part(head, (p, n) => mix(blush, cream, n.y * 0.5 + 0.5), 0.5));
+  for (const side of [-1, 1]) {
+    const eye = new THREE.SphereGeometry(0.026, 8, 6);
+    eye.translate(side * 0.085, -0.06, 0.04);
+    parts.push(part(eye, '#2a1a24', 0));
+  }
+  // tentacles: thin tubes fanning out towards the player, curling at the ends
+  const N = 6;
+  for (let i = 0; i < N; i++) {
+    const a = (i / (N - 1) - 0.5) * 1.3 + (rng() - 0.5) * 0.12;
+    const len = 0.3 + rng() * 0.06 + (i === 1 || i === N - 2 ? 0.08 : 0);
+    const curl = (rng() < 0.5 ? -1 : 1) * 0.08;
+    const pts = [0, 0.33, 0.66, 1].map((t) => new THREE.Vector3(Math.sin(a) * len * t + curl * t * t, -0.12 - Math.cos(a) * len * t, 0.02 * Math.sin(t * 3)));
+    const tube = tubeAlong(new THREE.CatmullRomCurve3(pts), (t) => 0.028 * (1 - 0.75 * t) + 0.004, 12, 6);
+    parts.push(part(tube, (p) => mix(col('#ecc9c6'), fleck, Math.min(1, Math.max(0, (-p.y - 0.25) * 3))), 0.3));
+  }
+  const g = merge(parts);
+  g.rotateX(-Math.PI / 2); // tip away from the player, tentacles towards them
+  g.scale(1.25, 0.85, 0.95);
+  return settle(g);
+}
+
+function scallopGeometry(rng) {
+  // a scallop on the half shell: a ribbed coral fan (hinge and two ears towards the player) holding a round white
+  // muscle. The only fan shape; the ribs and the white puck keep it apart from salmon (coral slab) and steak.
+  const R = 0.42 + rng() * 0.03, ribs = 13, hinge = -0.3;
+  const s = new THREE.Shape();
+  const arc = [];
+  for (let i = 0; i <= 64; i++) {
+    const a = Math.PI * (0.13 + 0.74 * (i / 64));
+    const r = R * (1 + 0.035 * Math.cos(a * ribs * 2));
+    arc.push(new THREE.Vector2(Math.cos(a) * r, hinge + 0.1 + Math.sin(a) * r * 0.95));
+  }
+  s.moveTo(0.2, hinge - 0.04); // right ear
+  s.lineTo(0.2, hinge + 0.06);
+  s.lineTo(arc[0].x, arc[0].y);
+  for (const p of arc) s.lineTo(p.x, p.y);
+  s.lineTo(-0.2, hinge + 0.06); // left ear
+  s.lineTo(-0.2, hinge - 0.04);
+  s.closePath();
+  const shell = slab(s, 0.05, 0.02, 12);
+  const coral = col('#f08a5d'), pale = col('#f8e4cf'), rib = col('#c9603f');
+  const shellPart = part(shell, (p, n) => {
+    const a = Math.atan2(-p.z - hinge, p.x);
+    const d = Math.hypot(p.x, -p.z - hinge);
+    let c = mix(pale, coral, Math.min(1, d / R) * 0.9 + 0.1);
+    if (Math.cos(a * ribs * 2) > 0.55 && d > 0.12) c = mix(c, rib, 0.45);
+    return n.y < 0.5 ? mix(c, rib, 0.4) : c;
+  }, 0.2);
+  const meatR = 0.16 + rng() * 0.015;
+  const meat = new THREE.CylinderGeometry(meatR, meatR * 1.04, 0.12, 22, 2);
+  meat.translate(0, 0.1, -(hinge + 0.1 + R * 0.42));
+  const meatPart = part(meat, (p, n) => mix(col('#fbf3e6'), col('#e9d7c0'), n.y > 0.5 ? hash2(Math.floor(p.x * 30), Math.floor(p.z * 30), 13) * 0.4 : 0.3), 1);
+  return settle(merge([shellPart, meatPart]));
+}
+
+function pineappleGeometry(rng) {
+  // a grilled pineapple ring: a thick golden ring with a hole and an orange rind edge. The only food with a hole;
+  // round and flat against corn's long cob.
+  const R = 0.36 + rng() * 0.02, r = 0.09 + rng() * 0.01, squash = 0.94 + rng() * 0.06;
+  const s = new THREE.Shape();
+  s.absellipse(0, 0, R, R * squash, 0, Math.PI * 2, false, 0);
+  const hole = new THREE.Path(Array.from({ length: 33 }, (_, i) => new THREE.Vector2(Math.cos((-i / 32) * TAU) * r, Math.sin((-i / 32) * TAU) * r)));
+  s.holes.push(hole);
+  const ring = slab(s, 0.1, 0.03, 40);
+  const gold = col('#f7cf4a'), rind = col('#c98a1c'), core = col('#fbe9a6');
+  // the pale woody core: its own thin ring around the hole (vertex colours cannot draw a smooth radial gradient on
+  // the ring's long top triangles)
+  const circle = (rad, n = 32, dir = 1) => Array.from({ length: n + 1 }, (_, i) => new THREE.Vector2(Math.cos((dir * i / n) * TAU) * rad, Math.sin((dir * i / n) * TAU) * rad));
+  const coreShape = new THREE.Shape(circle(r + 0.06));
+  coreShape.holes.push(new THREE.Path(circle(r, 32, -1)));
+  const coreRing = slab(coreShape, 0.004, 0.0, 32);
+  coreRing.translate(0, 0.128, 0);
+  return settle(
+    merge([
+      part(ring, (p, n) => (n.y < 0.5 ? (Math.hypot(p.x, p.z / squash) > (R + r) / 2 ? rind.clone() : core.clone()) : mix(gold, rind, hash2(Math.floor(p.x * 24), Math.floor(p.z * 24), 17) * 0.12)), 1),
+      part(coreRing, core, 0.4),
+    ]),
+  );
+}
+
 // ------------------------------------------------------------------ registry
 
 export const FOOD_MODELS = Object.freeze({
@@ -486,6 +602,9 @@ export const FOOD_MODELS = Object.freeze({
   mushroom: { geometry: mushroomGeometry, material: { roughness: 0.65, marks: 0.5, markAngle: 1.2, markFreq: 5, cook: 0.5 } },
   pepper: { geometry: pepperGeometry, material: { roughness: 0.22, marks: 0.5, markAngle: 0.4, markFreq: 4.5, cook: 0.35 } },
   skewer: { geometry: skewerGeometry, material: { roughness: 0.5, marks: 0.7, markAngle: 1.57, markFreq: 9, cook: 0.6 } },
+  squid: { geometry: squidGeometry, material: { roughness: 0.35, marks: 0.8, markAngle: 0.0, markFreq: 6, cook: 0.5 } },
+  scallop: { geometry: scallopGeometry, material: { roughness: 0.45, marks: 0.6, markAngle: 0.8, markFreq: 9, cook: 0.6 } },
+  pineapple: { geometry: pineappleGeometry, material: { roughness: 0.4, marks: 1, markAngle: 0.7, markFreq: 5, cook: 0.6 } },
 });
 
 const geoCache = new Map();
@@ -535,3 +654,6 @@ export const createSausage = (o) => createFood('sausage', o);
 export const createMushroom = (o) => createFood('mushroom', o);
 export const createPepper = (o) => createFood('pepper', o);
 export const createSkewer = (o) => createFood('skewer', o);
+export const createSquid = (o) => createFood('squid', o);
+export const createScallop = (o) => createFood('scallop', o);
+export const createPineapple = (o) => createFood('pineapple', o);

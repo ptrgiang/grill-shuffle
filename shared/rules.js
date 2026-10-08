@@ -2,7 +2,7 @@
 //
 // matcher: how items are grouped for matching. Items whose matcher keys are equal can form a match.
 //   same_food - identical food ids (the base rule)
-//   category  - same food category (meat / seafood / veg / grain): a later variant
+//   category  - same food category (meat / seafood / veg / grain / fruit): a later variant
 // matchSize: how many matching items on ONE grill clear together.
 
 import { FOODS } from './foods.js';
