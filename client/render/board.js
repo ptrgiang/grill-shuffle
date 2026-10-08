@@ -63,6 +63,7 @@ export class BoardView {
     this.hover = null;
     this.targets = null; // grills that accept the selected item (null: nothing selected)
     this.hint = null;
+    this.reach = false; // a targeted booster (tongs) is armed: locked grills' food is in reach, not dimmed
     this.ambient = 0;
     this.selRing = new THREE.Mesh(new THREE.RingGeometry(0.36, 0.46, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#ffe7b0', transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
     this.selRing.renderOrder = 3;
@@ -222,7 +223,7 @@ export class BoardView {
     if (!this.state) return;
     this.state.grills.forEach((g, gi) => {
       const candidate = !!this.targets?.includes(gi) && !this.hover;
-      g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0, candidate, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
+      g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0 && !this.reach, candidate, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
     });
   }
 
@@ -240,21 +241,34 @@ export class BoardView {
     }
     const now = this.clock;
     let land = now;
-    let lastChain = -1, chainStart = now, lastEnd = now, cursor = now, burstAt = now;
+    let lastChain = -1, chainStart = now, lastEnd = now, cursor = now, burstAt = now, landed = 0;
     for (const ev of events) {
       switch (ev.type) {
+        case 'booster':
+          // the gust sweeps the board before the food shuffles; tongs show on their item's move below
+          if (ev.booster === 'fan') {
+            this.particles.gust(this.layout.width, this.layout.depth);
+            this.stage.addShake(0.04);
+          }
+          this.onFx(ev, null);
+          break;
         case 'move': {
           const v = this.items.get(ev.itemId);
           if (!v) break;
+          if (ev.booster === 'tongs' && ev.from) this.particles.poof(this.slotPos(ev.from.grill, ev.from.slot).setY(0.4), '#ffe7b0');
           v.grill = ev.to.grill;
           v.slot = ev.to.slot;
-          const dur = dropped ? TIMING.dragLand : TIMING.move;
-          this.#moveTo(v, dur, { arc: !dropped });
-          land = Math.max(land, now + dur);
+          // fan: every item hops at once, a few ms apart, pushed along by the gust; tongs: a high, slower lift
+          const delay = ev.booster === 'fan' ? 0.08 + Math.random() * 0.14 : 0;
+          const dur = (dropped ? TIMING.dragLand : TIMING.move) * (ev.booster ? 1.6 : 1);
+          this.#moveTo(v, dur, { arc: !dropped, delay, lift: ev.booster === 'tongs' ? 0.6 : 0 });
+          const at = now + delay + (ev.booster ? v.motion.dur : dur);
+          land = Math.max(land, at);
           cursor = land;
-          this.#at(land, () => {
+          const quiet = ev.booster === 'fan' && landed++ > 0; // one landing sound for the whole gust
+          this.#at(at, () => {
             this.particles.steam(this.slotPos(ev.to.grill, ev.to.slot), 3);
-            this.onFx({ type: 'land', food: ev.food, booster: ev.booster }, this.#screen(ev.to.grill));
+            if (!quiet) this.onFx({ type: 'land', food: ev.food, booster: ev.booster }, this.#screen(ev.to.grill));
           });
           break;
         }
@@ -326,12 +340,12 @@ export class BoardView {
     return this.stage.toScreen(new THREE.Vector3(L.x, 0.6, L.z));
   }
 
-  #moveTo(v, dur, { arc = true, delay = 0 } = {}) {
+  #moveTo(v, dur, { arc = true, delay = 0, lift = 0 } = {}) {
     const from = v.holder.position.clone();
     const to = this.slotPos(v.grill, v.slot);
     const dist = from.distanceTo(to);
     v.settle = false;
-    v.motion = { kind: 'move', from, to, t0: this.clock + delay, dur: Math.max(0.06, dur * Math.min(1.4, 0.6 + dist * 0.12)), arc: arc ? Math.min(1.1, 0.25 + dist * 0.12) : 0 };
+    v.motion = { kind: 'move', from, to, t0: this.clock + delay, dur: Math.max(0.06, dur * Math.min(1.4, 0.6 + dist * 0.12)), arc: arc ? Math.min(1.1, 0.25 + dist * 0.12) + lift : 0 };
   }
 
   #playMatch(ev, start) {
@@ -395,6 +409,13 @@ export class BoardView {
   itemAt(grill, slot) {
     const it = this.state?.grills[grill]?.slots[slot];
     return it ? this.items.get(it.id) : null;
+  }
+
+  /** Tongs armed: locked grills stop looking out of reach (presentation only; the session decides what is legal). */
+  setReach(on) {
+    if (this.reach === !!on) return;
+    this.reach = !!on;
+    this.#refreshSlots();
   }
 
   select(grill, slot) {

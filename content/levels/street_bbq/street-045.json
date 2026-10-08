@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"tongs":1},
   "hint": "Five foods. The stack hides the key piece.",
   "solver": {
     "minMoves": 9,

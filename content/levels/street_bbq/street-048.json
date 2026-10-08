@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"tongs":1},
   "hint": "Two stacks, two locks, five foods.",
   "solver": {
     "minMoves": 9,

@@ -4,6 +4,7 @@ import { createState } from '../../shared/state.js';
 import { applyAction } from '../../shared/resolve.js';
 import { getLegalMoves, canPick, canDrop, encodeActions } from '../../shared/moves.js';
 import { hashState } from '../../shared/hash.js';
+import { BOOSTERS, canUseBooster } from '../../shared/boosters.js';
 import { starsFor } from '../../shared/progression.js';
 
 export class Session {
@@ -18,6 +19,7 @@ export class Session {
     this.actions = []; // applied actions, in order
     this.undos = 0;
     this.hints = 0;
+    this.armed = null; // a targeted booster ('tongs') waiting for its pick and drop
   }
 
   get status() {
@@ -31,8 +33,46 @@ export class Session {
       this.history.push(this.state);
       this.actions.push(action);
       this.state = r.state;
+      this.armed = null;
     }
     return r;
+  }
+
+  // ---- boosters (rules in shared/boosters.js; this only tracks which one the player is aiming)
+
+  /** Boosters this level offers (charges at the start), in BOOSTERS order. */
+  boosterIds() {
+    return Object.keys(BOOSTERS).filter((id) => (this.level.boosters?.[id] ?? 0) > 0);
+  }
+
+  charges(id) {
+    return this.state.boosters[id] ?? 0;
+  }
+
+  /** Could `id` be used now? Targeted boosters: is there any pick + drop at all. */
+  canUseBooster(id) {
+    if (this.state.status !== 'playing' || this.charges(id) <= 0) return false;
+    if (BOOSTERS[id]?.needs === 'none') return canUseBooster(this.state, { type: 'booster', booster: id });
+    const st = this.state;
+    return st.grills.some((g, gi) => g.slots.some(Boolean) && st.grills.some((_, ti) => ti !== gi && st.grills[ti].slots.some((__, s) => canDrop(st, ti, s))));
+  }
+
+  /** Aim a targeted booster (the next pick + drop uses it), or disarm with null. Returns the armed id. */
+  arm(id) {
+    this.armed = id && BOOSTERS[id]?.needs === 'from+to' && this.canUseBooster(id) ? id : null;
+    return this.armed;
+  }
+
+  /** Boosters used so far in this attempt, e.g. { tongs: 1 } (the result screen notes them; stars are unaffected). */
+  boostersUsed() {
+    const used = {};
+    for (const a of this.actions) if (a.type === 'booster') used[a.booster] = (used[a.booster] ?? 0) + 1;
+    return used;
+  }
+
+  /** The action a pick at `from` and a drop at `to` mean right now: a plain move, or the armed booster. */
+  actionFor(from, to) {
+    return this.armed ? { type: 'booster', booster: this.armed, from, to } : { type: 'move', from, to };
   }
 
   canUndo() {
@@ -44,12 +84,16 @@ export class Session {
     this.state = this.history.pop();
     this.actions.pop();
     this.undos++;
+    this.armed = null;
     return this.state;
   }
 
   // ---- questions the input layer asks (rules live in shared/, these only forward)
   canPick(grill, slot) {
-    return this.state.status === 'playing' && canPick(this.state, grill, slot);
+    if (this.state.status !== 'playing') return false;
+    // tongs reach any item, locked grills included
+    if (this.armed) return !!this.state.grills[grill]?.slots[slot];
+    return canPick(this.state, grill, slot);
   }
 
   /** Grills an item at `from` could be moved to. */

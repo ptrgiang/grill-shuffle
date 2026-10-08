@@ -249,6 +249,8 @@ export class Audio {
         return this.play('fail', { gain: 0.8 });
       case 'button':
         return this.play('button', { gain: 0.6 });
+      case 'booster':
+        return ev.booster === 'fan' ? this.play('gust', { gain: 0.8 }) : this.play('tongs', { gain: 0.7, pan });
     }
   }
 }

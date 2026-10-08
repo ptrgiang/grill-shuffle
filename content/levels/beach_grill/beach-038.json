@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"tongs":1,"fan":1},
   "hint": "Squid, scallops and a lock. Plan the order.",
   "solver": {
     "minMoves": 9,

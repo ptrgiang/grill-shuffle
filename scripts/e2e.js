@@ -83,6 +83,7 @@ async function runLayout(w, h) {
   try {
     for (const [path, ui, controls] of [
       ['/street-bbq/31', '.hud-top, .goal, .tool', '.hud button'],
+      ['/street-bbq/41', '.hud-top, .goal, .tool', '.hud button'], // + booster buttons
       ['/', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'],
     ]) {
       await page.goto(vite.url + path, { waitUntil: 'load' });
@@ -305,6 +306,51 @@ async function runQuality(name, { w, h }) {
   }
 }
 
+// #9: a booster level on a phone. Tongs: tap the button (armed), tap food on a LOCKED grill, tap an open slot; the
+// food moves, no move is spent, the charge is gone. Fan: tap twice (confirm), the open grills' food is reshuffled.
+async function runBoosters(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  const st = () => page.evaluate(() => {
+    const s = window.__gs.state;
+    const btn = (id) => document.querySelector(`.tool.booster[data-booster="${id}"]`);
+    return { movesUsed: s.movesUsed, boosters: s.boosters, grills: s.grills.map((g) => g.slots.map((x) => x && x.food)), armed: window.__gs.app.session.armed, tongs: btn('tongs') && { cls: btn('tongs').className, disabled: btn('tongs').disabled, charge: btn('tongs').querySelector('.charge').textContent } };
+  });
+  try {
+    await page.goto(`${vite.url}/street-bbq/41`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    await settle(page, 600);
+    const lvl = level('street-041');
+    const lockedGrill = lvl.board.grills.findIndex((g) => g.lock);
+    const fromSlot = lvl.board.grills[lockedGrill].slots.findIndex(Boolean);
+    const toGrill = lvl.board.grills.findIndex((g, i) => !g.lock && i !== lockedGrill && g.slots.includes(null));
+    const toSlot = lvl.board.grills[toGrill].slots.indexOf(null);
+    let s = await st();
+    check(s.tongs && s.tongs.charge === '1' && !s.tongs.disabled, `${name}: the level's Tongs show in the HUD with 1 charge (${JSON.stringify(s.tongs)})`);
+    await page.tap('.tool.booster[data-booster="tongs"]');
+    await sleep(200);
+    s = await st();
+    check(s.armed === 'tongs' && /armed/.test(s.tongs.cls), `${name}: tapping Tongs arms them`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-armed.png`) });
+    const food = lvl.board.grills[lockedGrill].slots[fromSlot];
+    const a = await slotXY(page, lockedGrill, fromSlot, 0.4);
+    const b = await slotXY(page, toGrill, toSlot);
+    await page.touchscreen.tap(a.x, a.y);
+    await sleep(150);
+    await page.touchscreen.tap(b.x, b.y);
+    await settle(page, 900);
+    s = await st();
+    check(s.grills[toGrill][toSlot] === food && s.grills[lockedGrill][fromSlot] === null, `${name}: Tongs lift ${food} off locked grill ${lockedGrill} onto grill ${toGrill}`);
+    check(s.movesUsed === 0 && s.boosters.tongs === 0 && s.armed === null, `${name}: no move spent, charge used, disarmed (${JSON.stringify({ moves: s.movesUsed, boosters: s.boosters })})`);
+    check(s.tongs.disabled && s.tongs.charge === '0', `${name}: the empty Tongs button is disabled`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-used.png`) });
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 // #67 / #17: the second pack (Beach Grill) is locked behind Street BBQ + its theme's stars, deep links to it land on
 // the level select at that pack, and finishing the requirement opens it in its own theme.
 async function runPacks(name, { w, h }) {
@@ -377,6 +423,7 @@ try {
   for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
   await runQuality('quality', { w: 390, h: 844 });
   await runPacks('packs-390', { w: 390, h: 844 });
+  await runBoosters('boosters-390', { w: 390, h: 844 });
 } finally {
   vite.stop();
 }
