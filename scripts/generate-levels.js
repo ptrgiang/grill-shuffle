@@ -5,12 +5,17 @@
 //     [--lock-matches 1:3] [--food-count 3:4] [--min-moves 5:18] [--seed 1] [--candidates 2000]
 //     [--out content/generated/<name>]   write level files + pack.json there (default: print a summary only)
 //     [--prefix gen]                     id prefix
+//     [--append <pack>]                  candidates to append to that pack (content rules, #62): the difficulty
+//                                        range starts at the pack's current max (--difficulty only sets the top,
+//                                        default max + 15) and the output is in ascending difficulty, so it can be
+//                                        appended in order. Without --append the output is still sorted.
 //
 // Output goes to a staging folder, never straight into a production pack: a person plays them first, then moves
 // the good ones into content/levels/<pack>/ and runs validate:levels.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { parseArgs, formatLevel, allLevels, loadThemes, ROOT } from './lib/content.js';
+import { parseArgs, formatLevel, allLevels, loadThemes, loadPacks, ROOT } from './lib/content.js';
+import { packMaxDifficulty } from './lib/content-rules.js';
 import { generateLevels } from '../solver/generator.js';
 import { boardSignature } from '../solver/canonical.js';
 import { validateLevel } from '../shared/levels.js';
@@ -18,7 +23,11 @@ import { validateLevel } from '../shared/levels.js';
 const args = parseArgs();
 const range = (v, d) => (v === undefined ? d : String(v).split(':').map(Number).concat(String(v).includes(':') ? [] : [Number(v)]).slice(0, 2));
 
-const theme = args.theme ?? 'street_bbq';
+// --append <pack>: new levels may never be easier than the pack's hardest level so far
+const appendTo = args.append ? loadPacks().find((p) => p.pack.id === String(args.append)) : null;
+if (args.append && !appendTo) throw new Error(`--append: no pack ${args.append}`);
+const appendMin = appendTo ? packMaxDifficulty(appendTo.levels.map((l) => ({ difficulty: l.level?.solver?.difficulty }))) : null;
+const theme = args.theme ?? appendTo?.pack.theme ?? 'street_bbq';
 const catalog = loadThemes()[theme]?.foods; // the theme's food catalog: default food pool, and a hard limit
 const config = {
   theme,
@@ -31,7 +40,7 @@ const config = {
   layers: range(args.layers, [0, 0]),
   locks: range(args.locks, [0, 0]),
   lockMatches: range(args['lock-matches'], [1, 3]),
-  difficulty: range(args.difficulty, [20, 40]),
+  difficulty: appendTo ? [appendMin, args.difficulty ? range(args.difficulty).at(-1) : appendMin + 15] : range(args.difficulty, [20, 40]),
   minMoves: range(args['min-moves'], [4, 22]),
 };
 const count = Number(args.count ?? 10);
@@ -57,6 +66,8 @@ const { levels, stats } = generateLevels(config, {
   },
 });
 
+levels.sort((a, b) => a.report.difficulty.score - b.report.difficulty.score || a.report.minMoves - b.report.minMoves); // never easier
+if (appendTo) console.log(`append to ${appendTo.pack.id}: max difficulty so far ${appendMin}, candidates in ascending order`);
 levels.forEach((l, i) => {
   l.level.id = `${prefix}-${String(i + 1).padStart(3, '0')}`;
   l.level.name = `${config.theme} #${i + 1}`;
