@@ -21,7 +21,7 @@ import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
 import { replay } from '../shared/replay.js';
 import { THEMES } from '../shared/levels.js';
-import { checkAppendOnly, checkCurve, checkCurveFrom, checkPackSize } from './lib/content-rules.js';
+import { checkAppendOnly, checkCurve, checkCurveFrom, checkPackSize, checkText, TEXT_LIMITS } from './lib/content-rules.js';
 import { ROOT } from './lib/content.js';
 import { packSlug, RESERVED_SLUGS } from '../client/game/routes.js';
 
@@ -30,6 +30,7 @@ const errors = [];
 const ids = new Map();
 const sigs = new Map();
 let count = 0;
+let legacyTexts = 0; // English-only name / hint strings (#89 accepts them until #90)
 const themes = loadThemes();
 
 // the base revision's copy of a content file (null: the file does not exist there, e.g. a new pack)
@@ -75,6 +76,11 @@ const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.sl
 const slugs = new Map();
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
+  {
+    const c = checkText('name', pack.name, TEXT_LIMITS.pack);
+    for (const e of c.errors) errors.push(`${packFile}: ${e}`);
+    if (c.legacy) legacyTexts++;
+  }
   // URLs /<slug>/<n> (#63): a slug is lowercase-dashed, unique and never a page / file / API path
   const slug = packSlug(pack);
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) errors.push(`${packFile}: URL slug "${slug}" must be lowercase letters, digits and dashes`);
@@ -100,6 +106,11 @@ for (const { pack, packFile, levels } of loadPacks()) {
     if (basename(file, '.json') !== level.id) err(`file name does not match id ${level.id}`);
     if (ids.has(level.id)) err(`duplicate id (also in ${ids.get(level.id)})`);
     ids.set(level.id, at);
+    for (const [k, max] of [['name', TEXT_LIMITS.name], ['hint', TEXT_LIMITS.hint]]) {
+      const c = checkText(k, level[k], max);
+      for (const e of c.errors) err(e);
+      if (c.legacy) legacyTexts++;
+    }
     const v = validateLevel(level);
     for (const e of v.errors) err(e);
     if (!v.ok) continue;
@@ -145,4 +156,5 @@ if (errors.length) {
   console.log(`\n${errors.length} error(s) in ${count} levels`);
   process.exit(1);
 }
+if (legacyTexts) console.log(`note: ${legacyTexts} pack / level names and hints are still English-only strings (#90 / #92 write them in vi + en)`);
 console.log(`OK: ${count} levels valid${args.fast ? ' (structure only)' : ', solver-verified'}`);

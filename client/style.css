@@ -333,3 +333,18 @@ body.in-game .landing { display: none; }
 .result-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 6px; }
 .result-links .link { background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; gap: 6px; text-decoration: none; }
 .result-links .link svg { width: 16px; height: 16px; fill: currentColor; }
+
+/* language (#89). .lang-chip / .lang-link / .lang-links are design prototypes (?v-switch=2/3/5); the pick stays. */
+.lang-seg { grid-template-columns: repeat(2, 1fr); min-width: 104px; }
+.menu-foot .lang-seg .seg-btn { min-height: 40px; padding: 0 12px; }
+.lang-chip { position: absolute; top: calc(14px + var(--safe-top)); right: calc(14px + var(--safe-right)); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 20px; background: var(--panel); color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.lang-chip .ico, .lang-link .ico { width: 18px; height: 18px; display: inline-flex; }
+.lang-chip svg, .lang-link svg { width: 18px; height: 18px; }
+.lang-link { gap: 6px; background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; }
+.lang-links { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 6px; }
+.lang-links .link { background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; min-height: 36px; text-shadow: 0 2px 8px #000; }
+.lang-links .link.on { color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.lang-links .dot { color: var(--muted); }
+.lang-pick-title { line-height: 1.3; }
+.lang-pick-title .muted { font-size: 0.75em; font-weight: 500; }
+.seg-btn { white-space: nowrap; }

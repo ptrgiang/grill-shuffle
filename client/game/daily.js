@@ -3,6 +3,7 @@
 import { dayNumber } from '../../shared/challenge.js';
 import { PUZZLE_RULE_VERSION } from '../../shared/version.js';
 import { validateLevel } from '../../shared/levels.js';
+import { t } from '../i18n/index.js';
 
 /**
  * Advance the local streak with a daily win on `date` (YYYY-MM-DD, UTC). Winning the same day again changes
@@ -51,8 +52,8 @@ export function serverDailyLevel(info, code, date) {
 
 /** One line for the result screen from the server's verified answer (`POST /api/daily/result`). */
 export function rankLine({ players, percentile, bestMoves, moves }) {
-  if (!players || players <= 1) return 'You are the first chef on today’s grill!';
-  const better = percentile > 0 ? `Better than ${percentile}% of ${players} players.` : null;
-  if (moves <= bestMoves) return better ? `Today’s best! ${better}` : `You matched today’s best (${bestMoves} moves) among ${players} players.`;
-  return `${better ?? `${players} players today.`} Best today: ${bestMoves} moves.`;
+  if (!players || players <= 1) return t('rank.first');
+  const better = percentile > 0 ? t('rank.better', { percentile, players }) : null;
+  if (moves <= bestMoves) return better ? t('rank.todaysBest', { better }) : t('rank.matched', { best: bestMoves, players });
+  return t('rank.bestToday', { lead: better ?? t('rank.players', { players }), best: bestMoves });
 }

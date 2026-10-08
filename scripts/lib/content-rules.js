@@ -67,3 +67,23 @@ export function checkCurveFrom(what, pack, base) {
 
 /** Highest stored difficulty in a pack (generate:levels --append starts there). */
 export const packMaxDifficulty = (levels) => Math.max(...levels.map((l) => l.difficulty).filter((d) => typeof d === 'number'));
+
+/** Player-facing content text (#89): `{ vi, en }`, both non-empty, each within `max` characters. */
+export const TEXT_LIMITS = Object.freeze({ name: 28, hint: 160, pack: 24 });
+
+/**
+ * Checks one text field. A plain string is the legacy English-only form: accepted until #90 converts the shipped
+ * levels (`legacy: true`, reported as a count), never for new fields.
+ */
+export function checkText(what, value, max) {
+  if (value == null) return { errors: [], legacy: false };
+  if (typeof value === 'string') return { errors: value.length > max ? [`${what}: longer than ${max} characters`] : [], legacy: true };
+  const errors = [];
+  if (typeof value !== 'object' || Array.isArray(value)) return { errors: [`${what}: must be { "vi": …, "en": … }`], legacy: false };
+  for (const l of ['vi', 'en']) {
+    if (typeof value[l] !== 'string' || !value[l].trim()) errors.push(`${what}: missing ${l} text`);
+    else if (value[l].length > max) errors.push(`${what}: ${l} text longer than ${max} characters`);
+  }
+  for (const k of Object.keys(value)) if (k !== 'vi' && k !== 'en') errors.push(`${what}: unknown language "${k}"`);
+  return { errors, legacy: false };
+}

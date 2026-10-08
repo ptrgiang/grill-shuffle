@@ -45,7 +45,7 @@
   </head>
   <body>
     <div id="app">
-      <canvas id="stage" aria-label="Grill Shuffle game board"></canvas>
+      <canvas id="stage" aria-label="Grill Shuffle game board" data-i18n-aria="app.board"></canvas>
       <div id="ui"></div>
     </div>
 
@@ -53,12 +53,12 @@
     <main id="landing" class="landing">
       <header class="landing-hero">
         <h1><img src="/favicon.svg" alt="" width="44" height="44" />Grill Shuffle</h1>
-        <p class="tagline">A food sort &amp; match puzzle you play right in your browser.</p>
-        <a class="cta" href="/play">Play free</a>
+        <p class="tagline" data-i18n-html="landing.tagline">A food sort &amp; match puzzle you play right in your browser.</p>
+        <a class="cta" href="/play" data-i18n="landing.cta">Play free</a>
       </header>
       <section>
-        <h2>Sort the food, match three, clear the grill</h2>
-        <p>
+        <h2 data-i18n="landing.h.sort">Sort the food, match three, clear the grill</h2>
+        <p data-i18n="landing.p.sort">
           Grill Shuffle is a tactile grill puzzle game. Shrimp, steak, corn and drumsticks are scattered across sizzling
           grills: drag food between grills, put three of a kind together and watch them flame up and get served. Every
           level is a compact food puzzle with a move limit, and every one has been solved by a computer so you know a
@@ -66,55 +66,55 @@
         </p>
       </section>
       <section>
-        <h2>How to play</h2>
+        <h2 data-i18n="landing.h.how">How to play</h2>
         <ol>
-          <li>Drag a food item (or tap it, then tap a grill) to move it into an empty slot.</li>
-          <li>Three matching foods on one grill sizzle and clear.</li>
-          <li>Clear consecutive matches for a combo.</li>
-          <li>Finish the order before you run out of moves. Fewer moves earn more stars.</li>
+          <li data-i18n="landing.how.1">Drag a food item (or tap it, then tap a grill) to move it into an empty slot.</li>
+          <li data-i18n="landing.how.2">Three matching foods on one grill sizzle and clear.</li>
+          <li data-i18n="landing.how.3">Clear consecutive matches for a combo.</li>
+          <li data-i18n="landing.how.4">Finish the order before you run out of moves. Fewer moves earn more stars.</li>
         </ol>
       </section>
       <section>
-        <h2>Daily puzzle and friend challenges</h2>
-        <p>
+        <h2 data-i18n="landing.h.daily">Daily puzzle and friend challenges</h2>
+        <p data-i18n="landing.p.daily">
           A new BBQ puzzle every day, the same board for everyone. Finish any level and share a challenge link: your
           friends open the exact same grill and try to beat your move count.
         </p>
       </section>
       <section id="install">
-        <h2>Install Grill Shuffle on your phone or computer</h2>
-        <p>
+        <h2 data-i18n="landing.h.install">Install Grill Shuffle on your phone or computer</h2>
+        <p data-i18n="landing.p.install">
           Grill Shuffle is a web app: install it straight from the browser and it opens in its own window with its own
           icon, like a regular app. Nothing to download from a store, and your progress stays with you.
         </p>
-        <h3>iPhone and iPad (Safari)</h3>
+        <h3 data-i18n="landing.h.ios">iPhone and iPad (Safari)</h3>
         <ol>
-          <li>Open grillshuffle.thebuilder.work in Safari.</li>
-          <li>Tap the Share button (the square with an arrow pointing up).</li>
-          <li>Scroll down and tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li>
+          <li data-i18n="landing.ios.1">Open the game in Safari.</li>
+          <li data-i18n="landing.ios.2">Tap the Share button (the square with an arrow pointing up).</li>
+          <li data-i18n-html="landing.ios.3">Scroll down and tap <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li>
         </ol>
-        <h3>Android (Chrome, Edge, Samsung Internet)</h3>
+        <h3 data-i18n="landing.h.android">Android (Chrome, Edge, Samsung Internet)</h3>
         <ol>
-          <li>Open the game in your browser.</li>
-          <li>Tap <strong>Install app</strong> in the game menu, or open the browser menu (⋮) and tap
+          <li data-i18n="landing.android.1">Open the game in your browser.</li>
+          <li data-i18n-html="landing.android.2">Tap <strong>Install app</strong> in the game menu, or open the browser menu (⋮) and tap
             <strong>Install app</strong> / <strong>Add to Home screen</strong>.</li>
-          <li>Confirm with <strong>Install</strong>. Grill Shuffle appears with your other apps.</li>
+          <li data-i18n-html="landing.android.3">Confirm with <strong>Install</strong>. Grill Shuffle appears with your other apps.</li>
         </ol>
-        <h3>Windows, macOS, Linux and ChromeOS (Chrome or Edge)</h3>
+        <h3 data-i18n="landing.h.desktop">Windows, macOS, Linux and ChromeOS (Chrome or Edge)</h3>
         <ol>
-          <li>Open the game and click <strong>Install app</strong> in the menu, or the install icon at the right end of
+          <li data-i18n-html="landing.desktop.1">Open the game and click <strong>Install app</strong> in the menu, or the install icon at the right end of
             the address bar.</li>
-          <li>Click <strong>Install</strong>. Grill Shuffle gets a Start menu / Launchpad entry and can be pinned to the
+          <li data-i18n-html="landing.desktop.2">Click <strong>Install</strong>. Grill Shuffle gets a Start menu / Launchpad entry and can be pinned to the
             taskbar or Dock.</li>
         </ol>
-        <h3>Mac (Safari)</h3>
+        <h3 data-i18n="landing.h.mac">Mac (Safari)</h3>
         <ol>
-          <li>Open the game in Safari 17 or later.</li>
-          <li>Choose <strong>File → Add to Dock</strong>, then <strong>Add</strong>.</li>
+          <li data-i18n="landing.mac.1">Open the game in Safari 17 or later.</li>
+          <li data-i18n-html="landing.mac.2">Choose <strong>File → Add to Dock</strong>, then <strong>Add</strong>.</li>
         </ol>
-        <p>Firefox on a computer cannot install web apps: open the game in Chrome, Edge or Safari to install it.</p>
+        <p data-i18n="landing.p.firefox">Firefox on a computer cannot install web apps: open the game in Chrome, Edge or Safari to install it.</p>
       </section>
-      <footer>Grill Shuffle — an original food sorting puzzle. No downloads, no sign-up.</footer>
+      <footer data-i18n="landing.footer">Grill Shuffle — an original food sorting puzzle. No downloads, no sign-up.</footer>
     </main>
 
     <noscript>Grill Shuffle needs JavaScript and WebGL to run.</noscript>

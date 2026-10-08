@@ -7,6 +7,8 @@
 //   npm run variant-shots -- --issue 84 --pages "/levels@390x844m,/@1280x800"
 //   npm run variant-shots -- --issue 84 --variants 5 --labels "1:Road,2:Scroll,3:Postcards,4:Map,5:Notebook"
 //   npm run variant-shots -- --issue 84 --no-publish          (local only: shots/variants/84/)
+//   npm run variant-shots -- --issue 89 --set font ...         one issue, several decisions: `v-font=<v>` in the query
+//                                                              (client: variant('font')), its own comment per set
 //
 // Page specs as in pr-shots (<path>@<W>x<H>[m][+select][+unlock][+tap=<css>]). Captures this working tree only.
 import { readFileSync, writeFileSync, rmSync } from 'node:fs';
@@ -15,7 +17,9 @@ import { launchChrome } from './lib/browser.js';
 import { ROOT, parseArgs } from './lib/content.js';
 import { parsePage, addQuery, capture, publish, withSection, git, gh } from './lib/shots.js';
 
-const TAG = 'variant-shots';
+const tagOf = (set) => (set ? `variant-shots:${set}` : 'variant-shots');
+/** The query parameter of a set: `variant`, or `v-<set>`. */
+export const paramOf = (set) => (set ? `v-${set}` : 'variant');
 
 /** "1:Road,2:Long scroll" -> { 1: 'Road', 2: 'Long scroll' } */
 export function parseLabels(s) {
@@ -27,15 +31,15 @@ export function parseLabels(s) {
   return out;
 }
 
-/** The page spec of variant `v`: same viewport and flags, `variant=<v>` in the query, `-v<v>` in the file name. */
-export function variantPage(page, v) {
-  return { ...page, name: `${page.name}-v${v}`, url: addQuery(page.url, `variant=${v}`), variant: v };
+/** The page spec of variant `v`: same viewport and flags, `variant=<v>` (or `v-<set>=<v>`) in the query, `-v<v>` in the file name. */
+export function variantPage(page, v, set = null) {
+  return { ...page, name: `${page.name}-v${v}`, url: addQuery(page.url, `${paramOf(set)}=${v}`), variant: v };
 }
 
 /** The comment text: one sheet per page, the labels, and how to answer. */
-export function commentBody({ issue, sha, branch, count, labels, sheets, errors = 0 }) {
+export function commentBody({ issue, sha, branch, count, labels, sheets, errors = 0, set = null }) {
   const lines = [
-    `## ${count} variants for #${issue}`,
+    `## ${count} variants for #${issue}${set ? `: ${set}` : ''}`,
     `Branch \`${branch}@${sha}\`, captured by \`npm run variant-shots\` (headless Chrome, time frozen, quality high). Left to right: variant 1 to ${count}.`,
     '',
   ];
@@ -89,9 +93,9 @@ async function sheet(files, out, labels) {
 }
 
 /** The id of this issue's variant comment, or null. */
-function findComment(repo, issue) {
+function findComment(repo, issue, tag) {
   const all = JSON.parse(gh('api', `repos/${repo}/issues/${issue}/comments`, '--paginate'));
-  return all.find((c) => c.body?.includes(`<!-- ${TAG}:start -->`))?.id ?? null;
+  return all.find((c) => c.body?.includes(`<!-- ${tag}:start -->`))?.id ?? null;
 }
 
 async function main() {
@@ -103,14 +107,16 @@ async function main() {
   if (!args.pages || args.pages === true) throw new Error('--pages "<spec>,..." is required (the pages that show the change)');
   const pages = String(args.pages).split(',').map(parsePage);
   const labels = parseLabels(args.labels);
+  const set = args.set && args.set !== true ? String(args.set).replace(/[^a-z0-9-]/gi, '') : null;
+  const tag = tagOf(set);
   const publishIt = !args['no-publish'];
   const sha = git(ROOT, 'rev-parse', '--short', 'HEAD');
   const branch = git(ROOT, 'rev-parse', '--abbrev-ref', 'HEAD');
   if (git(ROOT, 'status', '--porcelain', '--untracked-files=no')) console.log('note: uncommitted changes are in the captures');
 
-  const outDir = join(ROOT, 'shots', 'variants', String(issue));
+  const outDir = join(ROOT, 'shots', 'variants', String(issue), ...(set ? [set] : []));
   rmSync(outDir, { recursive: true, force: true });
-  const shots = pages.flatMap((p) => Array.from({ length: count }, (_, i) => variantPage(p, i + 1)));
+  const shots = pages.flatMap((p) => Array.from({ length: count }, (_, i) => variantPage(p, i + 1, set)));
   const errors = await capture(ROOT, shots, join(outDir, 'raw'), 'variant');
   const sheets = [];
   for (const p of pages) {
@@ -123,19 +129,19 @@ async function main() {
   if (!publishIt) return;
 
   const repo = gh('repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner');
-  const dir = `issues/${issue}/${sha}`;
-  publish(sheets.map((s) => ({ src: s.file, name: `${s.name}.png` })), dir, `issue-${issue}: ${count} variants at ${sha}`);
+  const dir = `issues/${issue}/${sha}${set ? `/${set}` : ''}`;
+  publish(sheets.map((s) => ({ src: s.file, name: `${s.name}.png` })), dir, `issue-${issue}: ${count} variants${set ? ` (${set})` : ''} at ${sha}`);
   for (const s of sheets) s.url = `https://github.com/${repo}/blob/pr-shots/${dir}/${s.name}.png?raw=true`;
-  const text = commentBody({ issue, sha, branch, count, labels, sheets, errors: errors.length });
+  const text = commentBody({ issue, sha, branch, count, labels, sheets, errors: errors.length, set });
   const file = join(outDir, 'comment.md');
-  const id = findComment(repo, issue);
+  const id = findComment(repo, issue, tag);
   if (id) {
     const old = JSON.parse(gh('api', `repos/${repo}/issues/comments/${id}`)).body;
-    writeFileSync(file, withSection(old, text, TAG));
+    writeFileSync(file, withSection(old, text, tag));
     gh('api', '-X', 'PATCH', `repos/${repo}/issues/comments/${id}`, '-F', `body=@${file}`);
     console.log(`issue #${issue}: variant comment updated`);
   } else {
-    writeFileSync(file, withSection('', text, TAG).trimStart());
+    writeFileSync(file, withSection('', text, tag).trimStart());
     gh('issue', 'comment', String(issue), '--body-file', file);
     console.log(`issue #${issue}: variant comment posted`);
   }
