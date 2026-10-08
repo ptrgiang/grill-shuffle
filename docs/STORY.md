@@ -1,5 +1,8 @@
 # Story: Xe nướng của bà (Grandma's grill cart)
 
+The game is **Bà Năm's Grill** (owner, 2026-10-08; rebrand #93, domain banamgrill.thebuilder.work #94). Taglines:
+vi *"Bà Năm's Grill: xếp đồ nướng, theo dấu bà"*, en *"Bà Năm's Grill: a food-sorting puzzle from a Saigon alley"*.
+
 Owner direction 2026-10-08 (#78): the puzzle gets a story layer that is **Vietnamese-rooted, told mostly through
 motion**, and turns the packs into one journey the player wants to keep travelling. Story work comes before feature
 work in the roadmap (#35, milestone Story). Every player-facing string ships in **Vietnamese and English** from the
@@ -68,13 +71,13 @@ Keep the recurring cast small: a wordless story can carry only a few faces.
 
 ## The five stops
 
-| # | Pack | Place | Page keeper | Bà Năm's secret revealed | What the puzzle means here | Transition | Lead instrument |
+| # | Pack (vi / en name, #92) | Place | Page keeper | Bà Năm's secret revealed | What the puzzle means here | Transition | Lead instrument |
 |---|---|---|---|---|---|---|---|
-| 1 | Street BBQ | Saigon alley, evening | Cô Sáu | where she went, why; the alley is to be cleared | the evening rush on one cart: clear orders before the next wave | string lights flick on | plucked, pitch-bent lead (đàn bầu spirit) |
-| 2 | Beach Grill | central-coast fishing village | Chú Tư, fisherman | as a girl she sold fish from her father's boat | stacked trays = the tide bringing in more | wave wipe | bamboo flute |
-| 3 | Night Market (#22) | lantern town by a river | Chị Hoa, lantern stall (daughter of Bà Năm's old love) | the stall she once ran; a love she left for the family | locked grills = stalls that open as the night fills | lanterns light in sequence | đàn tranh-like arpeggio |
-| 4 | Mountain Camp (#23) | northwest highlands | a highland family (people and names agreed with the owner, reviewed by someone from the region) | the winter she was snowed in and taken in by them | frozen items (#8) = the cold she survived | mist parts | mouth harp / flute drone |
-| 5 | Rooftop Grill (#24) | Saigon: the tower's rooftop above where the alley was | Khang, then Bà Năm | why she let go: the cart was always meant for Út | grill heat (#25) = Khang's kitchen pressure | city lights wave on | full arrangement of the motif |
+| 1 | Hẻm Sài Gòn / Saigon Alley (`street_bbq`) | Saigon alley, evening | Cô Sáu | where she went, why; the alley is to be cleared | the evening rush on one cart: clear orders before the next wave | string lights flick on | plucked, pitch-bent lead (đàn bầu spirit) |
+| 2 | Làng Chài / Fishing Village (`beach_grill`) | central-coast fishing village | Chú Tư, fisherman | as a girl she sold fish from her father's boat | stacked trays = the tide bringing in more | wave wipe | bamboo flute |
+| 3 | Phố Lồng Đèn / Lantern Town (#22) | lantern town by a river | Chị Hoa, lantern stall (daughter of Bà Năm's old love) | the stall she once ran; a love she left for the family | locked grills = stalls that open as the night fills | lanterns light in sequence | đàn tranh-like arpeggio |
+| 4 | Bản Vùng Cao / Highland Village (#23) | northwest highlands | a highland family (people and names agreed with the owner, reviewed by someone from the region) | the winter she was snowed in and taken in by them | frozen items (#8) = the cold she survived | mist parts | mouth harp / flute drone |
+| 5 | Sân Thượng / The Rooftop (#24) | Saigon: the tower's rooftop above where the alley was | Khang, then Bà Năm | why she let go: the cart was always meant for Út | grill heat (#25) = Khang's kitchen pressure | city lights wave on | full arrangement of the motif |
 
 The trail structure is open-ended: Bà Năm cooked across the whole country, so later themes and seasonal events (#32:
 Tết, Trung thu) are "another person she once knew", never a forced sequel.
