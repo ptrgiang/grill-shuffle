@@ -7,7 +7,10 @@
 //   npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,/@1280x800"
 //   npm run pr-shots -- --pr 61 --base origin/main --no-publish     (local only: shots/pr/)
 //
-// Page spec: <path>@<W>x<H>[m][+select]   m = phone (touch, DPR 2), +select = tap-select a food first (game pages).
+// Page spec: <path>@<W>x<H>[m][+select][+unlock][+tap=<css>]
+//   m = phone (touch, DPR 2), +select = tap-select a food first (game pages), +unlock = every story level 3 stars
+//   first (locked packs open, e.g. /beach-grill/37), +tap=<css> = tap that element first (e.g. a HUD button:
+//   +tap=[data-booster=fan]; skipped quietly where it does not exist, as on a base without the feature).
 // Every URL gets freeze=1&quality=high&coach=0 (still frames, pinned tier); a base without those flags ignores them.
 // Pairs that differ by more than 0.4 % of their pixels are shown; the others are listed as unchanged.
 import { execFileSync } from 'node:child_process';
@@ -28,13 +31,16 @@ const git = (cwd, ...a) => execFileSync('git', a, { cwd, encoding: 'utf8', stdio
 const gh = (...a) => execFileSync('gh', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
 export function parsePage(spec) {
-  const m = /^(.+)@(\d+)x(\d+)(m?)(\+select)?$/.exec(spec.trim());
-  if (!m) throw new Error(`bad page spec "${spec}" (want /path@390x844m[+select])`);
-  const [, path, w, h, mobile, select] = m;
-  const name = `${path.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'menu'}-${w}x${h}${select ? '-select' : ''}`;
+  const m = /^(.+?)@(\d+)x(\d+)(m?)((?:\+(?:select|unlock|tap=[^+]+))*)$/.exec(spec.trim());
+  if (!m) throw new Error(`bad page spec "${spec}" (want /path@390x844m[+select][+unlock][+tap=<css>])`);
+  const [, path, w, h, mobile, flags] = m;
+  const select = /\+select(?=\+|$)/.test(flags), unlock = /\+unlock(?=\+|$)/.test(flags);
+  const tap = /\+tap=([^+]+)/.exec(flags)?.[1] ?? null;
+  const tapName = tap ? `-tap-${tap.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '')}` : '';
+  const name = `${path.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'menu'}-${w}x${h}${select ? '-select' : ''}${tapName}`;
   const q = 'freeze=1&quality=high&coach=0';
   const [page, hash] = path.split('#'); // the flags go in the query, before a #fragment
-  return { spec, name, url: page + (page.includes('?') ? '&' : '?') + q + (hash ? `#${hash}` : ''), w: +w, h: +h, mobile: !!mobile, select: !!select };
+  return { spec, name, url: page + (page.includes('?') ? '&' : '?') + q + (hash ? `#${hash}` : ''), w: +w, h: +h, mobile: !!mobile, select, unlock, tap };
 }
 
 /**
@@ -58,12 +64,28 @@ async function capture(root, pages, dir, label) {
       const { page, close } = await launchChrome({ width: p.w, height: p.h, mobile: p.mobile, dpr: p.mobile ? 2 : 1, life: 3 * 60_000 });
       try {
         collectPageErrors(page, errors, `${label} ${p.name}: `);
-        await page.goto(vite.url + p.url, { waitUntil: 'load', timeout: 60000 });
+        if (p.unlock) {
+          // open the menu, give every story level 3 stars (in memory: this profile is thrown away), then navigate
+          await page.goto(vite.url + '/?freeze=1&quality=high&coach=0', { waitUntil: 'load', timeout: 60000 });
+          // the menu renders after boot loaded the saved progress, which would overwrite stars given earlier
+          await page.waitForSelector('.menu', { timeout: 30000 });
+          await page.evaluate((u) => {
+            const gs = window.__gs;
+            for (const pk of gs.packs) for (const id of pk.levels) gs.app.progress[id] = { stars: 3 };
+            window.__gameReady = false;
+            history.pushState(null, '', u);
+            gs.go(location.pathname + location.search + location.hash, { replace: true });
+          }, p.url);
+        } else await page.goto(vite.url + p.url, { waitUntil: 'load', timeout: 60000 });
         await page.waitForFunction('window.__sandboxReady || window.__gameReady', { timeout: 30000 }).catch(() => {});
         await page.evaluate(() => document.fonts?.ready);
         await sleep(1800);
         if (p.select && !(await tapSelect(page).catch(() => false))) errors.push(`${label} ${p.name}: nothing to select`);
         if (p.select) await sleep(700);
+        if (p.tap && (await page.$(p.tap))) {
+          await page.tap(p.tap);
+          await sleep(900);
+        }
         await page.screenshot({ path: join(dir, `${p.name}.png`) });
       } finally {
         await close();
