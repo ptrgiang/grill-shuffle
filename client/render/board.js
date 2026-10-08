@@ -144,7 +144,7 @@ export class BoardView {
     holder.add(blob);
     holder.position.copy(this.slotPos(grill, slot));
     this.root.add(holder);
-    return { id: item.id, food: item.food, grill, slot, holder, mesh, blob, motion: null, phase: Math.random() * 6.28, hiddenUntil: 0 };
+    return { id: item.id, food: item.food, grill, slot, holder, mesh, blob, motion: null, phase: this.stage.frozen ? 0 : Math.random() * 6.28, hiddenUntil: 0 };
   }
 
   /** Converge the view on `state`: create missing items, drop stale ones, retarget everything to its slot. */
@@ -499,7 +499,7 @@ export class BoardView {
     if (this.hint && now > this.hint.until) this.hint = null;
     // ambient sizzle: embers off hot grills, wisps of steam off food
     this.ambient -= dt;
-    if (this.ambient <= 0 && this.grills.length) {
+    if (this.ambient <= 0 && this.grills.length && !this.stage.frozen) {
       this.ambient = 0.18 + Math.random() * 0.25;
       const gi = Math.floor(Math.random() * this.grills.length);
       const g = this.grills[gi];

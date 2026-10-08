@@ -6,6 +6,7 @@
 //                item (not the finger) is released
 //   burn-*: the burn levels (rules v3) won through tap / drag, the tray level included
 //   burn-char: lets an item char on purpose and expects the level lost with the "Burnt!" screen
+//   mobile-360: a full tap win on the smallest supported phone, 360 x 640 at DPR 3
 //   landscape: tap play on a phone held sideways (844 x 390, HUD in side columns, asymmetric camera frustum)
 //   layout-*: at 360x640, 390x844, 430x932, 844x390 and 1280x800 the game HUD and the menu never cover the board, the
 //             board stays on screen, and every control is a tap target of at least 44 x 44 px
@@ -311,6 +312,7 @@ try {
   await run('burn-two', { w: 1280, h: 800, mobile: false, levelId: 'street-012', mode: 'drag' });
   await run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' });
   await runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' });
+  await run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' });
   await run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' });
   for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
   await runQuality('quality', { w: 390, h: 844 });

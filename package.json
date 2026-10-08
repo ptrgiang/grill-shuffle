@@ -28,7 +28,9 @@
     "shot:match": "node scripts/shot-match.js",
     "ci": "npm run check && npm test && npm run validate:levels && npm run build",
     "db:migrate:local": "wrangler d1 migrations apply grill-shuffle --local",
-    "deploy": "npm run ci && wrangler deploy"
+    "deploy": "npm run ci && wrangler deploy",
+    "visual": "node scripts/visual.js",
+    "visual:accept": "node scripts/visual-accept.js"
   },
   "dependencies": {
     "three": "^0.186.1"

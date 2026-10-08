@@ -6,13 +6,18 @@ import { TIERS } from './quality.js';
 import { CAMERA_ELEVATION } from './layout.js';
 import { softDot } from './textures.js';
 
+const urlFlag = (name) => typeof location !== 'undefined' && new URLSearchParams(location.search).get(name) === '1';
+
 export class Stage {
   /**
    * @param canvas  the <canvas>
-   * @param opts    { theme, shadows, pixelRatioMax }
+   * @param opts    { theme, shadows, pixelRatioMax, frozen }
+   *                frozen: time stands still (dt 0 every frame: no ember drift, no bulb flicker, no ambient
+   *                particles), for pixel-compared screenshots. Default: the page URL has ?freeze=1.
    */
-  constructor(canvas, { theme = {}, shadows = true, pixelRatioMax = 2, preserveDrawingBuffer = false } = {}) {
+  constructor(canvas, { theme = {}, shadows = true, pixelRatioMax = 2, preserveDrawingBuffer = false, frozen = urlFlag('freeze') } = {}) {
     this.canvas = canvas;
+    this.frozen = frozen;
     this.theme = theme;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -230,9 +235,9 @@ export class Stage {
     const loop = (now) => {
       const raw = (now - last) / 1000;
       last = now;
-      const step = gate ? gate(raw) : raw;
+      const step = this.frozen ? 1 : gate ? gate(raw) : raw;
       if (step > 0) {
-        const dt = Math.min(0.05, step);
+        const dt = this.frozen ? 0 : Math.min(0.05, step);
         const t0 = performance.now();
         onFrame?.(dt);
         this.render(dt);

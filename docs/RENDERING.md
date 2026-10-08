@@ -109,6 +109,32 @@ follows through `stage.onTier` (particle density, blob shadows).
 ambience loop); `audio/audio.js` plays them through a compressor. Match sound = impact + sizzle + sparks + two-note
 serve chime; combo raises the chime's pitch, adds an octave layer at x2, brightness at x3, a flourish at x4+.
 
+## Visual regression
+
+`npm run visual` (`scripts/visual.js`) captures a fixed set of pages (food lineup, sandbox board, the game at 360×640,
+390×844, 430×932, 844×390 and 1280×800, the menu on a phone and a desktop) and pixel-compares each with
+`tests/visual/<name>.png`. Captures use `?freeze=1` (`Stage.frozen`: dt 0 every frame, so no ember drift, bulb
+flicker, wobble or ambient particles), `quality=high` and DPR 1, so two runs on one machine match to the pixel. A
+pixel counts as changed when a channel differs by more than 40; a capture fails above 0.4 % changed pixels. Diffs (red
+on a faded copy) go to `shots/visual/diff/`.
+
+Baselines come from CI (Linux headless Chrome, the `visual` workflow on PRs touching `client/`, `content/`,
+`shared/`): fonts and SwiftShader differ slightly per OS, so a Windows capture is never committed. The workflow
+uploads its captures and diffs as the `visual` artifact; after an intended change, `npm run visual:accept [-- <run>]`
+copies that run's captures into `tests/visual/`. `npm run visual -- --update` / `-- <name>` exist for local use.
+
+## Real-device checklist
+
+Before closing a mobile issue, on one iPhone (Safari) and one Android (Chrome), ideally also installed as an app:
+
+- First tap starts the sound; it survives an app switch and the lock screen; mute persists after reload.
+- Tap a food: it lifts, valid grills pulse, full ones dim; tap a grill moves it; tapping a full grill shakes it, and
+  vibrates on Android (iOS Safari has no vibration API).
+- Drag: the food rides above the finger and lands where the food (not the finger) is.
+- HUD: nothing covers the board in portrait and sideways; the notch / home bar never hides a control.
+- `?stats=1`: busy fps and the tier Auto picks (record in `docs/PERFORMANCE.md`).
+- Level 1 on a fresh install: the onboarding hand appears and disappears after the first move.
+
 ## Sandboxes
 
 `/sandbox/food` (lineup, `?grills=1`, sliders for cook/char/marks, `?spin=0` for stills, `?ui=0` hides the panel;

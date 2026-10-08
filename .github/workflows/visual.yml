@@ -1,0 +1,31 @@
+name: visual
+
+# Pixel-compares frozen captures of the game against tests/visual/ (scripts/visual.js). Baselines are made here, on
+# Linux: after an intended visual change, run `npm run visual:accept` locally to pull this run's captures, review, commit.
+on:
+  pull_request:
+    paths: ['client/**', 'content/**', 'shared/**', 'scripts/visual.js', 'scripts/lib/browser.js', 'tests/visual/**', 'package-lock.json', '.github/workflows/visual.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Capture and compare
+        run: npm run visual
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: visual
+          path: shots/visual
+          if-no-files-found: ignore
