@@ -32,6 +32,21 @@ Grill fields: `type` (`grill` | `tray`), `slots`, optional `layers` (each exactl
 ## Packs
 
 `content/levels/<pack>/pack.json` lists level ids in play order; the client bundles every pack at build time.
+Packs play in `order` (then id).
+
+### Unlocks
+
+`client/game/unlock.js` (pure). The first pack is open. Pack k opens when **every level of pack k-1 has a star and**
+the story star total reaches its theme's `unlock.stars`; once one of its levels has a star it stays open (appended
+levels or a raised requirement never lock a player out). Inside a pack levels open one by one (previous level won).
+Only story stars count, not dailies or challenges. The level select groups by pack: a locked pack shows its theme
+swatch and what it needs ("Finish Street BBQ and earn ★ 40"), its levels are not links. A deep link into a locked
+pack lands on `/levels` with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
+(the result screen offers "Levels" instead). The menu wears the theme of the level "Continue" opens.
+
+To see it with two packs: `npm run dev`, open `/levels?fixtures=1` (dev server only): `tests/fixtures/levels/test_mint`
+is a two-level pack on the `test_mint` theme (★ 40). `npm run test:e2e` (`packs-390`) checks lock, deep link, unlock
+and the pack's theme.
 
 ### Content rules (#62, decided 2026-10-08: the game's content direction)
 
@@ -157,7 +172,7 @@ the reference.
 
 | Key | What | Read by |
 |---|---|---|
-| `id`, `name`, `description` | snake_case id (one of `shared/levels.js` `THEMES`), display name | level select (#67) |
+| `id`, `name`, `description` | snake_case id (one of `shared/levels.js` `THEMES`), display name | `validate:levels` |
 | `foods` | the food catalog (below) | `validate:levels`, `generate:levels` |
 | `mechanics` | modifiers a level of this theme may use (`locked_grill`, `stacked_tray`, `prep_tray`, `burn_counter`) | `validate:levels` |
 | `palette` | `background` (clear colour), `vignette` (table edge darkening) | `Stage.setTheme` |
@@ -166,7 +181,7 @@ the reference.
 | `table` | `color` tint, wood `hue` / `saturation` / `lightness` (each plank adds a seeded 0–6 / 0–8 / 0–8), `planks`, `seed` | `textures.woodPlanks` |
 | `backdrop` | `preset` (`bokeh` sprites at the far edge, or `none`), `colors`, `count`, `opacity`, `size`, `height` | `Stage.setTheme` |
 | `ambience` | `preset` (`grill`), `hiss`, `rumble`, `crackle` (pops / s), `seed` | `synth.ambienceLoop`, `Audio.setAmbience` |
-| `unlock` | `{ "stars": N }`: stars needed to open the pack (UI: #67) | level select (#67) |
+| `unlock` | `{ "stars": N }`: story stars needed to open the pack (after the previous pack, see Unlocks) | `game/unlock.js` |
 
 The game applies the theme of the level being played (and of the menu's demo board): `Stage.setTheme` recolours the
 lights, background, table, the shared grill materials and the backdrop in place, and the ambience loop is rebuilt for

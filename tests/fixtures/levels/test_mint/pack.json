@@ -1,0 +1,12 @@
+{
+  "id": "test_mint",
+  "slug": "mint",
+  "theme": "test_mint",
+  "name": "Test Mint",
+  "order": 1,
+  "description": "Fixture pack (dev server, ?fixtures=1): a second pack, locked behind Street BBQ and the test_mint theme unlock (★ 40). Never shipped.",
+  "levels": [
+    "mint-001",
+    "mint-002"
+  ]
+}

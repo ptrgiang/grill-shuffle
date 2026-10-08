@@ -33,7 +33,8 @@ export function parsePage(spec) {
   const [, path, w, h, mobile, select] = m;
   const name = `${path.replace(/^\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'menu'}-${w}x${h}${select ? '-select' : ''}`;
   const q = 'freeze=1&quality=high&coach=0';
-  return { spec, name, url: path + (path.includes('?') ? '&' : '?') + q, w: +w, h: +h, mobile: !!mobile, select: !!select };
+  const [page, hash] = path.split('#'); // the flags go in the query, before a #fragment
+  return { spec, name, url: page + (page.includes('?') ? '&' : '?') + q + (hash ? `#${hash}` : ''), w: +w, h: +h, mobile: !!mobile, select: !!select };
 }
 
 /**

@@ -11,6 +11,7 @@ test('pr-shots: page specs', () => {
   assert.deepEqual([d.name, d.mobile, d.select], ['sandbox-board-level-street-003-1280x800', false, false]);
   assert.equal(d.url, '/sandbox/board?level=street-003&freeze=1&quality=high&coach=0');
   assert.equal(parsePage('/@390x844m').name, 'menu-390x844');
+  assert.equal(parsePage('/levels?fixtures=1#pack-test_mint@390x844m').url, '/levels?fixtures=1&freeze=1&quality=high&coach=0#pack-test_mint', 'flags before the #fragment');
   assert.throws(() => parsePage('/street-bbq/1'));
 });
 

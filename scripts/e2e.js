@@ -305,6 +305,54 @@ async function runQuality(name, { w, h }) {
   }
 }
 
+// #67: a second pack (dev fixture, ?fixtures=1) is locked behind Street BBQ + its theme's stars, deep links to it
+// land on the level select, and finishing the requirement opens it in its own theme.
+async function runPacks(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  try {
+    await page.goto(`${vite.url}/levels?fixtures=1`, { waitUntil: 'load' });
+    await page.waitForSelector('section.pack[data-pack="test_mint"]', { timeout: 30000 });
+    const locked = await page.evaluate(() => {
+      const sec = document.querySelector('section.pack[data-pack="test_mint"]');
+      sec.scrollIntoView({ block: 'center' });
+      const r = sec.getBoundingClientRect();
+      const cards = [...sec.nextElementSibling.querySelectorAll('.level-card')];
+      return { locked: sec.classList.contains('locked'), reason: sec.querySelector('.pack-lock')?.textContent, right: r.right, left: r.left, links: cards.filter((c) => c.tagName === 'A').length, cards: cards.length };
+    });
+    check(locked.locked && /Finish Street BBQ/.test(locked.reason) && /★ 40/.test(locked.reason), `${name}: the second pack shows locked with its requirement (${locked.reason})`);
+    check(locked.left >= 0 && locked.right <= w, `${name}: the locked pack header fits the ${w} px screen (${Math.round(locked.left)}..${Math.round(locked.right)})`);
+    check(locked.cards === 2 && locked.links === 0, `${name}: its levels are not playable (${locked.links}/${locked.cards} links)`);
+    await sleep(300);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
+
+    await page.evaluate(() => window.__gs.go('/mint/1'));
+    await page.waitForFunction(() => location.pathname === '/levels', { timeout: 10000 });
+    const landed = await page.evaluate(() => {
+      const r = document.querySelector('section.pack[data-pack="test_mint"]').getBoundingClientRect();
+      return { toast: document.querySelector('.toast.show')?.textContent ?? '', hash: location.hash, top: Math.round(r.top), inView: r.top >= 0 && r.bottom <= innerHeight };
+    });
+    check(/Test Mint is locked/.test(landed.toast), `${name}: a deep link into the locked pack lands on the level select with a toast (${landed.toast})`);
+    check(landed.hash === '#pack-test_mint' && landed.inView, `${name}: ...scrolled to that pack (${landed.hash}, top ${landed.top})`);
+
+    await page.evaluate(() => {
+      const gs = window.__gs;
+      for (const id of gs.packs.find((p) => p.id === 'street_bbq').levels) gs.app.progress[id] = { stars: 3 };
+      gs.go('/levels');
+    });
+    const open = await page.evaluate(() => !document.querySelector('section.pack[data-pack="test_mint"]').classList.contains('locked') && !!document.querySelector('a.level-card[href="/mint/1"]'));
+    check(open, `${name}: finishing Street BBQ with enough stars opens the pack`);
+    await page.evaluate(() => window.__gs.go('/mint/1'));
+    await page.waitForFunction(() => window.__gs.app.level?.id === 'mint-001', { timeout: 15000 });
+    const theme = await page.evaluate(() => window.__gs.stage.theme.id);
+    check(theme === 'test_mint', `${name}: its level plays in the pack's theme (${theme})`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 const vite = await startVite(ROOT);
 try {
@@ -318,6 +366,7 @@ try {
   await run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' });
   for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
   await runQuality('quality', { w: 390, h: 844 });
+  await runPacks('packs-390', { w: 390, h: 844 });
 } finally {
   vite.stop();
 }
