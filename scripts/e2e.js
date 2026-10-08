@@ -84,8 +84,8 @@ async function runLayout(w, h) {
     page.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => { const r = e.getBoundingClientRect(); return { sel, left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height, label: e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24) }; }).filter((r) => r.w > 0 && r.h > 0), sel);
   try {
     for (const [path, ui, controls] of [
-      ['/street-bbq/31', '.hud-top, .goal, .tool', '.hud button'],
-      ['/street-bbq/41', '.hud-top, .goal, .tool', '.hud button'], // + booster buttons
+      ['/saigon-alley/31', '.hud-top, .goal, .tool', '.hud button'],
+      ['/saigon-alley/41', '.hud-top, .goal, .tool', '.hud button'], // + booster buttons
       ['/?lang=en', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'], // ?lang: no first-launch picker
       ['/?lang=vi', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'], // Vietnamese labels run longer
     ]) {
@@ -121,7 +121,7 @@ async function run(name, { w, h, mobile, levelId, mode }) {
     await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     const path = await page.evaluate(() => location.pathname);
-    check(path === `/street-bbq/${STORY.indexOf(levelId) + 1}`, `${name}: /play/${levelId} is rewritten to /street-bbq/<on-screen number> (${path})`);
+    check(path === `/saigon-alley/${STORY.indexOf(levelId) + 1}`, `${name}: /play/${levelId} is rewritten to /saigon-alley/<on-screen number> (${path})`);
     await settle(page, 600);
     const state = () => page.evaluate(() => ({ status: window.__gs.state.status, movesUsed: window.__gs.state.movesUsed, grills: window.__gs.state.grills.map((g) => g.slots.map((x) => x && x.food)) }));
 
@@ -246,7 +246,7 @@ async function runCharred(name, { w, h, mobile, levelId }) {
   const errors = [];
   collectPageErrors(page, errors);
   try {
-    await page.goto(`${vite.url}/street-bbq/${STORY.indexOf(levelId) + 1}`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/saigon-alley/${STORY.indexOf(levelId) + 1}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     await settle(page, 600);
     const badges = await page.evaluate(() => window.__gs.state.grills.flatMap((g) => g.slots).filter((it) => it?.burn).length);
@@ -278,10 +278,10 @@ async function runQuality(name, { w, h }) {
   const errors = [];
   collectPageErrors(page, errors);
   try {
-    await page.goto(`${vite.url}/level/27?quality=low&coach=0`, { waitUntil: 'load' }); // an old (pre-#63) link
+    await page.goto(`${vite.url}/hem-sai-gon/27?quality=low&coach=0`, { waitUntil: 'load' }); // the Vietnamese slug (#92)
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     const url = await page.evaluate(() => location.pathname + location.search);
-    check(url === '/street-bbq/27?quality=low&coach=0', `${name}: the old /level/27 link lands on /street-bbq/27 with its query (${url})`);
+    check(url === '/saigon-alley/27?quality=low&coach=0', `${name}: the other language's slug lands on the English /saigon-alley/27 with its query (${url})`);
     await settle(page, 1500);
     check(await page.evaluate(() => window.__gs.stage.tierName) === 'low', `${name}: ?quality=low applies the low tier`);
     const frames = () => page.evaluate(() => window.__gs.stage.renderer.info.render.frame);
@@ -323,7 +323,7 @@ async function runBoosters(name, { w, h }) {
     return { movesUsed: s.movesUsed, boosters: s.boosters, grills: s.grills.map((g) => g.slots.map((x) => x && x.food)), armed: window.__gs.app.session.armed, tongs: btn('tongs') && { cls: btn('tongs').className, disabled: btn('tongs').disabled, charge: btn('tongs').querySelector('.charge').textContent } };
   });
   try {
-    await page.goto(`${vite.url}/street-bbq/41`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/saigon-alley/41`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     await settle(page, 600);
     const lvl = level('street-041');
@@ -367,7 +367,7 @@ async function runBoosters(name, { w, h }) {
     check(swapped && s.movesUsed === 0 && s.boosters.tray_swap === 0, `${name}: Tray Swap trades grills ${swap.from.grill} and ${swap.to.grill} with two taps (${JSON.stringify(s.grills)})`);
 
     // Torch (Street BBQ 32): tap the button, tap a food: it and two more of it are served as one match
-    await page.evaluate(() => window.__gs.go('/street-bbq/32'));
+    await page.evaluate(() => window.__gs.go('/saigon-alley/32'));
     await page.waitForFunction(() => window.__gs.app.level?.id === 'street-035', { timeout: 15000 });
     await settle(page, 600);
     const torch = boosterActions(createState(level('street-035')), 'torch')[0];
@@ -394,7 +394,7 @@ async function runReplay(name, { w, h }) {
   const want = replay(lvl, lvl.solver.solution).hash;
   const open = async (query) => {
     await page.evaluate(() => (window.__gameReady = false));
-    await page.goto(`${vite.url}/street-bbq/3?${query}`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/saigon-alley/3?${query}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     await settle(page, 500);
   };
@@ -458,17 +458,17 @@ async function runPacks(name, { w, h }) {
     check(st.shown === 'street_bbq' && st.tabLocked && st.tabFits && st.tabH >= 44, `${name}: /levels opens the Street BBQ tab; the Beach Grill tab shows locked, fits and is tappable (${JSON.stringify({ shown: st.shown, fits: st.tabFits, h: st.tabH })})`);
 
     await page.click('.pack-tab[data-pack="beach_grill"]');
-    await page.waitForFunction(() => location.pathname === '/levels/beach-grill', { timeout: 10000 });
+    await page.waitForFunction(() => location.pathname === '/levels/fishing-village', { timeout: 10000 });
     st = await tabState();
-    check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Street BBQ/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill tab (/levels/beach-grill) shows its requirement (${st.reason})`);
+    check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Saigon Alley/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill tab (/levels/fishing-village) shows its requirement (${st.reason})`);
     check(st.cards === 50 && st.links === 0, `${name}: its levels are not playable (${st.links}/${st.cards} links)`);
     await sleep(300);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
 
-    await page.evaluate(() => window.__gs.go('/beach-grill/1'));
-    await page.waitForFunction(() => location.pathname === '/levels/beach-grill', { timeout: 10000 });
+    await page.evaluate(() => window.__gs.go('/fishing-village/1'));
+    await page.waitForFunction(() => location.pathname === '/levels/fishing-village', { timeout: 10000 });
     const toast = await page.evaluate(() => document.querySelector('.toast.show')?.textContent ?? '');
-    check(/Beach Grill is locked/.test(toast), `${name}: a deep link into the locked pack lands on its tab with a toast (${toast})`);
+    check(/Fishing Village is locked/.test(toast), `${name}: a deep link into the locked pack lands on its tab with a toast (${toast})`);
 
     await page.evaluate(() => {
       const gs = window.__gs;
@@ -481,7 +481,7 @@ async function runPacks(name, { w, h }) {
     check(badge === `★ 150/${story * 3}`, `${name}: the star total counts story levels only, not dailies (${badge})`);
     st = await tabState();
     check(st.shown === 'beach_grill' && !st.tabLocked && !st.locked && st.links === 1, `${name}: finishing Street BBQ with enough stars opens the pack, and /levels now opens its tab (${JSON.stringify({ shown: st.shown, links: st.links })})`);
-    await page.evaluate(() => window.__gs.go('/beach-grill/1'));
+    await page.evaluate(() => window.__gs.go('/fishing-village/1'));
     await page.waitForFunction(() => window.__gs.app.level?.id === 'beach-001', { timeout: 15000 });
     const theme = await page.evaluate(() => window.__gs.stage.theme.id);
     check(theme === 'beach_grill', `${name}: its level plays in the pack's theme (${theme})`);
@@ -516,16 +516,18 @@ async function runLang(name, { w, h }) {
     await sleep(800);
     const again = await page.evaluate(() => ({ lang: document.documentElement.lang, asked: !!document.querySelector('.lang-pick') }));
     check(again.lang === 'vi' && !again.asked, `${name}: the choice is saved, no second question (${JSON.stringify(again)})`);
-    await page.evaluate(() => window.__gs.go('/street-bbq/3?coach=0'));
+    await page.evaluate(() => window.__gs.go('/saigon-alley/3?coach=0'));
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const viPath = await page.evaluate(() => location.pathname);
+    check(viPath === '/hem-sai-gon/3', `${name}: in Vietnamese the English slug is rewritten to the Vietnamese one (${viPath})`);
     const session = await page.evaluate(() => (window.__gsSession = window.__gs.app.session, true));
     await page.tap('.hud-top .icon-btn');
     await page.waitForSelector('.modal .lang-seg button[lang="en"]');
     await page.tap('.modal .lang-seg button[lang="en"]');
     await page.waitForFunction(() => document.documentElement.lang === 'en', { timeout: 10000 });
     await sleep(300);
-    const after = await page.evaluate(() => ({ title: document.querySelector('.modal h2')?.textContent, moves: document.querySelector('.moves-label')?.textContent, same: window.__gsSession === window.__gs.app.session }));
-    check(session && after.title === 'Paused' && after.moves === 'Moves' && after.same, `${name}: English from the pause menu relabels the HUD, keeps the level and the pause menu (${JSON.stringify(after)})`);
+    const after = await page.evaluate(() => ({ path: location.pathname, title: document.querySelector('.modal h2')?.textContent, moves: document.querySelector('.moves-label')?.textContent, same: window.__gsSession === window.__gs.app.session }));
+    check(session && after.path === '/saigon-alley/3' && after.title === 'Paused' && after.moves === 'Moves' && after.same, `${name}: English from the pause menu relabels the HUD and the URL, keeps the level and the pause menu (${JSON.stringify(after)})`);
     check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
   } finally {
     await close();

@@ -87,8 +87,8 @@ unchanged. Re-run after every visual fix: the section is replaced, older images 
   themes), or food / theme data in `shared/`.
 - **Pages**: pick the ones that SHOW the change, not just the default set. Spec `<path>@<W>x<H>[m][+select]`
   (`m` = phone with touch, `+select` = a food tap-selected first, `+unlock` = every story level 3★ first so locked
-  packs open, `+tap=<css>` = tap an element first, e.g. `+tap=[data-booster=fan]`), e.g. `/level/27@390x844m+select`,
-  `/level/31@1280x800`, `/@390x844m`, `/sandbox/food?spin=0&seed=1@1200x700`. A phone (390×844) always; desktop too
+  packs open, `+tap=<css>` = tap an element first, e.g. `+tap=[data-booster=fan]`), e.g. `/saigon-alley/27@390x844m+select`,
+  `/saigon-alley/31@1280x800`, `/@390x844m`, `/sandbox/food?spin=0&seed=1@1200x700`. A phone (390×844) always; desktop too
   when the layout or HUD changed; 360×640 / 844×390 when space is tight. States the URL cannot reach (a drag, a match
   burst) are described in words.
 - **Check them yourself** (Read the PNGs in `shots/pr/<n>/`) before reporting: the "after" must show the intended

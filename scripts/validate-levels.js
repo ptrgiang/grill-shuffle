@@ -23,7 +23,8 @@ import { replay } from '../shared/replay.js';
 import { THEMES } from '../shared/levels.js';
 import { checkAppendOnly, checkCurve, checkCurveFrom, checkPackSize, checkText, TEXT_LIMITS } from './lib/content-rules.js';
 import { ROOT } from './lib/content.js';
-import { packSlug, RESERVED_SLUGS } from '../client/game/routes.js';
+import { packSlugs, RESERVED_SLUGS } from '../client/game/routes.js';
+import { LANGS } from '../client/i18n/index.js';
 
 const args = parseArgs();
 const errors = [];
@@ -81,12 +82,16 @@ for (const { pack, packFile, levels } of loadPacks()) {
     for (const e of c.errors) errors.push(`${packFile}: ${e}`);
     if (c.legacy) legacyTexts++;
   }
-  // URLs /<slug>/<n> (#63): a slug is lowercase-dashed, unique and never a page / file / API path
-  const slug = packSlug(pack);
-  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) errors.push(`${packFile}: URL slug "${slug}" must be lowercase letters, digits and dashes`);
-  if (RESERVED_SLUGS.includes(slug)) errors.push(`${packFile}: URL slug "${slug}" is reserved (${RESERVED_SLUGS.join(', ')})`);
-  if (slugs.has(slug)) errors.push(`${packFile}: URL slug "${slug}" is also used by ${slugs.get(slug)}`);
-  slugs.set(slug, pack.id);
+  // URLs /<slug>/<n> (#63, #92): one slug per language in pack.json `slugs`, lowercase-dashed ASCII, unique across
+  // every pack and language, never a page / file / API path
+  if (!pack.slugs || LANGS.some((l) => typeof pack.slugs[l] !== 'string')) errors.push(`${packFile}: needs "slugs": { "vi": …, "en": … }`);
+  for (const [l, slug] of Object.entries(packSlugs(pack))) {
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) errors.push(`${packFile}: ${l} URL slug "${slug}" must be lowercase letters, digits and dashes`);
+    if (RESERVED_SLUGS.includes(slug)) errors.push(`${packFile}: ${l} URL slug "${slug}" is reserved (${RESERVED_SLUGS.join(', ')})`);
+    const other = slugs.get(slug);
+    if (other && other !== pack.id) errors.push(`${packFile}: URL slug "${slug}" is also used by ${other}`);
+    slugs.set(slug, pack.id); // the same slug in both languages of one pack is fine
+  }
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
   else if (pack.theme && !themes[pack.theme]) errors.push(`${packFile}: theme ${pack.theme} has no content/themes/${pack.theme}.json`);
   else if (pack.theme && !existsSync(themes[pack.theme].file.replace(/\.json$/, '.svg'))) errors.push(`${packFile}: theme ${pack.theme} needs an icon, content/themes/${pack.theme}.svg (level select tab)`);
@@ -156,5 +161,5 @@ if (errors.length) {
   console.log(`\n${errors.length} error(s) in ${count} levels`);
   process.exit(1);
 }
-if (legacyTexts) console.log(`note: ${legacyTexts} pack / level names and hints are still English-only strings (#90 / #92 write them in vi + en)`);
+if (legacyTexts) console.log(`note: ${legacyTexts} level names / hints are still English-only strings (#90 writes them in vi + en)`);
 console.log(`OK: ${count} levels valid${args.fast ? ' (structure only)' : ', solver-verified'}`);

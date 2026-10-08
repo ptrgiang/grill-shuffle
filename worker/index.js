@@ -1,5 +1,5 @@
 // Grill Shuffle Worker: the JSON API under /api/*. Everything else is Workers Static Assets (the Vite build), with
-// SPA fallback for /<pack>/<n> (e.g. /street-bbq/12), /level/<n>, /play, /p/<code>, /daily ... (wrangler.jsonc: not_found_handling = single-page-application).
+// SPA fallback for /<pack>/<n> (e.g. /hem-sai-gon/12, /saigon-alley/12), /play, /p/<code>, /daily ... (wrangler.jsonc: not_found_handling = single-page-application).
 //
 // The game never needs this to play: it runs locally and syncs here asynchronously. Results are stored as move
 // lists and re-played on the server with the same shared simulation before they count (`verified`).
