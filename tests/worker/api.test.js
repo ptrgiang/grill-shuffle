@@ -27,7 +27,7 @@ test('version and static fallthrough', async () => {
   assert.equal(v.status, 200);
   assert.equal(v.data.puzzleRuleVersion, 3);
   assert.equal(v.data.levels, STORY.length);
-  assert.equal((await call('GET', '/level/15')).data, 'asset');
+  assert.equal((await call('GET', '/hem-sai-gon/15')).data, 'asset');
   const page = await call('GET', '/play/street-001');
   assert.equal(page.data, 'asset');
 });

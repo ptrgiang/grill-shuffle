@@ -1,8 +1,8 @@
 // Grill Shuffle - app shell: routing, screens, and the game loop wiring.
 //
 //   /                 menu (+ SEO landing content below)
-//   /<pack>/<n>       story level n of a pack, as numbered on screen, e.g. /street-bbq/12 (routes.js; old
-//                     /level/<n> and /play/<id> URLs are rewritten to it)
+//   /<pack>/<n>       story level n of a pack, as numbered on screen, e.g. /hem-sai-gon/12 = /saigon-alley/12
+//                     (routes.js: one slug per language, rewritten to the current one; /play/<id> too)
 //   /play             the next unfinished story level
 //   /levels           level select
 //   /daily            today's puzzle (same board for everyone, UTC day)
@@ -14,7 +14,7 @@ import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
 import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-player.js';
-import { parseRoute as routeOf, levelPath as pathOf, levelPosition, packSlug } from './game/routes.js';
+import { parseRoute as routeOf, levelPath as pathOf, levelPosition, levelsPath } from './game/routes.js';
 import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
@@ -244,7 +244,7 @@ async function render() {
     const status = k > 0 ? packStatus(PACKS, k, app.progress, THEMES) : null;
     if (status && !status.open) {
       toast(t('pack.locked', { pack: pick(PACKS[k].name), reason: lockReason(status) }));
-      return go(`/levels/${packSlug(PACKS[k])}`, { replace: true });
+      return go(levelsPath(PACKS[k]), { replace: true });
     }
     const canonical = levelPath(lvl.id);
     if (canonical && location.pathname !== canonical) history.replaceState(null, '', canonical + location.search);
@@ -352,6 +352,8 @@ function useLang(l, { save = false } = {}) {
 function relabel() {
   if (app.route === 'menu' || app.route === 'levels') return render();
   if (app.route !== 'game' || !app.hud) return;
+  const path = app.mode === 'story' && !app.replay ? levelPath(app.level.id) : null; // the URL follows the language
+  if (path && location.pathname !== path) history.replaceState(null, '', path + location.search);
   const pause = app.modal?.dataset.kind === 'pause';
   closeModal();
   app.hud = new Hud(app.level, { replay: app.replay });
@@ -424,16 +426,17 @@ function challengePicker() {
   );
 }
 
-function showLevels(slug) {
+function showLevels(packId) {
   app.route = 'levels';
   app.hud = null;
   app.fit = null;
-  // one tab per pack (theme), numbered inside the pack (the URL number). /levels/<slug> picks the tab; plain /levels
+  // one tab per pack (theme), numbered inside the pack (the URL number). /levels/<slug> (either language) picks the tab; plain /levels
   // opens the pack "Continue" is in (old /levels#pack-<id> links too). A pack opens when the previous one is finished
   // and its theme's star requirement is met (game/unlock.js); a locked tab says what it needs.
   const hashId = location.hash.startsWith('#pack-') ? location.hash.slice(6) : null;
-  const sel = Math.max(0, PACKS.findIndex((p) => (slug ? packSlug(p) === slug : hashId ? p.id === hashId : p.levels.includes(nextStoryLevel()))));
+  const sel = Math.max(0, PACKS.findIndex((p) => (packId ? p.id === packId : hashId ? p.id === hashId : p.levels.includes(nextStoryLevel()))));
   const pack = PACKS[sel];
+  if (packId && location.pathname !== levelsPath(pack)) history.replaceState(null, '', levelsPath(pack)); // the other language's slug
   const card = (id, n) => {
     const lvl = getLevel(id);
     const open = levelOpen(PACKS, id, app.progress, THEMES);
@@ -455,7 +458,7 @@ function showLevels(slug) {
         ...PACKS.map((p, k) => {
           const st = packStatus(PACKS, k, app.progress, THEMES);
           const cls = `a.pack-tab${st.open ? '' : '.locked'}`;
-          return h(cls, { href: `/levels/${packSlug(p)}`, 'data-nav': true, 'data-pack': p.id, 'aria-current': k === sel ? 'page' : null },
+          return h(cls, { href: levelsPath(p), 'data-nav': true, 'data-pack': p.id, 'aria-current': k === sel ? 'page' : null },
             swatch(p),
             h('span.pack-tab-text', h('span.pack-tab-name', pick(p.name)), h('span.pack-tab-sub', st.open ? `★ ${storyStars([p], app.progress)}/${p.levels.length * 3}` : `★ ${st.need}`)),
             st.open ? null : iconEl('lock'),

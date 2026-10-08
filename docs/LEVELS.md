@@ -33,7 +33,11 @@ name ≤ 28, hint ≤ 160, pack name ≤ 24). A plain string is the legacy Engli
 
 ## Packs
 
-`content/levels/<pack>/pack.json` lists level ids in play order; the client bundles every pack at build time.
+Names (#92, after the story's stops): `street_bbq` = Hẻm Sài Gòn / Saigon Alley, `beach_grill` = Làng Chài / Fishing
+Village. Ids, theme ids and the history below keep the old working names (Street BBQ, Beach Grill).
+
+`content/levels/<pack>/pack.json` has `name` and `slugs` per language (#92: `{ "vi": "Hẻm Sài Gòn", "en": "Saigon Alley" }`,
+`{ "vi": "hem-sai-gon", "en": "saigon-alley" }`; slugs are lowercase ASCII, unique across packs and languages) and lists level ids in play order; the client bundles every pack at build time.
 Packs play in `order` (then id).
 
 ### Unlocks
@@ -42,7 +46,7 @@ Packs play in `order` (then id).
 the story star total reaches its theme's `unlock.stars`; once one of its levels has a star it stays open (appended
 levels or a raised requirement never lock a player out). Inside a pack levels open one by one (previous level won).
 Only story stars count, not dailies or challenges. The level select groups by pack: a locked pack shows its theme
-swatch and what it needs ("Finish Street BBQ and earn ★ 75"), its levels are not links. The level select has one
+swatch and what it needs ("Finish Saigon Alley and earn ★ 75"), its levels are not links. The level select has one
 **tab per pack** (`/levels/<slug>`, the theme's icon, name, stars or the requirement); plain `/levels` opens the tab of the
 pack "Continue" is in. A deep link into a locked pack lands on that pack's tab with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
 (the result screen offers "Levels" instead). The menu wears the theme of the level "Continue" opens.
@@ -97,7 +101,7 @@ each with a name, tier and hint. `tests/content/rules.test.js` covers the conten
 
 ## Beach Grill — curve (#17)
 
-The second pack (`/beach-grill/<n>`, theme `beach_grill`): a sunny beach look, catalog shrimp, salmon, corn, pepper,
+The second pack (`/fishing-village/<n>`, theme `beach_grill`): a sunny beach look, catalog shrimp, salmon, corn, pepper,
 skewer, sausage + the beach foods **squid, scallop, pineapple** (#70); mechanics prep tray, stacked tray and lock
 (no burn counters). Opens after Street BBQ with ★ 75. **Full: 50 levels**, its own curve from easy, never easier
 (#62). Levels 1–12 (#17) teach the basics and the mechanics; 13–50 (#70) bring one new food per stage, then mix all

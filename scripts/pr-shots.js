@@ -4,12 +4,12 @@
 //   <!-- pr-shots:start --> ... <!-- pr-shots:end -->   (replaced on every run, the rest of the body is kept).
 //
 //   npm run pr-shots                                   PR of the current branch, default pages
-//   npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,/@1280x800"
+//   npm run pr-shots -- --pages "/saigon-alley/27@390x844m+select,/@1280x800"
 //   npm run pr-shots -- --pr 61 --base origin/main --no-publish     (local only: shots/pr/)
 //
 // Page spec: <path>@<W>x<H>[m][+select][+unlock][+tap=<css>]
 //   m = phone (touch, DPR 2), +select = tap-select a food first (game pages), +unlock = every story level 3 stars
-//   first (locked packs open, e.g. /beach-grill/37), +tap=<css> = tap that element first (e.g. a HUD button:
+//   first (locked packs open, e.g. /fishing-village/37), +tap=<css> = tap that element first (e.g. a HUD button:
 //   +tap=[data-booster=fan]; skipped quietly where it does not exist, as on a base without the feature).
 // Every URL gets freeze=1&quality=high&coach=0 (still frames, pinned tier); a base without those flags ignores them.
 // Pairs that differ by more than 0.4 % of their pixels are shown; the others are listed as unchanged.
@@ -22,7 +22,7 @@ import { parsePage, capture, publish, withSection, git, gh } from './lib/shots.j
 export { parsePage, withSection };
 
 const args = parseArgs();
-const DEFAULT_PAGES = ['/street-bbq/1@390x844m', '/street-bbq/27@390x844m+select', '/street-bbq/27@844x390m', '/street-bbq/31@1280x800', '/@390x844m'];
+const DEFAULT_PAGES = ['/saigon-alley/1@390x844m', '/saigon-alley/27@390x844m+select', '/saigon-alley/27@844x390m', '/saigon-alley/31@1280x800', '/@390x844m'];
 const CHANNEL_TOL = 40, MAX_CHANGED = 0.004;
 const OUT = join(ROOT, 'shots', 'pr');
 

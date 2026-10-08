@@ -1,7 +1,14 @@
 {
   "id": "beach_grill",
   "theme": "beach_grill",
-  "name": "Beach Grill",
+  "name": {
+    "vi": "Làng Chài",
+    "en": "Fishing Village"
+  },
+  "slugs": {
+    "vi": "lang-chai",
+    "en": "fishing-village"
+  },
   "order": 1,
   "levels": [
     "beach-001",

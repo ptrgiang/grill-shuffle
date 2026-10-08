@@ -63,8 +63,9 @@ client/        browser game (Vite root)
                  replay-player.js (replay viewer: ?r=<actions>&h=<hash> or ?r=best, validated, then stepped through the
                  same session + BoardView.play; nothing recorded),
                  unlock.js (pure: pack / level unlocks, continue, next level),
-                 routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /street-bbq/12, n = position
-                 inside the pack; slug = pack.json `slug` or the id with dashes; old /level/<n> means Street BBQ),
+                 routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /hem-sai-gon/12 = /saigon-alley/12,
+                 n = position inside the pack; pack.json `slugs` { vi, en }: either opens it, links and the address bar
+                 use the current language's),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
   render/        stage.js (renderer, camera, lights, backdrop, theme, quality tier, rAF loop), quality.js (pure: tiers,
                  frame monitor, idle gate), layout.js (pure board layout + hit test),

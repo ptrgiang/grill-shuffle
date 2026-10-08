@@ -17,7 +17,7 @@
    npm run test:e2e                # when input / UI changed (safe headless launcher; -- --only replay,boosters for some groups)
    npm run shot -- --set           # when visuals changed: look at every PNG
    ```
-   After opening the PR, for any UI change: `npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,..."` puts
+   After opening the PR, for any UI change: `npm run pr-shots -- --pages "/saigon-alley/27@390x844m+select,..."` puts
    before / after pairs (main vs the branch) into the PR body, so the reviewer sees the change without a checkout.
    Design variants (a UI change the owner picks from, before the PR): prototypes read `?variant=<n>` through
    `client/ui/variant.js` (`variant()`; `<html data-variant>` for CSS), then
