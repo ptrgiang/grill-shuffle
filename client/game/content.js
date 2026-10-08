@@ -11,6 +11,9 @@ const themeFiles = import.meta.glob('../../content/themes/*.json', { eager: true
 const fixtures = import.meta.env?.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).get('fixtures') === '1';
 const fixtureLevels = fixtures ? import.meta.glob('../../tests/fixtures/levels/*/*.json', { eager: true, import: 'default' }) : {};
 const fixtureThemes = fixtures ? import.meta.glob('../../tests/fixtures/themes/*.json', { eager: true, import: 'default' }) : {};
+// theme icons: content/themes/<id>.svg next to the theme file (square, viewBox 0 0 48 48; validate:levels checks them)
+const iconFiles = import.meta.glob('../../content/themes/*.svg', { eager: true, query: '?raw', import: 'default' });
+const fixtureIcons = fixtures ? import.meta.glob('../../tests/fixtures/themes/*.svg', { eager: true, query: '?raw', import: 'default' }) : {};
 
 const packs = [];
 const levels = new Map();
@@ -21,6 +24,9 @@ for (const [path, data] of Object.entries({ ...levelFiles, ...fixtureLevels })) 
 packs.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id.localeCompare(b.id));
 
 export const THEMES = Object.fromEntries([...Object.values(fixtureThemes), ...Object.values(themeFiles)].map((t) => [t.id, t]));
+
+/** Theme id -> its icon's SVG markup (themes without one fall back to a colour swatch). */
+export const THEME_ICONS = Object.fromEntries(Object.entries({ ...fixtureIcons, ...iconFiles }).map(([path, svg]) => [path.split('/').pop().replace(/\.svg$/, ''), svg]));
 
 /** Packs for routes and the level select: { id, slug?, name, theme, levels } with only levels that exist. */
 export const PACKS = packs.map((p) => ({ ...p, levels: p.levels.filter((id) => levels.has(id)) }));

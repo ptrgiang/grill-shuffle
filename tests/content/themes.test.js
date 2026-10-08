@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { THEME_DEFAULTS, resolveTheme, validateTheme } from '../../shared/themes.js';
+import { THEME_DEFAULTS, resolveTheme, validateTheme, validateThemeIcon } from '../../shared/themes.js';
 import { ambienceLoop } from '../../client/audio/synth.js';
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
@@ -50,4 +50,21 @@ test('themes: ambience defaults reproduce the shipped loop; params change it', (
   const base = ambienceLoop(sr);
   assert.deepEqual(ambienceLoop(sr, THEME_DEFAULTS.ambience), base);
   assert.notDeepEqual(ambienceLoop(sr, resolveTheme(mint).ambience), base);
+});
+
+test('themes: every shipped theme icon (and the fixture) is a safe 48x48 SVG', () => {
+  for (const p of ['../../content/themes/street_bbq.svg', '../../content/themes/beach_grill.svg', '../fixtures/themes/test_mint.svg']) {
+    assert.deepEqual(validateThemeIcon(readFileSync(new URL(p, import.meta.url), 'utf8')), [], p);
+  }
+});
+
+test('themes: icon validation rejects scripts, handlers, links, wrong grid, oversize', () => {
+  const ok = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48"/></svg>';
+  assert.deepEqual(validateThemeIcon(ok), []);
+  assert.match(validateThemeIcon(ok.replace('<rect', '<script>alert(1)</script><rect')).join(), /scripts/);
+  assert.match(validateThemeIcon(ok.replace('<rect', '<rect onclick="x()"')).join(), /event handlers/);
+  assert.match(validateThemeIcon(ok.replace('<rect', '<image href="https://x/y.png"/><rect')).join(), /images/);
+  assert.match(validateThemeIcon(ok.replace('0 0 48 48', '0 0 24 24')).join(), /viewBox/);
+  assert.match(validateThemeIcon(ok.replace('</svg>', `<!--${'x'.repeat(9000)}--></svg>`)).join(), /at most 8192/);
+  assert.match(validateThemeIcon('<div/>').join(), /single <svg/);
 });

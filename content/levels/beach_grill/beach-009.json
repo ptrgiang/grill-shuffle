@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-009",
+  "name": "Lifeguard Tower",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["skewer","skewer","sausage"],"layers":[[null,"pepper","pepper"]]},
+      {"slots":[null,null,null]},
+      {"slots":["sausage",null,"salmon"],"lock":1},
+      {"slots":["skewer",null,"salmon"],"layers":[["salmon","sausage","pepper"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "A locked grill opens after the number of matches on its lock.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 44,
+    "rating": "hard",
+    "states": 628,
+    "solution": "m0.2-1.0 m3.0-0.2 m2.0-1.1 m3.2-2.0 m3.0-2.1 m3.1-1.2 m3.2-0.0"
+  }
+}

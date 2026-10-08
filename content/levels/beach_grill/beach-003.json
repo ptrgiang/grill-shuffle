@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-003",
+  "name": "Sausage Sizzle",
+  "theme": "beach_grill",
+  "tier": "easy",
+  "moves": 7,
+  "board": {
+    "grills": [
+      {"slots":[null,"sausage",null]},
+      {"slots":["pepper",null,"skewer"]},
+      {"slots":["skewer","sausage","skewer"]},
+      {"slots":["sausage","pepper","pepper"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Fill the gaps first, then finish each grill.",
+  "solver": {
+    "minMoves": 4,
+    "difficulty": 18,
+    "rating": "easy",
+    "states": 114,
+    "solution": "m2.1-0.0 m1.2-2.1 m3.0-0.2 m1.0-3.0"
+  }
+}

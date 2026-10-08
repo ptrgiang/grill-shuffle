@@ -1,6 +1,7 @@
 // URL <-> screen, pure (no DOM). `packs`: [{ id, slug, levels: [level ids in play order] }] (content.js PACKS).
 //   /                 menu
-//   /levels           level select
+//   /levels           level select (tab of the pack "Continue" is in)
+//   /levels/<slug>    level select on that pack's tab, e.g. /levels/beach-grill
 //   /<slug>/<n>       story level n of a pack (1-based position inside the pack, the number shown on screen),
 //                     e.g. /street-bbq/12 (#63)
 //   /level/<n>        old URL (before packs): level n of Street BBQ (LEGACY_PACK); rewritten to /street-bbq/<n>
@@ -24,6 +25,7 @@ export function parseRoute(path, packs) {
   let m;
   if (p === '/') return { name: 'menu' };
   if (p === '/levels') return { name: 'levels' };
+  if ((m = /^\/levels\/([a-z0-9-]+)$/.exec(p))) return packs.some((k) => packSlug(k) === m[1]) ? { name: 'levels', pack: m[1] } : { name: 'levels' };
   if (p === '/daily') return { name: 'daily' };
   if (p === '/play') return { name: 'play' };
   if ((m = /^\/level\/(\d{1,4})$/.exec(p))) return levelAt(packs.find((k) => k.id === LEGACY_PACK), Number(m[1]));

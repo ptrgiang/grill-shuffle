@@ -45,3 +45,18 @@ test('shipped packs: Street BBQ keeps its 50 legacy levels exempt, from #51 the 
   assert.equal(street.pack.curveFrom, 51);
   for (const { pack, levels } of loadPacks()) assert.deepEqual(checkCurve(pack.id, levels.map(({ id, level }) => ({ id, difficulty: level.solver.difficulty })), pack.curveFrom ?? 1), []);
 });
+
+test('content: tools and the client agree on story order (pack.json `order`, then id)', async () => {
+  const { loadPacks } = await import('../../scripts/lib/content.js');
+  const packs = loadPacks().map((p) => p.pack);
+  const sorted = [...packs].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id.localeCompare(b.id));
+  assert.deepEqual(packs.map((p) => p.id), sorted.map((p) => p.id));
+  assert.equal(packs[0].id, 'street_bbq', 'Street BBQ plays first');
+});
+
+test('content rules: a pack holds at most 50 levels', async () => {
+  const { checkPackSize, MAX_PACK_LEVELS } = await import('../../scripts/lib/content-rules.js');
+  assert.equal(MAX_PACK_LEVELS, 50);
+  assert.deepEqual(checkPackSize('p', Array.from({ length: 50 }, (_, i) => `l${i}`)), []);
+  assert.match(checkPackSize('p', Array.from({ length: 51 }, (_, i) => `l${i}`)).join(), /51 levels, a pack holds at most 50/);
+});

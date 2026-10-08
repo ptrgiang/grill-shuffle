@@ -1,0 +1,20 @@
+{
+  "id": "beach_grill",
+  "theme": "beach_grill",
+  "name": "Beach Grill",
+  "order": 1,
+  "levels": [
+    "beach-001",
+    "beach-002",
+    "beach-003",
+    "beach-004",
+    "beach-005",
+    "beach-006",
+    "beach-007",
+    "beach-008",
+    "beach-009",
+    "beach-010",
+    "beach-011",
+    "beach-012"
+  ]
+}

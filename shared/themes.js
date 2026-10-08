@@ -92,3 +92,21 @@ export function validateTheme(theme) {
   if (theme.unlock?.stars !== undefined && !Number.isInteger(theme.unlock.stars)) err('unlock.stars must be an integer');
   return errors;
 }
+
+/** Size limit for a theme icon (content/themes/<id>.svg): it is inlined into the level select. */
+export const ICON_MAX_BYTES = 8192;
+
+/**
+ * Check a theme icon's SVG markup. It is inlined into the page, so: one <svg> with viewBox "0 0 48 48", no scripts,
+ * event handlers, links, embedded images or foreign objects, at most ICON_MAX_BYTES. Returns errors (empty = valid).
+ */
+export function validateThemeIcon(svg) {
+  const errors = [];
+  if (typeof svg !== 'string') return ['icon must be SVG text'];
+  const s = svg.trim();
+  if (!/^<svg\b[^>]*\bxmlns="http:\/\/www\.w3\.org\/2000\/svg"/.test(s) || !s.endsWith('</svg>')) errors.push('icon must be a single <svg xmlns="http://www.w3.org/2000/svg"> element');
+  if (!/^<svg\b[^>]*\bviewBox="0 0 48 48"/.test(s)) errors.push('icon needs viewBox="0 0 48 48" (square, drawn on a 48 grid)');
+  if (/<script|<foreignObject|<image|\bon[a-z]+\s*=|href\s*=|url\(/i.test(s)) errors.push('icon may not contain scripts, event handlers, links, images or url() references');
+  if (s.length > ICON_MAX_BYTES) errors.push(`icon is ${s.length} bytes, at most ${ICON_MAX_BYTES}`);
+  return errors;
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-011",
+  "name": "Sunset Rush",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":[null,"pepper",null],"layers":[["pepper","pepper","corn"]]},
+      {"slots":["pepper","corn","skewer"]},
+      {"slots":["skewer","sausage","corn"]},
+      {"slots":["sausage","sausage","pepper"],"lock":3},
+      {"slots":[null,"skewer","pepper"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "A lock and a hidden plate. Keep one grill free.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 44,
+    "rating": "hard",
+    "states": 1051,
+    "solution": "m1.0-0.0 m1.2-4.0 m2.2-1.0 m4.2-0.2 m0.2-1.2 m2.0-4.2 m3.2-0.2 m2.1-3.2"
+  }
+}

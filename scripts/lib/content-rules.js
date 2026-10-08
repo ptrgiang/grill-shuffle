@@ -1,11 +1,22 @@
-// Content rules (issue #62), pure: levels are only appended at the end of a pack, and inside a pack a level is never
-// easier than any level before it. validate-levels.js runs these against the base branch (git) in CI.
+// Content rules (issue #62, revised 2026-10-08), pure: a pack holds at most 50 levels, shipped levels keep their
+// position and id (new ones only at the end while there is room), and inside a pack a level is never easier than any
+// level before it. Levels themselves may be edited (harder, new mechanics / foods / boosters): validate:levels then
+// re-checks the curve. validate-levels.js runs these against the base branch (git) in CI.
 //
+//   0. at most MAX_PACK_LEVELS (50) levels per pack
 //   1. append only: the base's level list (and the share index) must be an exact prefix of the new one
 //   2. never easier: from position `curveFrom` (1-based, pack.json; default 1) on, each level's stored solver
 //      difficulty is >= the highest difficulty of every level before it in the pack (ties allowed)
 // `curveFrom` exempts levels shipped before the rule (Street BBQ 1-50). It can never be raised past what the base
 // already shipped, so it cannot be used to exempt new levels.
+
+/** A pack is full at this many levels: new features go into existing levels, not new ones. */
+export const MAX_PACK_LEVELS = 50;
+
+/** Rule 0: a pack holds at most MAX_PACK_LEVELS levels. */
+export function checkPackSize(what, levels) {
+  return levels.length > MAX_PACK_LEVELS ? [`${what}: ${levels.length} levels, a pack holds at most ${MAX_PACK_LEVELS} (put new features into existing levels instead)`] : [];
+}
 
 /** `base` (array or null for a new list) must be a prefix of `next`. Returns error strings, prefixed with `what`. */
 export function checkAppendOnly(what, base, next) {

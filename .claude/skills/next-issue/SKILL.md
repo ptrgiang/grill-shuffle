@@ -38,9 +38,11 @@ first part only. If something in the issue is ambiguous enough to change the des
 
 - Smallest coherent change; tests next to it (sim/solver/worker/client as relevant).
 - Always: `npm run ci` (check + tests + validate:levels + build).
-- Content (levels, packs, foods, mechanics with teaching levels): follow the content rules (`docs/LEVELS.md`, #62).
-  Append only, never easier, `generate:levels --append <pack>`. If an issue asks for something else (inserting a
-  teaching level mid-pack, a breather), ask the user first.
+- Content (levels, packs, foods, mechanics): follow the content rules (`docs/LEVELS.md`, #62 revised). Max 50 levels
+  per pack; a pack below 50 grows with `generate:levels --append <pack>`; a new feature (booster, mechanic, food) goes
+  into **existing** levels (edit + `solve -- <id> --write`), never into new levels or new packs just for it; never
+  easier; ids and positions never change. If an issue asks for something else (inserting a level mid-pack, a
+  breather, a 51st level), ask the user first.
 - Rule changes: bump `PUZZLE_RULE_VERSION`, `npm run solve -- --all --write`, `npm run validate:levels`, `npm run fuzz -- 20000`.
 - Input / UI / visuals: `npm run test:e2e`, `npm run shot -- --set`, and LOOK at the PNGs (desktop + 360/390/430 phones).
   Headless browsers only via `scripts/lib/browser.js`.

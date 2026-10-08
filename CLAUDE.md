@@ -18,10 +18,13 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
   (`npm run check` enforces it).
 - A rule change that can alter any move sequence's outcome bumps `PUZZLE_RULE_VERSION`, and needs
   `npm test` + `npm run solve -- --all` + `npm run validate:levels`. Never edit a shipped `CHALLENGE_PRESETS` version.
-- Content direction (#62, `docs/LEVELS.md` "Content rules"): levels are only **appended** to the end of a pack, never
-  inserted, reordered or removed; inside a pack a new level is never easier (solver difficulty ≥ every earlier level;
-  Street BBQ from #51, ≥ 58); each new pack has its own curve from easy; new foods / mechanics only in new levels.
-  `validate:levels` enforces it against the base branch. Ask the owner before any exception.
+- Content direction (#62, revised 2026-10-08 by the owner; `docs/LEVELS.md` "Content rules"): one pack per theme,
+  **at most 50 levels per pack**, each new theme has its own curve from easy and introduces its new foods. Shipped
+  levels keep their position and id (never inserted, reordered or removed; new ones only at the end while < 50).
+  **New features (boosters, mechanics, foods) go into existing levels, not new ones**: edit the level, raise its
+  difficulty if needed, `solve -- <id> --write`. Inside a pack a level is never easier than any level before it, also
+  after an edit (Street BBQ 1–50 are legacy-exempt). `validate:levels` enforces it against the base branch.
+  Ask the owner before any exception.
 - Levels are data. `moves` and `solver` blocks are written by `npm run solve -- <id> --write`, never by hand.
   Bulk content comes from `npm run generate:levels` into a staging folder, then human review.
 - Any headless browser goes through `scripts/lib/browser.js` (`launchChrome`). Never launch Chrome/Puppeteer

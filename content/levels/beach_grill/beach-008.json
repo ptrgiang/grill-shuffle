@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-008",
+  "name": "Sandcastle",
+  "theme": "beach_grill",
+  "tier": "normal",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["skewer",null,"shrimp"]},
+      {"slots":["sausage","skewer","sausage"]},
+      {"slots":[null,"corn",null],"layers":[["sausage","sausage","skewer"]]},
+      {"slots":["corn","sausage","shrimp"]},
+      {"slots":["corn","sausage","shrimp"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Count what is still hidden before you fill a grill.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 33,
+    "rating": "normal",
+    "states": 9197,
+    "solution": "m1.1-0.1 m3.0-2.0 m0.2-3.0 m3.1-1.1 m4.0-2.2 m2.2-0.2 m4.1-2.2 m4.2-3.1"
+  }
+}
