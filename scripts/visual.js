@@ -23,6 +23,7 @@ const q = 'freeze=1&quality=high&coach=0';
 const SET = [
   { name: 'food-lineup', path: `/sandbox/food?spin=0&seed=1&${q}`, w: 1200, h: 700 },
   { name: 'board-desktop', path: `/sandbox/board?level=street-003&anim=0&${q}`, w: 1280, h: 800 },
+  { name: 'theme-test-mint', path: `/sandbox/board?level=street-003&anim=0&theme=test_mint&${q}`, w: 1280, h: 800 }, // #21: a theme is data only
   { name: 'game-360x640', path: `/street-bbq/31?${q}`, w: 360, h: 640, mobile: true },
   { name: 'game-390x844', path: `/street-bbq/1?${q}`, w: 390, h: 844, mobile: true },
   { name: 'game-430x932', path: `/street-bbq/24?${q}`, w: 430, h: 932, mobile: true },

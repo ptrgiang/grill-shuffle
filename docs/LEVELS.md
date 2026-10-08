@@ -147,10 +147,39 @@ hard boards at 40 and 44) break up the climb: legacy only, new levels never dip 
 with hidden stacks an `expert` budget punishes a first look at the board. Burn-counter levels are not generated (the
 generator has no counters yet), so the three hand-made ones stay.
 
+## Theme format
+
+A theme is a content package, data only: `content/themes/<id>.json`, one per pack (`pack.json` `theme`). It sets how
+the pack looks and sounds, which foods and mechanics its levels may use, and what unlocks it. `shared/themes.js` holds
+the format: `THEME_DEFAULTS` (Street BBQ's look), `resolveTheme` (a partial file filled in from the defaults; nested
+objects merge, arrays replace) and `validateTheme`. `content/themes/street_bbq.json` spells every field out and is
+the reference.
+
+| Key | What | Read by |
+|---|---|---|
+| `id`, `name`, `description` | snake_case id (one of `shared/levels.js` `THEMES`), display name | level select (#67) |
+| `foods` | the food catalog (below) | `validate:levels`, `generate:levels` |
+| `mechanics` | modifiers a level of this theme may use (`locked_grill`, `stacked_tray`, `prep_tray`, `burn_counter`) | `validate:levels` |
+| `palette` | `background` (clear colour), `vignette` (table edge darkening) | `Stage.setTheme` |
+| `lights` | `sky` / `ground` (hemisphere), `key`, `rim` colours, their intensities, tone-mapping `exposure` | `Stage.setTheme` |
+| `grill` | `body`, `grate`, `grateGlow`, `handle`, `lid`, `chain`, `layerPlate`, `tray`, `trayRim`; `ember` { `bed`, `hot`, `warm`, `glow`, `fade`, `coal` } | `applyMaterialTheme`, `textures.embers` |
+| `table` | `color` tint, wood `hue` / `saturation` / `lightness` (each plank adds a seeded 0–6 / 0–8 / 0–8), `planks`, `seed` | `textures.woodPlanks` |
+| `backdrop` | `preset` (`bokeh` sprites at the far edge, or `none`), `colors`, `count`, `opacity`, `size`, `height` | `Stage.setTheme` |
+| `ambience` | `preset` (`grill`), `hiss`, `rumble`, `crackle` (pops / s), `seed` | `synth.ambienceLoop`, `Audio.setAmbience` |
+| `unlock` | `{ "stars": N }`: stars needed to open the pack (UI: #67) | level select (#67) |
+
+The game applies the theme of the level being played (and of the menu's demo board): `Stage.setTheme` recolours the
+lights, background, table, the shared grill materials and the backdrop in place, and the ambience loop is rebuilt for
+the new params. Colours are `#rrggbb`; unknown keys are errors, so a typo cannot fall back to the default silently.
+`?theme=<id>` on `/sandbox/board` and `/sandbox/food` shows any theme, including the test fixtures in
+`tests/fixtures/themes/` (`test_mint`: a partial theme, never in a pack; the `theme-test-mint` visual capture keeps it
+rendering). A new theme is a JSON file plus its id in `THEMES`: no code.
+
 ## Theme food catalogs
 
-Each theme declares the foods it serves (`content/themes/<id>.json` `foods`). `validate:levels` rejects a level that
-uses a food outside its theme's catalog; `generate:levels` draws from the catalog when `--foods` is not given and
+Each theme declares the foods it serves (`content/themes/<id>.json` `foods`). `validate:levels` checks every theme
+file against the format, rejects a level that uses a food outside its theme's catalog or a mechanic outside its
+`mechanics`, and a pack whose theme has no file; `generate:levels` draws from the catalog when `--foods` is not given and
 refuses foods outside it (`resolveConfig({ catalog })` in `solver/generator.js`). Shipped challenge presets keep
 their explicit food lists.
 

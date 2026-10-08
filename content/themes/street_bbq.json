@@ -2,12 +2,65 @@
   "id": "street_bbq",
   "name": "Street BBQ",
   "description": "A warm evening street grill: charcoal glow, string lights, a worn wooden counter.",
-  "background": "#1b1420",
-  "skyLight": "#ffd6b0",
-  "groundLight": "#3a2030",
-  "keyLight": "#ffe3c4",
-  "rimLight": "#ff9a5a",
   "foods": ["shrimp", "beef", "chicken", "corn", "carrot", "salmon", "bread", "sausage", "mushroom", "pepper", "skewer"],
-  "ambience": "grill",
-  "mechanics": ["locked_grill", "stacked_tray", "prep_tray"]
+  "mechanics": ["locked_grill", "stacked_tray", "prep_tray", "burn_counter"],
+  "palette": {
+    "background": "#1b1420",
+    "vignette": "#0a040c"
+  },
+  "lights": {
+    "sky": "#ffd6b0",
+    "ground": "#3a2030",
+    "key": "#ffe3c4",
+    "rim": "#ff9a5a",
+    "skyIntensity": 1.25,
+    "keyIntensity": 2.1,
+    "rimIntensity": 0.7,
+    "exposure": 1.05
+  },
+  "grill": {
+    "body": "#3a3440",
+    "grate": "#1e1b20",
+    "grateGlow": "#3a0f00",
+    "handle": "#7a4a2a",
+    "lid": "#5c6670",
+    "chain": "#9aa3ad",
+    "layerPlate": "#4a4250",
+    "tray": "#c89660",
+    "trayRim": "#8a5a34",
+    "ember": {
+      "bed": "#2a0d05",
+      "hot": "#ffbe5a",
+      "warm": "#ff5a14",
+      "glow": "#a01e05",
+      "fade": "#280802",
+      "coal": "#140c0a"
+    }
+  },
+  "table": {
+    "color": "#9a8070",
+    "hue": 28,
+    "saturation": 22,
+    "lightness": 34,
+    "planks": 6,
+    "seed": 11
+  },
+  "backdrop": {
+    "preset": "bokeh",
+    "colors": ["#ffcf7a", "#ffb35c", "#ffe9a8", "#ff8f5c"],
+    "count": 26,
+    "opacity": 0.35,
+    "size": 0.55,
+    "height": 1.2
+  },
+  "ambience": {
+    "preset": "grill",
+    "hiss": 0.14,
+    "rumble": 2.2,
+    "crackle": 7,
+    "seed": 21
+  },
+  "unlock": {
+    "stars": 0
+  }
 }

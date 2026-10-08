@@ -26,7 +26,7 @@ export function loadPacks() {
 
 export const THEMES_DIR = join(ROOT, 'content', 'themes');
 
-/** Theme definitions by id (content/themes/*.json): look, ambience and the theme's food catalog (`foods`). */
+/** Theme files by id (content/themes/*.json, format: shared/themes.js), each with its `file` path. */
 export function loadThemes() {
   const out = {};
   for (const f of readdirSync(THEMES_DIR)) if (f.endsWith('.json')) {

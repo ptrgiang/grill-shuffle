@@ -43,6 +43,23 @@ export class Audio {
     this.AC = AudioContext ?? globalThis.AudioContext ?? globalThis.webkitAudioContext;
     this.idle = idle ?? ((fn) => (globalThis.requestIdleCallback ? globalThis.requestIdleCallback(fn, { timeout: 200 }) : setTimeout(fn, 16)));
     this.warming = false;
+    this.ambienceParams = null; // theme `ambience` (null: synth defaults)
+    this.ambienceKey = '0';
+  }
+
+  /** The theme's ambience params ({ hiss, rumble, crackle, seed }). A change swaps the running loop. */
+  setAmbience(params = null) {
+    const key = params == null ? '0' : JSON.stringify(params);
+    if (key === this.ambienceKey) return;
+    this.ambienceParams = params;
+    this.ambienceKey = key;
+    if (!this.ambSrc) return; // not started yet: the warm-up starts the right one
+    try {
+      this.ambSrc.stop?.();
+    } catch {}
+    this.ambSrc.disconnect?.();
+    this.ambSrc = null;
+    this.idle(() => this.ambienceOn && this.startAmbience()); // building a 6 s loop: not inside the click
   }
 
   /**
@@ -133,10 +150,11 @@ export class Audio {
   }
 
   buffer(name, variant = 0) {
-    const key = `${name}:${variant}`;
+    const amb = name === 'ambience'; // one loop per theme ambience
+    const key = amb ? `ambience:${this.ambienceKey}` : `${name}:${variant}`;
     if (!this.buffers.has(key)) {
       const sr = this.ctx.sampleRate;
-      const data = SOUNDS[name](sr, variant);
+      const data = SOUNDS[name](sr, amb ? this.ambienceParams : variant);
       const b = this.ctx.createBuffer(1, data.length, sr);
       b.copyToChannel(data, 0);
       this.buffers.set(key, b);
