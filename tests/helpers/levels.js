@@ -1,5 +1,5 @@
 // Tiny level builders for tests. Grill shorthand: a string of food letters and '.', e.g. 'ss.' = shrimp, shrimp, empty.
-//   s shrimp  b beef  c chicken  k corn  r carrot  l salmon  d bread
+//   s shrimp  b beef  c chicken  k corn  r carrot  l salmon  d bread  u sausage  m mushroom  p pepper  w skewer
 // Prefix 'T:' makes a prep tray, suffix '#N' locks it for N matches, '/xyz' adds stacked layers, 's4' burns (see cells).
 
 import { foodFromCode } from '../../shared/foods.js';

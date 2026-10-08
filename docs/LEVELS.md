@@ -154,6 +154,10 @@ uses a food outside its theme's catalog; `generate:levels` draws from the catalo
 refuses foods outside it (`resolveConfig({ catalog })` in `solver/generator.js`). Shipped challenge presets keep
 their explicit food lists.
 
+Street BBQ serves sausage, mushroom, bell pepper and skewer too (#39). No shipped level uses them; each arrives through
+a teaching level appended at the end of the pack (rule 5). Until then pass `--foods` to `generate:levels --append
+street_bbq`, or the default draw from the whole catalog brings them in unannounced.
+
 ## Growing content (agent workflow)
 
 > Generate 100 Night Market levels at difficulty 35–55 using shrimp, beef, chicken, corn, locked grills and hidden slots.

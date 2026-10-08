@@ -7,7 +7,7 @@
   "groundLight": "#3a2030",
   "keyLight": "#ffe3c4",
   "rimLight": "#ff9a5a",
-  "foods": ["shrimp", "beef", "chicken", "corn", "carrot", "salmon", "bread"],
+  "foods": ["shrimp", "beef", "chicken", "corn", "carrot", "salmon", "bread", "sausage", "mushroom", "pepper", "skewer"],
   "ambience": "grill",
   "mechanics": ["locked_grill", "stacked_tray", "prep_tray"]
 }
