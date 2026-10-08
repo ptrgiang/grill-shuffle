@@ -2,13 +2,14 @@
 // the owner's pick). Pure SVG strings (no DOM, no text), so the menu, the favicon and the app icons
 // (scripts/make-icons.js) all draw the same picture.
 //
-// Round 3 prototypes (?variant=1..5, removed after the pick): five traditional ways to grill in front of her, with the
-// skewers laid the way street vendors do, across the firebox from rim to rim, bamboo ends pointing at the viewer.
+// Round 4 prototypes (?variant=1..5, removed after the pick): the round-2 cart in five non-wood materials (old red
+// tin, stainless, galvanised tôn, blue painted iron, stainless with a glass cabinet). The skewers lie the way street
+// vendors lay them: across the firebox from rim to rim on two rails, bamboo ends pointing at the viewer.
 
 const P = {
   skin: '#f2c6a0', skinShade: '#d99e78', hair: '#e9e4dc', hairShade: '#b9b1a6', ink: '#3a2a26',
   shirt: '#3e4c7c', shirtDark: '#2b365c', rim: '#7e1f1a', field: '#f3b25e', glow: '#ffd27a',
-  wood: '#8a5a34', woodDark: '#5e3a20', woodLight: '#b07a4a', tin: '#a9aeb1', tinDark: '#6c7276', clay: '#b5653a', clayDark: '#7e3f22',
+  tin: '#a9aeb1', tinDark: '#6c7276',
   bamboo: '#d9b779', bambooDark: '#a8844a', pork: '#a0452a', porkDark: '#5e2414', fat: '#e8b48a',
 };
 
@@ -78,67 +79,72 @@ const fan = (cx, cy, rot, r = 13) => `<g transform="rotate(${rot} ${cx} ${cy})">
   <circle cx="${cx}" cy="${cy}" r="${r * 0.66}" fill="none" stroke="#b8945a" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="${r * 0.34}" fill="none" stroke="#b8945a" stroke-width="1"/>
   <path d="M${cx - r} ${cy} H${cx + r} M${cx} ${cy - r} V${cy + r} M${cx - r * 0.7} ${cy - r * 0.7} L${cx + r * 0.7} ${cy + r * 0.7} M${cx + r * 0.7} ${cy - r * 0.7} L${cx - r * 0.7} ${cy + r * 0.7}" stroke="#b8945a" stroke-width=".8"/></g>`;
 
-/** A wooden cart wheel with an iron tyre. */
-function woodWheel(cx, cy, r = 13) {
-  const sp = Array.from({ length: 6 }, (_, i) => {
-    const a = (Math.PI * i) / 6;
-    return `M${(cx - Math.cos(a) * r * 0.8).toFixed(1)} ${(cy - Math.sin(a) * r * 0.8).toFixed(1)} L${(cx + Math.cos(a) * r * 0.8).toFixed(1)} ${(cy + Math.sin(a) * r * 0.8).toFixed(1)}`;
-  }).join(' ');
-  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#3a2a20"/><circle cx="${cx}" cy="${cy}" r="${r - 2.4}" fill="none" stroke="${P.woodLight}" stroke-width="3"/>
-  <path d="${sp}" stroke="${P.woodLight}" stroke-width="2.2"/><circle cx="${cx}" cy="${cy}" r="3.2" fill="${P.woodDark}" stroke="#2a1c14" stroke-width="1"/>`;
-}
-
-const planks = (x0, y0, w, h, n) =>
-  Array.from({ length: n }, (_, i) => {
-    const y = y0 + (i * h) / n;
-    return `<rect x="${x0}" y="${y.toFixed(1)}" width="${w}" height="${(h / n - 0.8).toFixed(1)}" fill="${i % 2 ? P.wood : '#94603a'}"/>` +
-      `<path d="M${x0 + 8 + i * 9} ${(y + 2).toFixed(1)} q14 2 30 0 M${x0 + 60 + i * 7} ${(y + 3).toFixed(1)} q12 -2 24 0" fill="none" stroke="${P.woodDark}" stroke-width=".7" opacity=".6"/>`;
-  }).join('');
-
 const shadow = (w = 66) => `<ellipse cx="100" cy="205" rx="${w}" ry="4.5" fill="#000" opacity=".22"/>`;
 
-const SCENES = {
-  // 1: an old wooden push cart: plank body, tin firebox on top, wooden wheels with iron tyres, two shafts to push
-  1: (id) => `${shadow()}${smoke(id, [50, 150], 134)}
-    ${firebox(id, 36, 164, 122, 153, 6, 5)}
-    ${planks(36, 159, 128, 27, 4)}
-    <rect x="34" y="156" width="132" height="3" fill="${P.woodDark}"/><rect x="34" y="156" width="4" height="34" fill="${P.woodDark}"/><rect x="162" y="156" width="4" height="34" fill="${P.woodDark}"/>
-    <path d="M164 160 L190 152 M164 170 L190 162" stroke="${P.woodDark}" stroke-width="3.4" stroke-linecap="round"/>
-    ${woodWheel(62, 192)}${woodWheel(138, 192)}${fan(26, 170, -16)}`,
-  // 2: a clay brazier (lò đất) and a hinged wire grill (vỉ kẹp) held over it, the fan in her other hand
-  2: (id) => `${shadow(46)}${smoke(id, [72, 132], 138)}
-    <path d="M58 160 Q100 152 142 160 L136 196 Q100 204 64 196 Z" fill="${P.clay}"/>
-    <path d="M58 160 Q100 152 142 160 Q100 168 58 160 Z" fill="url(#${id}-coal)"/>
-    <path d="M62 174 Q100 182 138 174 M64 186 Q100 194 136 186" fill="none" stroke="${P.clayDark}" stroke-width="1.6" opacity=".7"/>
-    <rect x="88" y="180" width="24" height="12" rx="3" fill="#2a1410"/><rect x="91" y="183" width="18" height="6" rx="2" fill="url(#${id}-vent)"/>
-    <g transform="rotate(-6 100 148)"><rect x="62" y="140" width="76" height="16" rx="2" fill="none" stroke="#8a8f92" stroke-width="2"/>
-    ${[0, 1, 2, 3, 4, 5].map((i) => `<ellipse cx="${70 + i * 12}" cy="148" rx="6" ry="4.4" fill="${i % 3 === 1 ? P.fat : P.pork}"/>`).join('')}
-    <path d="${Array.from({ length: 10 }, (_, i) => `M${64 + i * 8} 140 V156`).join(' ')} M62 148 H138" stroke="#9aa0a3" stroke-width=".8"/>
-    <path d="M138 146 L176 138 M138 150 L176 142" stroke="#8a8f92" stroke-width="2.2" stroke-linecap="round"/><rect x="170" y="136" width="14" height="9" rx="3" transform="rotate(-12 177 140)" fill="${P.woodDark}"/></g>
-    ${fan(30, 166, -20)}`,
-  // 3: a gánh (shoulder pole): her pole across the frame, a woven basket with a small firebox and skewers on each side
-  3: (id) => `${shadow(80)}<path d="M8 142 L192 130" stroke="${P.bamboo}" stroke-width="5" stroke-linecap="round"/><path d="M8 142 L192 130" stroke="${P.bambooDark}" stroke-width="1" stroke-dasharray="14 10"/>
-    ${smoke(id, [46], 140)}
-    <path d="M24 141 L18 166 M40 140 L46 166 M160 132.5 L154 162 M176 131.5 L182 162" stroke="#6b4a2a" stroke-width="1.4"/>
-    <g>${firebox(id, 14, 74, 158, 171, 4, 3)}<path d="M10 175 Q44 168 78 175 L72 198 Q44 205 16 198 Z" fill="${P.bamboo}"/><path d="M12 182 Q44 176 76 182 M14 190 Q44 184 74 190" fill="none" stroke="${P.bambooDark}" stroke-width="1.2"/><path d="M20 176 l6 22 M34 173 l2 28 M50 173 l-2 28 M64 175 l-6 22" stroke="${P.bambooDark}" stroke-width=".9"/></g>
-    <g><path d="M140 160 Q166 154 196 160 L190 184 Q166 190 146 184 Z" fill="${P.bamboo}"/><path d="M142 168 Q168 162 194 168 M144 176 Q168 170 192 176" fill="none" stroke="${P.bambooDark}" stroke-width="1.2"/>
-    <ellipse cx="160" cy="157" rx="10" ry="3.6" fill="#f4efe6" stroke="#5a7aa8" stroke-width="1.4"/><ellipse cx="160" cy="154" rx="10" ry="3.6" fill="#f4efe6" stroke="#5a7aa8" stroke-width="1.4"/><ellipse cx="178" cy="156" rx="8" ry="4" fill="#3fae78"/></g>`,
-  // 4: a honeycomb coal stove (bếp tổ ong) with a long tin tray of skewers on top, on the ground
-  4: (id) => `${shadow(60)}${smoke(id, [50, 150], 136)}
-    ${firebox(id, 38, 162, 126, 157, 5, 5)}
-    <path d="M66 162 V194 Q100 204 134 194 V162 Z" fill="url(#${id}-stove)"/><ellipse cx="100" cy="162" rx="34" ry="5.5" fill="#3e4836"/>
-    <path d="M66 172 Q100 180 134 172 M66 186 Q100 194 134 186" fill="none" stroke="#3e4836" stroke-width="2"/>
-    <rect x="88" y="176" width="24" height="12" rx="2" fill="#2a1410"/><rect x="90" y="178" width="20" height="8" rx="2" fill="url(#${id}-vent)"/>
-    <path d="M64 168 h-5 v8 h5 M136 168 h5 v8 h-5" fill="none" stroke="#3e4836" stroke-width="2"/>${fan(170, 176, 14)}`,
-  // 5: a wooden stall (sạp) under a striped awning: tin firebox on the counter, a lantern hanging from the awning
-  5: (id) => `<g clip-path="url(#${id}-in)"><path d="M18 30 H182 V44 H18 Z" fill="#c8372d"/>${Array.from({ length: 9 }, (_, i) => `<rect x="${18 + i * 18.2}" y="30" width="9.1" height="14" fill="#f4efe6"/>`).join('')}
-    <path d="${Array.from({ length: 9 }, (_, i) => `M${18 + i * 18.2} 44 q9.1 8 18.2 0`).join(' ')}" fill="#c8372d"/></g>
-    <path d="M160 50 v10" stroke="#3a2a20" stroke-width="1.4"/><ellipse cx="160" cy="68" rx="8" ry="10" fill="#e8452f"/><rect x="155" y="57" width="10" height="3" fill="#ffd23f"/><rect x="155" y="76" width="10" height="3" fill="#ffd23f"/><ellipse cx="160" cy="68" rx="4" ry="6" fill="#ffb347" opacity=".7"/>
-    ${shadow()}${smoke(id, [50, 150], 134)}
-    ${firebox(id, 36, 164, 122, 153, 6, 5)}
-    <rect x="30" y="158" width="140" height="6" fill="${P.woodLight}"/>${planks(34, 164, 132, 30, 3)}
-    <rect x="34" y="164" width="4" height="40" fill="${P.woodDark}"/><rect x="162" y="164" width="4" height="40" fill="${P.woodDark}"/>`,
+/** A spoked cart wheel with a rubber tyre (the round-2 cart). */
+function wheel(cx, cy, rim = '#b9bec3') {
+  const sp = Array.from({ length: 8 }, (_, i) => {
+    const a = (Math.PI * i) / 8;
+    return `M${(cx - Math.cos(a) * 10).toFixed(1)} ${(cy - Math.sin(a) * 10).toFixed(1)} L${(cx + Math.cos(a) * 10).toFixed(1)} ${(cy + Math.sin(a) * 10).toFixed(1)}`;
+  }).join(' ');
+  return `<circle cx="${cx}" cy="${cy}" r="13" fill="#1f1612"/><circle cx="${cx}" cy="${cy}" r="10.4" fill="#3a2e28" stroke="${rim}" stroke-width="1.8"/>
+  <path d="${sp}" stroke="#c9ced2" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="2.8" fill="#d9dde0" stroke="#6d6a66" stroke-width="1"/>`;
+}
+
+/** Glowing draught slots along the firebox band. */
+const vents = (id, x0, x1, y) => {
+  const n = Math.floor((x1 - x0 - 10) / 14);
+  return Array.from({ length: n }, (_, i) => `<rect x="${(x0 + 9 + i * 14).toFixed(1)}" y="${y}" width="8" height="2.8" rx="1.4" fill="url(#${id}-vent)"/>`).join('');
 };
+
+const rivets = (pts, fill) => pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2" fill="${fill}"/>`).join('');
+
+/**
+ * The cart body in one material. `body`: fill of the box, `trim`: rails, `extra`: drawn over the box (paint chips,
+ * brushing, corrugation, …).
+ */
+function cartBody(id, { body, trim, panel, extra = '', handle = '#9ea4a8', rim }) {
+  return `<rect x="38" y="153" width="124" height="7" fill="#3a332f"/>${vents(id, 38, 162, 155.2)}
+  <rect x="36" y="159.5" width="128" height="3" rx="1.5" fill="${trim}"/>
+  <rect x="38" y="162" width="124" height="26" fill="${body}"/>${extra}
+  <rect x="44" y="166" width="54" height="19" rx="2" fill="none" stroke="${panel}" stroke-width="1.3" opacity=".75"/>
+  <rect x="102" y="166" width="54" height="19" rx="2" fill="none" stroke="${panel}" stroke-width="1.3" opacity=".75"/>
+  ${rivets([[41, 165], [159, 165], [41, 185], [159, 185]], '#e9e4dc')}
+  <rect x="36" y="187.5" width="128" height="3" rx="1.5" fill="${trim}"/>
+  <path d="M162 168 L178 158 L184 158" fill="none" stroke="${handle}" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M180 158 h7" stroke="#2a1c18" stroke-width="5" stroke-linecap="round"/>
+  <path d="M60 190 v3 M140 190 v3" stroke="#6d6a66" stroke-width="3"/>${wheel(60, 194, rim)}${wheel(140, 194, rim)}`;
+}
+
+const chips = `<path d="M50 175 q3 -3 6 0 q2 3 -2 4 q-4 0 -4 -4 Z M118 181 q4 -2 7 1 q-1 3 -5 2 Z M146 172 q3 0 4 3 q-3 2 -4 -3 Z" fill="#e8d9c0" opacity=".85"/>
+  <g fill="#8a4a20" opacity=".8"><circle cx="70" cy="183" r="1.6"/><circle cx="73" cy="185" r="1"/><circle cx="131" cy="174" r="1.4"/><circle cx="96" cy="186" r="1.2"/></g>`;
+const brushed = Array.from({ length: 30 }, (_, i) => `<path d="M${40 + i * 4.1} 162 v26" stroke="${i % 3 ? '#ffffff' : '#7c8388'}" stroke-width=".5" opacity="${i % 3 ? 0.35 : 0.25}"/>`).join('');
+const corrugated = Array.from({ length: 21 }, (_, i) => `<path d="M${41 + i * 5.9} 162 v26" stroke="#7d8589" stroke-width="1.6" opacity=".55"/><path d="M${43 + i * 5.9} 162 v26" stroke="#eef0f1" stroke-width=".8" opacity=".6"/>`).join('') +
+  `<g fill="#e6e9eb" opacity=".5"><circle cx="58" cy="176" r="2.2"/><circle cx="92" cy="181" r="1.8"/><circle cx="127" cy="174" r="2"/></g>`;
+
+/** A glass display cabinet on the counter (variant 5): raw skewers and bánh mì waiting behind the glass. */
+const cabinet = `<rect x="36" y="124" width="50" height="29" rx="2" fill="#dff1f4" fill-opacity=".45" stroke="#b9bec3" stroke-width="2"/>
+  <path d="M36 138 H86" stroke="#b9bec3" stroke-width="1.4"/>
+  <g fill="#d9a35e"><rect x="40" y="134" width="18" height="6" rx="3"/><rect x="62" y="134" width="18" height="6" rx="3"/></g>
+  <path d="M42 152 l14 -5 M50 154 l14 -5 M58 156 l14 -5" stroke="#d9b779" stroke-width="1.4" stroke-linecap="round"/>
+  <g fill="#c25a3a"><circle cx="47" cy="149.5" r="2.2"/><circle cx="55" cy="151.5" r="2.2"/><circle cx="63" cy="153.5" r="2.2"/><circle cx="52" cy="148" r="2.2"/></g>
+  <path d="M40 130 L48 156" stroke="#ffffff" stroke-width="1.4" opacity=".55"/>`;
+
+/** The #93 round 4 prototypes: the round-2 cart, five non-wood materials, the skewers across the firebox. */
+const CARTS = {
+  1: { body: 'url(#c1-body)', trim: '#c9ced2', panel: '#7e1f1a', extra: chips, stops: ['#d9452f', '#bb3326', '#8e251c'] }, // old red tin, chipped
+  2: { body: 'url(#c2-body)', trim: '#eef0f1', panel: '#7c8388', extra: brushed, stops: ['#eef1f3', '#c3c8cc', '#8f979c'], handle: '#d9dde0' }, // stainless (inox)
+  3: { body: 'url(#c3-body)', trim: '#9ea4a8', panel: '#5f676b', extra: corrugated, stops: ['#c9cfd2', '#a7aeb2', '#80888c'] }, // galvanised tôn
+  4: { body: 'url(#c4-body)', trim: '#f2c94c', panel: '#1d4e58', extra: chips.replace(/#e8d9c0/g, '#cfe3e6'), stops: ['#3d97a8', '#2f7f8f', '#225f6b'] }, // blue painted iron
+  5: { body: 'url(#c5-body)', trim: '#eef0f1', panel: '#7c8388', extra: brushed, stops: ['#eef1f3', '#c3c8cc', '#8f979c'], handle: '#d9dde0', glass: true }, // inox + glass cabinet
+};
+
+function cart(id, v) {
+  const c = CARTS[v] ?? CARTS[1];
+  const grad = `<linearGradient id="c${v}-body" x1="0" y1="0" x2="0" y2="1">${c.stops.map((s, i) => `<stop offset="${i / 2}" stop-color="${s}"/>`).join('')}</linearGradient>`;
+  const box = c.glass ? `${cabinet}${firebox(id, 90, 164, 126, 148, 5, 4)}` : firebox(id, 36, 164, 124, 148, 5, 5);
+  return `<defs>${grad}</defs>${shadow()}${smoke(id, c.glass ? [120, 156] : [50, 150], 134)}${box}${cartBody(id, c)}${fan(26, 176, -16)}`;
+}
 
 const defs = (id) => `<defs>
   <pattern id="${id}-check" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#f4efe6"/><rect width="3" height="3" fill="#2a2a2a"/><rect x="3" y="3" width="3" height="3" fill="#2a2a2a"/></pattern>
@@ -163,7 +169,7 @@ function scallop(r, n, depth) {
 
 /** The badge as an SVG string. `id` keeps gradient ids unique when several badges share a page; `scene` 1..5. */
 export function badgeSvg({ id = 'bn', scene = 1 } = {}) {
-  const fore = (SCENES[scene] ?? SCENES[1])(id);
+  const fore = cart(id, scene);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 208 216" role="img" aria-hidden="true">${defs(id)}
   <path d="${scallop(96, 28, 5)}" fill="${P.rim}"/><circle cx="100" cy="100" r="86" fill="url(#${id}-check)" opacity=".9"/>
   <circle cx="100" cy="100" r="80" fill="${P.field}"/>
