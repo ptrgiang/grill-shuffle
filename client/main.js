@@ -25,7 +25,7 @@ import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { Coach, coachMove } from './ui/coach.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
-import { starThresholds, totalStars } from '../shared/progression.js';
+import { starThresholds } from '../shared/progression.js';
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
 import { registerServiceWorker } from './ui/update.js';
@@ -210,7 +210,7 @@ function showMenu() {
   app.hud = null;
   // an idle board behind the menu, as a live preview
   const demo = getLevel(STORY[2] ?? STORY[0]);
-  const stars = totalStars(app.progress);
+  const stars = storyStars(PACKS, app.progress); // story levels only: dailies and challenges have their own records
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
   useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
@@ -364,7 +364,7 @@ function showLevels(slug) {
       );
   screen(
     h('div.levels',
-      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? pack.name : 'Levels'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
+      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? pack.name : 'Levels'), h('span.badge', `★ ${storyStars(PACKS, app.progress)}/${STORY.length * 3}`)),
       tabs,
       h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
         status.open ? null : h('p.pack-lock', iconEl('lock'), h('span', lockReason(status))),

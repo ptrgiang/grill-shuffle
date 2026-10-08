@@ -345,8 +345,12 @@ async function runPacks(name, { w, h }) {
     await page.evaluate(() => {
       const gs = window.__gs;
       for (const id of gs.packs.find((p) => p.id === 'street_bbq').levels) gs.app.progress[id] = { stars: 3 };
+      gs.app.progress['daily:2026-10-08'] = { stars: 3 }; // a daily result: not a story star
       gs.go('/levels');
     });
+    const badge = await page.evaluate(() => document.querySelector('.levels-head .badge')?.textContent);
+    const story = await page.evaluate(() => window.__gs.packs.reduce((n, p) => n + p.levels.length, 0));
+    check(badge === `★ 150/${story * 3}`, `${name}: the star total counts story levels only, not dailies (${badge})`);
     st = await tabState();
     check(st.shown === 'beach_grill' && !st.tabLocked && !st.locked && st.links === 1, `${name}: finishing Street BBQ with enough stars opens the pack, and /levels now opens its tab (${JSON.stringify({ shown: st.shown, links: st.links })})`);
     await page.evaluate(() => window.__gs.go('/beach-grill/1'));
