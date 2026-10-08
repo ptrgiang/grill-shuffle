@@ -34,7 +34,7 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant, variant } from './ui/variant.js';
+import { initVariant } from './ui/variant.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
 
@@ -273,12 +273,9 @@ function showMenu() {
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
   useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
-  const sv = variant('switch') || 1;
-  const langCtl = menuLangControl(sv);
   screen(
     h('div.menu',
-      sv === 2 ? langCtl : null,
-      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle')), sv === 5 ? langCtl : null),
+      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle'))),
       h('div.menu-spacer'),
       h('div.menu-buttons',
         h('a.btn.big.primary', { href: levelPath(next) ?? '/play', 'data-nav': true }, stars ? t('menu.continue', { label: levelLabel(next) }) : t('menu.play')),
@@ -288,10 +285,10 @@ function showMenu() {
         ),
         h('button.btn.ghost', { on: { click: () => challengePicker() } }, t('menu.challenge')),
       ),
-      h('div.menu-foot', soundToggle(), sv === 1 || sv === 3 || sv === 4 ? langCtl : null, installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, t('menu.about'))),
+      h('div.menu-foot', soundToggle(), langSwitch(), installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, t('menu.about'))),
     ),
   );
-  if (sv === 4 && !app.settings.lang) langPicker(); // first launch: ask once
+  if (!app.settings.lang && !LANGS.includes(urlLang)) langPicker(); // first launch: ask once (#89); ?lang= skips it
   app.fit = demo ? menuMargins : null;
   if (demo) {
     app.session = new Session(demo);
@@ -343,12 +340,12 @@ function soundToggle() {
 
 /** Use a language: dictionaries, <html lang>, the landing text; listeners redraw what is on screen. */
 function useLang(l, { save = false } = {}) {
-  setLang(l);
-  applyStatic(document);
   if (save) {
-    app.settings.lang = l;
+    app.settings.lang = l; // before the redraw: the menu must not ask again
     db.set('settings', app.settings);
   }
+  setLang(l);
+  applyStatic(document);
 }
 
 /** Redraw the current screen in the new language. A level keeps its session; an open pause menu reopens. */
@@ -378,24 +375,6 @@ function langPicker() {
     h('h2.lang-pick-title', DICTS.vi['lang.pickTitle'], h('br'), h('span.muted', DICTS.en['lang.pickTitle'])),
     h('div.modal-buttons.lang-pick', ...LANGS.map((l) => h(`button.btn${lang() === l ? '.primary' : ''}`, { lang: l, on: { click: () => (closeModal(), useLang(l, { save: true })) } }, DICTS[l][`lang.${l}`]))),
   );
-}
-
-// #89 design prototypes: where the switch lives on the menu (?v-switch=1..5) and the Vietnamese-capable font
-// (?v-font=1..5). Removed once the owner picks.
-function menuLangControl(v) {
-  const other = LANGS.find((l) => l !== lang());
-  if (v === 2) return h('button.lang-chip', { 'aria-label': t('lang.label'), on: { click: () => (audio.onEvent({ type: 'button' }), useLang(other, { save: true })) } }, iconEl('globe'), h('span', t(`lang.short.${lang()}`)));
-  if (v === 3) return h('button.link.lang-link', { on: { click: () => langPicker() } }, iconEl('globe'), DICTS[lang()][`lang.${lang()}`]);
-  if (v === 5) return h('div.lang-links', ...LANGS.flatMap((l, i) => [i ? h('span.dot', '·') : null, h(`button.link${lang() === l ? '.on' : ''}`, { lang: l, on: { click: () => useLang(l, { save: true }) } }, DICTS[l][`lang.${l}`])]));
-  return langSwitch(); // 1 and 4
-}
-const FONT_VARIANTS = [null, 'Baloo 2', 'Nunito', 'Quicksand', 'Grandstander', 'Mali'];
-function loadFontVariant(v) {
-  const fam = FONT_VARIANTS[v];
-  if (!fam) return;
-  const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: `https://fonts.googleapis.com/css2?family=${fam.replace(/ /g, '+')}:wght@400..700&display=swap` });
-  document.head.append(link);
-  document.documentElement.style.setProperty('--font', `'${fam}', system-ui, sans-serif`);
 }
 
 async function setMuted(m, btn) {
@@ -1039,13 +1018,12 @@ function onViewportChange() {
 window.addEventListener('resize', onViewportChange);
 window.addEventListener('orientationchange', onViewportChange);
 window.visualViewport?.addEventListener('resize', onViewportChange); // mobile address bar showing / hiding
-document.fonts?.ready.then(onViewportChange); // Fredoka arriving changes the HUD's size
+document.fonts?.ready.then(onViewportChange); // Baloo 2 arriving changes the HUD's size
 
 async function boot() {
   initVariant(); // ?variant=<n>: design prototypes (CONTRIBUTING.md step 0)
   app.settings = { ...DEFAULT_SETTINGS, ...(await db.get('settings', {})) };
   useLang(LANGS.includes(urlLang) ? urlLang : detectLang(app.settings.lang, navigator.languages ?? [navigator.language]));
-  loadFontVariant(variant('font'));
   audio.setMuted(app.settings.muted);
   audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });
   app.progress = await db.get('progress', {});
