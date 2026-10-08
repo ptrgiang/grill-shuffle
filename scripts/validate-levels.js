@@ -21,7 +21,7 @@ import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
 import { replay } from '../shared/replay.js';
 import { THEMES } from '../shared/levels.js';
-import { checkAppendOnly, checkCurve, checkCurveFrom } from './lib/content-rules.js';
+import { checkAppendOnly, checkCurve, checkCurveFrom, checkPackSize } from './lib/content-rules.js';
 import { ROOT } from './lib/content.js';
 import { packSlug, RESERVED_SLUGS } from '../client/game/routes.js';
 
@@ -82,6 +82,7 @@ for (const { pack, packFile, levels } of loadPacks()) {
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
   else if (pack.theme && !themes[pack.theme]) errors.push(`${packFile}: theme ${pack.theme} has no content/themes/${pack.theme}.json`);
   const basePack = atBase(packFile);
+  errors.push(...checkPackSize(pack.id, pack.levels));
   errors.push(...checkAppendOnly(pack.id, basePack?.levels ?? null, pack.levels));
   errors.push(...checkCurveFrom(pack.id, pack, basePack));
   errors.push(...checkCurve(pack.id, levels.map(({ id, level }) => ({ id, difficulty: level?.solver?.difficulty })), pack.curveFrom ?? 1));

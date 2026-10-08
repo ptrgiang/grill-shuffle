@@ -53,3 +53,10 @@ test('content: tools and the client agree on story order (pack.json `order`, the
   assert.deepEqual(packs.map((p) => p.id), sorted.map((p) => p.id));
   assert.equal(packs[0].id, 'street_bbq', 'Street BBQ plays first');
 });
+
+test('content rules: a pack holds at most 50 levels', async () => {
+  const { checkPackSize, MAX_PACK_LEVELS } = await import('../../scripts/lib/content-rules.js');
+  assert.equal(MAX_PACK_LEVELS, 50);
+  assert.deepEqual(checkPackSize('p', Array.from({ length: 50 }, (_, i) => `l${i}`)), []);
+  assert.match(checkPackSize('p', Array.from({ length: 51 }, (_, i) => `l${i}`)).join(), /51 levels, a pack holds at most 50/);
+});

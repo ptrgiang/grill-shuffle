@@ -311,38 +311,44 @@ async function runPacks(name, { w, h }) {
   const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
   const errors = [];
   collectPageErrors(page, errors);
+  const tabState = () =>
+    page.evaluate(() => {
+      const tab = document.querySelector('.pack-tab[data-pack="beach_grill"]');
+      const sec = document.querySelector('section.pack');
+      const r = tab.getBoundingClientRect();
+      const cards = sec ? [...sec.querySelectorAll('.level-card')] : [];
+      return {
+        path: location.pathname, shown: sec?.dataset.pack, tabLocked: tab.classList.contains('locked'), current: tab.getAttribute('aria-current'),
+        tabFits: r.left >= 0 && r.right <= innerWidth, tabH: Math.round(r.height), locked: sec?.classList.contains('locked'),
+        reason: sec?.querySelector('.pack-lock')?.textContent, links: cards.filter((c) => c.tagName === 'A').length, cards: cards.length,
+      };
+    });
   try {
     await page.goto(`${vite.url}/levels`, { waitUntil: 'load' });
-    await page.waitForSelector('section.pack[data-pack="beach_grill"]', { timeout: 30000 });
-    const locked = await page.evaluate(() => {
-      const sec = document.querySelector('section.pack[data-pack="beach_grill"]');
-      sec.scrollIntoView({ block: 'center' });
-      const r = sec.getBoundingClientRect();
-      const cards = [...sec.nextElementSibling.querySelectorAll('.level-card')];
-      return { locked: sec.classList.contains('locked'), reason: sec.querySelector('.pack-lock')?.textContent, right: r.right, left: r.left, links: cards.filter((c) => c.tagName === 'A').length, cards: cards.length };
-    });
-    check(locked.locked && /Finish Street BBQ/.test(locked.reason) && /★ 75/.test(locked.reason), `${name}: the second pack shows locked with its requirement (${locked.reason})`);
-    check(locked.left >= 0 && locked.right <= w, `${name}: the locked pack header fits the ${w} px screen (${Math.round(locked.left)}..${Math.round(locked.right)})`);
-    check(locked.cards === 12 && locked.links === 0, `${name}: its levels are not playable (${locked.links}/${locked.cards} links)`);
+    await page.waitForSelector('.pack-tab[data-pack="beach_grill"]', { timeout: 30000 });
+    let st = await tabState();
+    check(st.shown === 'street_bbq' && st.tabLocked && st.tabFits && st.tabH >= 44, `${name}: /levels opens the Street BBQ tab; the Beach Grill tab shows locked, fits and is tappable (${JSON.stringify({ shown: st.shown, fits: st.tabFits, h: st.tabH })})`);
+
+    await page.click('.pack-tab[data-pack="beach_grill"]');
+    await page.waitForFunction(() => location.pathname === '/levels/beach-grill', { timeout: 10000 });
+    st = await tabState();
+    check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Street BBQ/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill tab (/levels/beach-grill) shows its requirement (${st.reason})`);
+    check(st.cards === 12 && st.links === 0, `${name}: its levels are not playable (${st.links}/${st.cards} links)`);
     await sleep(300);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
 
     await page.evaluate(() => window.__gs.go('/beach-grill/1'));
-    await page.waitForFunction(() => location.pathname === '/levels', { timeout: 10000 });
-    const landed = await page.evaluate(() => {
-      const r = document.querySelector('section.pack[data-pack="beach_grill"]').getBoundingClientRect();
-      return { toast: document.querySelector('.toast.show')?.textContent ?? '', hash: location.hash, top: Math.round(r.top), inView: r.top >= 0 && r.bottom <= innerHeight };
-    });
-    check(/Beach Grill is locked/.test(landed.toast), `${name}: a deep link into the locked pack lands on the level select with a toast (${landed.toast})`);
-    check(landed.hash === '#pack-beach_grill' && landed.inView, `${name}: ...scrolled to that pack (${landed.hash}, top ${landed.top})`);
+    await page.waitForFunction(() => location.pathname === '/levels/beach-grill', { timeout: 10000 });
+    const toast = await page.evaluate(() => document.querySelector('.toast.show')?.textContent ?? '');
+    check(/Beach Grill is locked/.test(toast), `${name}: a deep link into the locked pack lands on its tab with a toast (${toast})`);
 
     await page.evaluate(() => {
       const gs = window.__gs;
       for (const id of gs.packs.find((p) => p.id === 'street_bbq').levels) gs.app.progress[id] = { stars: 3 };
       gs.go('/levels');
     });
-    const open = await page.evaluate(() => !document.querySelector('section.pack[data-pack="beach_grill"]').classList.contains('locked') && !!document.querySelector('a.level-card[href="/beach-grill/1"]'));
-    check(open, `${name}: finishing Street BBQ with enough stars opens the pack`);
+    st = await tabState();
+    check(st.shown === 'beach_grill' && !st.tabLocked && !st.locked && st.links === 1, `${name}: finishing Street BBQ with enough stars opens the pack, and /levels now opens its tab (${JSON.stringify({ shown: st.shown, links: st.links })})`);
     await page.evaluate(() => window.__gs.go('/beach-grill/1'));
     await page.waitForFunction(() => window.__gs.app.level?.id === 'beach-001', { timeout: 15000 });
     const theme = await page.evaluate(() => window.__gs.stage.theme.id);

@@ -12,9 +12,9 @@ import { BoardView } from './render/board.js';
 import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
-import { parseRoute as routeOf, levelPath as pathOf, levelPosition } from './game/routes.js';
+import { parseRoute as routeOf, levelPath as pathOf, levelPosition, packSlug } from './game/routes.js';
 import { PACKS, STORY, SHARE, THEMES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
-import { packStatus, packIndexOf, levelOpen, lockReason, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
+import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
@@ -177,7 +177,7 @@ async function render() {
   dismissCoach();
   document.body.classList.toggle('in-game', r.name !== 'menu');
   if (r.name === 'menu') return showMenu();
-  if (r.name === 'levels') return showLevels();
+  if (r.name === 'levels') return showLevels(r.pack);
   if (r.name === 'play') {
     const lvl = r.missing ? null : getLevel(r.id ?? nextStoryLevel());
     if (!lvl) return go('/', { replace: true });
@@ -185,7 +185,7 @@ async function render() {
     const status = k > 0 ? packStatus(PACKS, k, app.progress, THEMES) : null;
     if (status && !status.open) {
       toast(`${PACKS[k].name} is locked. ${lockReason(status)}.`);
-      return go(`/levels#pack-${PACKS[k].id}`, { replace: true });
+      return go(`/levels/${packSlug(PACKS[k])}`, { replace: true });
     }
     const canonical = levelPath(lvl.id);
     if (canonical && location.pathname !== canonical) history.replaceState(null, '', canonical + location.search);
@@ -324,12 +324,16 @@ function challengePicker() {
   );
 }
 
-function showLevels() {
+function showLevels(slug) {
   app.route = 'levels';
   app.hud = null;
   app.fit = null;
-  // grouped by pack, numbered inside each pack (the URL number); a pack opens when the previous one is finished and its
-  // theme's star requirement is met (game/unlock.js); a locked pack shows what it needs
+  // one tab per pack (theme), numbered inside the pack (the URL number). /levels/<slug> picks the tab; plain /levels
+  // opens the pack "Continue" is in (old /levels#pack-<id> links too). A pack opens when the previous one is finished
+  // and its theme's star requirement is met (game/unlock.js); a locked tab says what it needs.
+  const hashId = location.hash.startsWith('#pack-') ? location.hash.slice(6) : null;
+  const sel = Math.max(0, PACKS.findIndex((p) => (slug ? packSlug(p) === slug : hashId ? p.id === hashId : p.levels.includes(nextStoryLevel()))));
+  const pack = PACKS[sel];
   const card = (id, n) => {
     const lvl = getLevel(id);
     const open = levelOpen(PACKS, id, app.progress, THEMES);
@@ -338,28 +342,38 @@ function showLevels() {
       ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', lvl.name ?? id), starsEl(stars, 3, 'stars.small'))
       : h('div.level-card.locked', h('span.num', String(n)), iconEl('lock'));
   };
+  const swatch = (p) => {
+    const t = resolveTheme(THEMES[p.theme] ?? {});
+    return h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
+  };
   const one = PACKS.length === 1;
+  const status = packStatus(PACKS, sel, app.progress, THEMES);
+  const tabs = one
+    ? null
+    : h('nav.pack-tabs', { 'aria-label': 'Themes' },
+        ...PACKS.map((p, k) => {
+          const st = packStatus(PACKS, k, app.progress, THEMES);
+          const cls = `a.pack-tab${st.open ? '' : '.locked'}`;
+          return h(cls, { href: `/levels/${packSlug(p)}`, 'data-nav': true, 'data-pack': p.id, 'aria-current': k === sel ? 'page' : null },
+            swatch(p),
+            h('span.pack-tab-text', h('span.pack-tab-name', p.name), h('span.pack-tab-sub', st.open ? `★ ${storyStars([p], app.progress)}/${p.levels.length * 3}` : `★ ${st.need}`)),
+            st.open ? null : iconEl('lock'),
+          );
+        }),
+      );
   screen(
     h('div.levels',
-      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? PACKS[0].name : 'Levels'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
-      ...PACKS.flatMap((pack, k) => {
-        const status = packStatus(PACKS, k, app.progress, THEMES);
-        const t = resolveTheme(THEMES[pack.theme] ?? {});
-        const swatch = h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
-        return [
-          one ? null : h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
-            h('h3.pack-head', swatch, h('span', pack.name), status.open ? null : iconEl('lock')),
-            status.open ? null : h('p.pack-lock', lockReason(status)),
-          ),
-          h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
-        ];
-      }),
+      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? pack.name : 'Levels'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
+      tabs,
+      h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
+        status.open ? null : h('p.pack-lock', iconEl('lock'), h('span', lockReason(status))),
+        h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
+      ),
     ),
   );
-  // /levels#pack-<id>: open at that pack (deep links into a locked pack land here)
-  const at = location.hash && document.getElementById(location.hash.slice(1));
-  if (at) at.scrollIntoView({ block: 'start' });
+  document.querySelector('.pack-tab[aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
+
 
 // ---------------------------------------------------------------- playing
 

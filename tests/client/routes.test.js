@@ -32,6 +32,9 @@ test('routes: old id URLs, continue, codes and pages still parse; reserved words
   assert.deepEqual(parseRoute('/p/S1038', PACKS), { name: 'code', code: 'S1038' });
   assert.deepEqual(parseRoute('/', PACKS), { name: 'menu' });
   assert.deepEqual(parseRoute('/levels', PACKS), { name: 'levels' });
+  assert.deepEqual(parseRoute('/levels/beach-grill', PACKS), { name: 'levels', pack: 'beach-grill' }, 'a pack tab');
+  assert.deepEqual(parseRoute('/levels/night', PACKS), { name: 'levels', pack: 'night' }, 'custom slug');
+  assert.deepEqual(parseRoute('/levels/nope', PACKS), { name: 'levels' }, 'unknown tab: the default one');
   assert.deepEqual(parseRoute('/daily', PACKS), { name: 'daily' });
   const evil = [{ id: 'sandbox', levels: ['x-001'] }];
   assert.deepEqual(parseRoute('/sandbox/1', evil), { name: 'menu' });

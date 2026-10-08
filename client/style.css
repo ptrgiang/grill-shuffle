@@ -126,12 +126,18 @@ body.in-game .landing { display: none; }
 .levels { position: absolute; inset: 0; background: rgba(20, 12, 22, 0.88); padding: calc(14px + var(--safe-top)) 14px 20px; overflow-y: auto; }
 .levels-head { display: flex; align-items: center; gap: 10px; max-width: 720px; margin: 0 auto 14px; }
 .levels-head h2 { flex: 1; margin: 0; font-size: 24px; }
-.pack { max-width: 720px; margin: 22px auto 10px; }
-.pack-head { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 20px; color: var(--accent); }
-.pack-head svg { width: 20px; fill: var(--muted); }
-.pack-swatch { width: 26px; height: 26px; border-radius: 8px; flex: none; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18); }
-.pack.locked .pack-head { color: var(--muted); }
-.pack-lock { margin: 6px 0 0 36px; color: var(--muted); font-size: 15px; }
+.pack-tabs { display: flex; gap: 8px; max-width: 720px; margin: 0 auto 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.pack-tabs::-webkit-scrollbar { display: none; }
+.pack-tab { flex: none; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 14px 6px 8px; border-radius: 14px; background: #2a1c29; color: var(--muted); text-decoration: none; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3); }
+.pack-tab[aria-current='page'] { background: #3a2638; color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent), 0 3px 0 rgba(0, 0, 0, 0.3); }
+.pack-tab svg { width: 16px; fill: var(--muted); }
+.pack-tab-text { display: flex; flex-direction: column; line-height: 1.15; }
+.pack-tab-name { font-weight: 700; font-size: 16px; }
+.pack-tab-sub { font-size: 13px; color: var(--muted); }
+.pack-swatch { width: 30px; height: 30px; border-radius: 9px; flex: none; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18); }
+.pack { max-width: 720px; margin: 0 auto; }
+.pack-lock { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: #2a1c29; color: var(--ink); font-size: 15px; }
+.pack-lock svg { width: 18px; flex: none; fill: var(--accent); }
 .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-width: 720px; margin: 0 auto; }
 .level-card { background: #3a2638; border-radius: 16px; padding: 12px; min-height: 104px; color: var(--ink); text-decoration: none; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35); }
 .level-card .num { font-size: 26px; font-weight: 700; color: var(--accent); }
