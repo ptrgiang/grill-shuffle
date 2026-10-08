@@ -1,10 +1,8 @@
-// The Bà Năm's Grill badge (#93): Bà Năm and her charcoal grill in a bottle-cap stamp with a khăn rằn rim (style 4,
-// the owner's pick). Pure SVG strings (no DOM, no text), so the menu, the favicon and the app icons
+// The Bà Năm's Grill badge (#93, the owner's picks over four rounds): Bà Năm behind her stainless street cart, a glass
+// cabinet with bánh mì and raw skewers on the left, a charcoal firebox on the right, in a bottle-cap stamp with a
+// khăn rằn rim. The skewers lie the way street vendors lay them: across the firebox from rim to rim on two rails,
+// bamboo ends pointing at the viewer. Pure SVG strings (no DOM, no text), so the menu, the favicon and the app icons
 // (scripts/make-icons.js) all draw the same picture.
-//
-// Round 4 prototypes (?variant=1..5, removed after the pick): the round-2 cart in five non-wood materials (old red
-// tin, stainless, galvanised tôn, blue painted iron, stainless with a glass cabinet). The skewers lie the way street
-// vendors lay them: across the firebox from rim to rim on two rails, bamboo ends pointing at the viewer.
 
 const P = {
   skin: '#f2c6a0', skinShade: '#d99e78', hair: '#e9e4dc', hairShade: '#b9b1a6', ink: '#3a2a26',
@@ -99,10 +97,7 @@ const vents = (id, x0, x1, y) => {
 
 const rivets = (pts, fill) => pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2" fill="${fill}"/>`).join('');
 
-/**
- * The cart body in one material. `body`: fill of the box, `trim`: rails, `extra`: drawn over the box (paint chips,
- * brushing, corrugation, …).
- */
+/** The cart body under the firebox. `body`: fill of the box, `trim`: rails, `extra`: drawn over the box (brushing). */
 function cartBody(id, { body, trim, panel, extra = '', handle = '#9ea4a8', rim }) {
   return `<rect x="38" y="153" width="124" height="7" fill="#3a332f"/>${vents(id, 38, 162, 155.2)}
   <rect x="36" y="159.5" width="128" height="3" rx="1.5" fill="${trim}"/>
@@ -116,13 +111,8 @@ function cartBody(id, { body, trim, panel, extra = '', handle = '#9ea4a8', rim }
   <path d="M60 190 v3 M140 190 v3" stroke="#6d6a66" stroke-width="3"/>${wheel(60, 194, rim)}${wheel(140, 194, rim)}`;
 }
 
-const chips = `<path d="M50 175 q3 -3 6 0 q2 3 -2 4 q-4 0 -4 -4 Z M118 181 q4 -2 7 1 q-1 3 -5 2 Z M146 172 q3 0 4 3 q-3 2 -4 -3 Z" fill="#e8d9c0" opacity=".85"/>
-  <g fill="#8a4a20" opacity=".8"><circle cx="70" cy="183" r="1.6"/><circle cx="73" cy="185" r="1"/><circle cx="131" cy="174" r="1.4"/><circle cx="96" cy="186" r="1.2"/></g>`;
 const brushed = Array.from({ length: 30 }, (_, i) => `<path d="M${40 + i * 4.1} 162 v26" stroke="${i % 3 ? '#ffffff' : '#7c8388'}" stroke-width=".5" opacity="${i % 3 ? 0.35 : 0.25}"/>`).join('');
-const corrugated = Array.from({ length: 21 }, (_, i) => `<path d="M${41 + i * 5.9} 162 v26" stroke="#7d8589" stroke-width="1.6" opacity=".55"/><path d="M${43 + i * 5.9} 162 v26" stroke="#eef0f1" stroke-width=".8" opacity=".6"/>`).join('') +
-  `<g fill="#e6e9eb" opacity=".5"><circle cx="58" cy="176" r="2.2"/><circle cx="92" cy="181" r="1.8"/><circle cx="127" cy="174" r="2"/></g>`;
-
-/** A glass display cabinet on the counter (variant 5): raw skewers and bánh mì waiting behind the glass. */
+/** The glass display cabinet on the counter: bánh mì and raw skewers waiting behind the glass. */
 const cabinet = `<rect x="36" y="124" width="50" height="29" rx="2" fill="#dff1f4" fill-opacity=".45" stroke="#b9bec3" stroke-width="2"/>
   <path d="M36 138 H86" stroke="#b9bec3" stroke-width="1.4"/>
   <g fill="#d9a35e"><rect x="40" y="134" width="18" height="6" rx="3"/><rect x="62" y="134" width="18" height="6" rx="3"/></g>
@@ -130,20 +120,11 @@ const cabinet = `<rect x="36" y="124" width="50" height="29" rx="2" fill="#dff1f
   <g fill="#c25a3a"><circle cx="47" cy="149.5" r="2.2"/><circle cx="55" cy="151.5" r="2.2"/><circle cx="63" cy="153.5" r="2.2"/><circle cx="52" cy="148" r="2.2"/></g>
   <path d="M40 130 L48 156" stroke="#ffffff" stroke-width="1.4" opacity=".55"/>`;
 
-/** The #93 round 4 prototypes: the round-2 cart, five non-wood materials, the skewers across the firebox. */
-const CARTS = {
-  1: { body: 'url(#c1-body)', trim: '#c9ced2', panel: '#7e1f1a', extra: chips, stops: ['#d9452f', '#bb3326', '#8e251c'] }, // old red tin, chipped
-  2: { body: 'url(#c2-body)', trim: '#eef0f1', panel: '#7c8388', extra: brushed, stops: ['#eef1f3', '#c3c8cc', '#8f979c'], handle: '#d9dde0' }, // stainless (inox)
-  3: { body: 'url(#c3-body)', trim: '#9ea4a8', panel: '#5f676b', extra: corrugated, stops: ['#c9cfd2', '#a7aeb2', '#80888c'] }, // galvanised tôn
-  4: { body: 'url(#c4-body)', trim: '#f2c94c', panel: '#1d4e58', extra: chips.replace(/#e8d9c0/g, '#cfe3e6'), stops: ['#3d97a8', '#2f7f8f', '#225f6b'] }, // blue painted iron
-  5: { body: 'url(#c5-body)', trim: '#eef0f1', panel: '#7c8388', extra: brushed, stops: ['#eef1f3', '#c3c8cc', '#8f979c'], handle: '#d9dde0', glass: true }, // inox + glass cabinet
-};
-
-function cart(id, v) {
-  const c = CARTS[v] ?? CARTS[1];
-  const grad = `<linearGradient id="c${v}-body" x1="0" y1="0" x2="0" y2="1">${c.stops.map((s, i) => `<stop offset="${i / 2}" stop-color="${s}"/>`).join('')}</linearGradient>`;
-  const box = c.glass ? `${cabinet}${firebox(id, 90, 164, 126, 148, 5, 4)}` : firebox(id, 36, 164, 124, 148, 5, 5);
-  return `<defs>${grad}</defs>${shadow()}${smoke(id, c.glass ? [120, 156] : [50, 150], 134)}${box}${cartBody(id, c)}${fan(26, 176, -16)}`;
+/** The cart: brushed stainless body, glass cabinet, firebox with skewers, spoked wheels, push handle, quạt nan. */
+function cart(id) {
+  const steel = `<linearGradient id="${id}-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f3"/><stop offset=".5" stop-color="#c3c8cc"/><stop offset="1" stop-color="#8f979c"/></linearGradient>`;
+  return `<defs>${steel}</defs>${shadow()}${smoke(id, [120, 156], 134)}${cabinet}${firebox(id, 90, 164, 126, 148, 5, 4)}` +
+    cartBody(id, { body: `url(#${id}-body)`, trim: '#eef0f1', panel: '#7c8388', extra: brushed, handle: '#d9dde0' }) + fan(26, 176, -16);
 }
 
 const defs = (id) => `<defs>
@@ -167,9 +148,9 @@ function scallop(r, n, depth) {
   return `${d}Z`;
 }
 
-/** The badge as an SVG string. `id` keeps gradient ids unique when several badges share a page; `scene` 1..5. */
-export function badgeSvg({ id = 'bn', scene = 1 } = {}) {
-  const fore = cart(id, scene);
+/** The badge as an SVG string. `id` keeps gradient ids unique when several badges share a page. */
+export function badgeSvg({ id = 'bn' } = {}) {
+  const fore = cart(id);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 208 216" role="img" aria-hidden="true">${defs(id)}
   <path d="${scallop(96, 28, 5)}" fill="${P.rim}"/><circle cx="100" cy="100" r="86" fill="url(#${id}-check)" opacity=".9"/>
   <circle cx="100" cy="100" r="80" fill="${P.field}"/>
