@@ -2,7 +2,7 @@
 
 0. **Design (UI changes).** Anything that changes what the player sees starts with **5 visual variants in its
    issue** (label `design/variants`, owner decision 2026-10-08): prototypes behind `?variant=1..5`, captured through
-   the safe launcher (`npm run variant-shots`, #79; until then `npm run shot` + images on the `pr-shots` branch), posted
+   the safe launcher (`npm run variant-shots`, see step 3), posted
    as one issue comment. The owner replies with a number; only then the PR is built, with the pick only (the other
    variants and the `?variant` switch are removed) and the usual before / after pr-shots. Variants live in the issue,
    not the PR: the decision is recorded where the work is planned and the PR stays one change.
