@@ -4,7 +4,7 @@
 //   <!-- pr-shots:start --> ... <!-- pr-shots:end -->   (replaced on every run, the rest of the body is kept).
 //
 //   npm run pr-shots                                   PR of the current branch, default pages
-//   npm run pr-shots -- --pages "/level/27@390x844m+select,/@1280x800"
+//   npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,/@1280x800"
 //   npm run pr-shots -- --pr 61 --base origin/main --no-publish     (local only: shots/pr/)
 //
 // Page spec: <path>@<W>x<H>[m][+select]   m = phone (touch, DPR 2), +select = tap-select a food first (game pages).
@@ -19,7 +19,7 @@ import { ROOT, parseArgs } from './lib/content.js';
 import { tapSelect } from './lib/pages.js';
 
 const args = parseArgs();
-const DEFAULT_PAGES = ['/level/1@390x844m', '/level/27@390x844m+select', '/level/27@844x390m', '/level/31@1280x800', '/@390x844m'];
+const DEFAULT_PAGES = ['/street-bbq/1@390x844m', '/street-bbq/27@390x844m+select', '/street-bbq/27@844x390m', '/street-bbq/31@1280x800', '/@390x844m'];
 const CHANNEL_TOL = 40, MAX_CHANGED = 0.004;
 const OUT = join(ROOT, 'shots', 'pr');
 const START = '<!-- pr-shots:start -->', END = '<!-- pr-shots:end -->';
@@ -212,7 +212,7 @@ async function main() {
 
   const repo = gh('repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner');
   const dir = `pr-${pr.number}/${headSha}`;
-  publish(changed.map((p) => ({ src: p.pair, name: `${p.name}.png` })), dir, `pr-${pr.number}: before/after at ${headSha} (base ${baseSha})`);
+  if (changed.length) publish(changed.map((p) => ({ src: p.pair, name: `${p.name}.png` })), dir, `pr-${pr.number}: before/after at ${headSha} (base ${baseSha})`); // nothing to push when nothing changed
   const img = (p) => `https://github.com/${repo}/blob/pr-shots/${dir}/${p.name}.png?raw=true`;
   const lines = [
     '## Screenshots: before / after',

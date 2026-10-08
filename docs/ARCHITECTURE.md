@@ -56,6 +56,8 @@ client/        browser game (Vite root)
                  onboarding hand), stats.js (?stats=1 overlay), install.js, update.js
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
   game/          session.js (state + undo + action log), input.js (pointer state machine), content.js (packs),
+                 routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /street-bbq/12, n = position
+                 inside the pack; slug = pack.json `slug` or the id with dashes; old /level/<n> means Street BBQ),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
   render/        stage.js (renderer, camera, lights, backdrop, quality tier, rAF loop), quality.js (pure: tiers,
                  frame monitor, idle gate), layout.js (pure board layout + hit test),

@@ -126,6 +126,7 @@ body.in-game .landing { display: none; }
 .levels { position: absolute; inset: 0; background: rgba(20, 12, 22, 0.88); padding: calc(14px + var(--safe-top)) 14px 20px; overflow-y: auto; }
 .levels-head { display: flex; align-items: center; gap: 10px; max-width: 720px; margin: 0 auto 14px; }
 .levels-head h2 { flex: 1; margin: 0; font-size: 24px; }
+.pack-head { max-width: 720px; margin: 22px auto 10px; font-size: 20px; color: var(--accent); }
 .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; max-width: 720px; margin: 0 auto; }
 .level-card { background: #3a2638; border-radius: 16px; padding: 12px; min-height: 104px; color: var(--ink); text-decoration: none; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35); }
 .level-card .num { font-size: 26px; font-weight: 700; color: var(--accent); }

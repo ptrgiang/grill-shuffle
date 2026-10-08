@@ -1,7 +1,8 @@
 // Grill Shuffle - app shell: routing, screens, and the game loop wiring.
 //
 //   /                 menu (+ SEO landing content below)
-//   /level/<n>        story level n, as numbered on screen (routes.js; old /play/<id> URLs are rewritten to it)
+//   /<pack>/<n>       story level n of a pack, as numbered on screen, e.g. /street-bbq/12 (routes.js; old
+//                     /level/<n> and /play/<id> URLs are rewritten to it)
 //   /play             the next unfinished story level
 //   /levels           level select
 //   /daily            today's puzzle (same board for everyone, UTC day)
@@ -11,8 +12,8 @@ import { BoardView } from './render/board.js';
 import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
-import { parseRoute as routeOf, levelPath } from './game/routes.js';
-import { STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { parseRoute as routeOf, levelPath as pathOf, levelPosition } from './game/routes.js';
+import { PACKS, STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
@@ -135,7 +136,15 @@ function onFx(ev, at) {
 
 // ---------------------------------------------------------------- routing
 
-const parseRoute = (path = location.pathname) => routeOf(path, STORY);
+const parseRoute = (path = location.pathname) => routeOf(path, PACKS);
+const levelPath = (id) => pathOf(PACKS, id);
+
+/** On-screen name of a story level: "Level 12", with the pack's name once there is more than one pack. */
+function levelLabel(id) {
+  const at = levelPosition(PACKS, id);
+  if (!at) return null;
+  return PACKS.length > 1 ? `${at.pack.name} · Level ${at.n}` : `Level ${at.n}`;
+}
 
 export function go(path, { replace = false } = {}) {
   if (replace) history.replaceState(null, '', path);
@@ -163,7 +172,7 @@ async function render() {
   if (r.name === 'play') {
     const lvl = r.missing ? null : getLevel(r.id ?? nextStoryLevel());
     if (!lvl) return go('/', { replace: true });
-    const canonical = levelPath(STORY, lvl.id);
+    const canonical = levelPath(lvl.id);
     if (canonical && location.pathname !== canonical) history.replaceState(null, '', canonical + location.search);
     return startLevel(lvl, { mode: 'story' });
   }
@@ -189,13 +198,12 @@ function showMenu() {
   const stars = totalStars(app.progress);
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
-  const nextIdx = storyIndex(next) + 1;
   screen(
     h('div.menu',
       h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', 'Grill Shuffle'), h('p.subtitle', 'Food Sort & Match Puzzle')),
       h('div.menu-spacer'),
       h('div.menu-buttons',
-        h('a.btn.big.primary', { href: levelPath(STORY, next) ?? '/play', 'data-nav': true }, stars ? `Continue · Level ${nextIdx}` : 'Play'),
+        h('a.btn.big.primary', { href: levelPath(next) ?? '/play', 'data-nav': true }, stars ? `Continue · ${levelLabel(next)}` : 'Play'),
         h('div.row',
           h('a.btn', { href: '/daily', 'data-nav': true }, h('span', 'Daily Grill'), streak ? h('span.badge', `🔥 ${streak}`) : null),
           h('a.btn', { href: '/levels', 'data-nav': true }, h('span', 'Levels'), stars ? h('span.badge', `★ ${stars}`) : null),
@@ -304,18 +312,24 @@ function showLevels() {
   app.route = 'levels';
   app.hud = null;
   app.fit = null;
-  const cards = STORY.map((id, i) => {
+  // grouped by pack, numbered inside each pack (the URL number); unlocks run along the whole story, so a pack's first
+  // level opens when the previous pack's last one is won
+  const card = (id, n) => {
     const lvl = getLevel(id);
-    const open = isUnlocked(STORY, i, app.progress);
+    const open = isUnlocked(STORY, storyIndex(id), app.progress);
     const stars = app.progress[id]?.stars ?? 0;
     return open
-      ? h('a.level-card', { href: levelPath(STORY, id), 'data-nav': true }, h('span.num', String(i + 1)), h('span.name', lvl.name ?? id), starsEl(stars, 3, 'stars.small'))
-      : h('div.level-card.locked', h('span.num', String(i + 1)), iconEl('lock'));
-  });
+      ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', lvl.name ?? id), starsEl(stars, 3, 'stars.small'))
+      : h('div.level-card.locked', h('span.num', String(n)), iconEl('lock'));
+  };
+  const one = PACKS.length === 1;
   screen(
     h('div.levels',
-      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', 'Street BBQ'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
-      h('div.level-grid', ...cards),
+      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? PACKS[0].name : 'Levels'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
+      ...PACKS.flatMap((pack) => [
+        one ? null : h('h3.pack-head', pack.name),
+        h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
+      ]),
     ),
   );
 }
@@ -421,7 +435,7 @@ async function hint() {
 class Hud {
   constructor(level) {
     this.level = level;
-    const title = app.mode === 'daily' ? `Daily · ${level.id.slice(6)}` : app.mode === 'challenge' && !STORY.includes(level.id) ? `Challenge ${app.code}` : `Level ${storyIndex(level.id) + 1}`;
+    const title = app.mode === 'daily' ? `Daily · ${level.id.slice(6)}` : app.mode === 'challenge' && !STORY.includes(level.id) ? `Challenge ${app.code}` : levelLabel(level.id);
     this.movesEl = h('span.moves-num', '0');
     this.goalsEl = h('div.goals');
     this.comboEl = h('div.combo');
@@ -589,7 +603,7 @@ async function showResult(won, reason) {
     daily,
     improved && app.mode === 'story' ? h('p.muted', 'New best saved.') : null,
     h('div.modal-buttons',
-      nextId ? h('a.btn.primary', { href: levelPath(STORY, nextId), 'data-nav': true }, 'Next level') : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
+      nextId ? h('a.btn.primary', { href: levelPath(nextId), 'data-nav': true }, 'Next level') : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
       h('button.btn', { on: { click: () => share(s.movesUsed) } }, iconEl('share'), ' Challenge a friend'),
       h('button.btn.ghost', { on: { click: restart } }, 'Replay'),
     ),

@@ -23,6 +23,7 @@ import { replay } from '../shared/replay.js';
 import { THEMES } from '../shared/levels.js';
 import { checkAppendOnly, checkCurve, checkCurveFrom } from './lib/content-rules.js';
 import { ROOT } from './lib/content.js';
+import { packSlug, RESERVED_SLUGS } from '../client/game/routes.js';
 
 const args = parseArgs();
 const errors = [];
@@ -69,8 +70,15 @@ for (const t of Object.values(themes)) {
 /** Every food a level can show: slots and stacked layers. */
 const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).map(cellFood).filter(Boolean));
 
+const slugs = new Map();
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
+  // URLs /<slug>/<n> (#63): a slug is lowercase-dashed, unique and never a page / file / API path
+  const slug = packSlug(pack);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) errors.push(`${packFile}: URL slug "${slug}" must be lowercase letters, digits and dashes`);
+  if (RESERVED_SLUGS.includes(slug)) errors.push(`${packFile}: URL slug "${slug}" is reserved (${RESERVED_SLUGS.join(', ')})`);
+  if (slugs.has(slug)) errors.push(`${packFile}: URL slug "${slug}" is also used by ${slugs.get(slug)}`);
+  slugs.set(slug, pack.id);
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
   const basePack = atBase(packFile);
   errors.push(...checkAppendOnly(pack.id, basePack?.levels ?? null, pack.levels));
