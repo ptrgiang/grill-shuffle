@@ -1,6 +1,6 @@
 # Grill Shuffle — agent notes
 
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first. Process: [CONTRIBUTING.md](CONTRIBUTING.md).
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first, and [docs/STORY.md](docs/STORY.md) for anything the player sees. Process: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Starting a session
 
@@ -35,6 +35,13 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
   blank-password check several times a day; a FOREIGN-only block is not ours (issue #55), tell the user before deleting it.
 - Workflow per task: inspect → find the owning subsystem → smallest coherent change → tests → sim/solver tests →
   validate levels → look at the change (`/sandbox/*`, `npm run shot`) → mobile input if touched → docs.
+
+- Story (#78, `docs/STORY.md`): Vietnamese-rooted, mostly wordless, motion-driven; story work goes before feature work.
+  Every player-facing string is written in **vi and en** in the same change (no English-only text, no later pass).
+  Level display names / hints may be rewritten for the story; ids and positions never.
+  Beats are content (`content/story/`) + client presentation; never in `shared/`/`solver/`, never change a level.
+  Do not run huashu-art-motion's `render.py` here (it launches Playwright directly).
+- UI changes: **5 variants in the issue first** (label `design/variants`), owner picks, then the PR (`CONTRIBUTING.md` step 0).
 
 ## This machine (Windows)
 

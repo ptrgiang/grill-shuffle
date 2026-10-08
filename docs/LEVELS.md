@@ -53,8 +53,9 @@ link, the unlock and its theme. `?fixtures=1` on the dev server adds a third tes
 
 1. **One pack per theme, at most 50 levels.** Each theme ships one pack that grows to 50 levels and then is full.
    Each new theme starts its own curve from easy and introduces its own new foods (taught inside its 50).
-2. **Ids and positions never change.** Shipped levels are never inserted between, reordered, removed or renamed:
-   `/<pack-slug>/<n>` (#63) and share codes always open the same level. While a pack has fewer than 50 levels, new
+2. **Ids and positions never change.** Shipped levels are never inserted between, reordered or removed, and their ids
+   never change: `/<pack-slug>/<n>` (#63) and share codes always open the same level. Display **names and hints may be
+   rewritten** for the story (owner, 2026-10-08, `docs/STORY.md`), always in vi and en. While a pack has fewer than 50 levels, new
    ones go at the **end** only.
 3. **New features go into existing levels.** A new booster, mechanic or food does not get new levels or a new pack:
    the levels it suits are **edited in place** (board, `boosters`, `modifiers`, foods; difficulty may go up), then
@@ -64,7 +65,11 @@ link, the unlock and its theme. `?fixtures=1` on the dev server adds a third tes
    mean raising the levels after it.
 5. **Street BBQ 1–50 are legacy** (`"curveFrom": 51` in its `pack.json`: they predate rule 4 and keep their
    shipped order; the pack is full).
-6. **Packs unlock in order** (see Unlocks); the level select shows one tab per pack (`/levels/<slug>`).
+6. **Packs unlock in order** (see Unlocks). The level select shows one tab per pack (`/levels/<slug>`) **until the
+   journey map (#84) ships**: owner, 2026-10-08, the tabs may be replaced by one continuous road through all packs
+   (the story, `docs/STORY.md`), chosen from 5 variants. `/levels/<slug>` and `/<pack-slug>/<n>` keep working.
+7. **Story beats never change levels.** Beats (`content/story/`, #80) attach to existing level ids; they never add,
+   reorder or edit a level and never count for difficulty.
 
 Editing a level keeps players' stars (progress is per level id). A challenge link to it opens the edited board, so
 its stored best moves / player counts may mix the old and new board.
