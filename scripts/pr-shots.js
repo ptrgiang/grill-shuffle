@@ -212,7 +212,7 @@ async function main() {
 
   const repo = gh('repo', 'view', '--json', 'nameWithOwner', '--jq', '.nameWithOwner');
   const dir = `pr-${pr.number}/${headSha}`;
-  publish(changed.map((p) => ({ src: p.pair, name: `${p.name}.png` })), dir, `pr-${pr.number}: before/after at ${headSha} (base ${baseSha})`);
+  if (changed.length) publish(changed.map((p) => ({ src: p.pair, name: `${p.name}.png` })), dir, `pr-${pr.number}: before/after at ${headSha} (base ${baseSha})`); // nothing to push when nothing changed
   const img = (p) => `https://github.com/${repo}/blob/pr-shots/${dir}/${p.name}.png?raw=true`;
   const lines = [
     '## Screenshots: before / after',
