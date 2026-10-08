@@ -9,9 +9,14 @@
    ```
    npm run ci                      # check + tests + validate:levels + build
    npm run test:e2e                # when input / UI changed (safe headless launcher)
-   npm run shot -- --set           # when visuals changed: attach screenshots to the PR
+   npm run shot -- --set           # when visuals changed: look at every PNG
    ```
-4. **Pull request** into `main`, using the template, with `Closes #<issue>`. CI (`checks` job) must be green.
+   After opening the PR, for any UI change: `npm run pr-shots -- --pages "/level/27@390x844m+select,..."` puts
+   before / after pairs (main vs the branch) into the PR body, so the reviewer sees the change without a checkout.
+4. **Pull request** into `main`, using the template, with `Closes #<issue>`. CI (`checks` job) must be green; on
+   PRs touching `client/`, `content/` or `shared/` the `visual` workflow pixel-compares frozen captures against
+   `tests/visual/` (see `docs/RENDERING.md`, "Visual regression"). An intended look change: `npm run visual:accept`,
+   review the new baselines in the diff, commit them.
 5. **Review.** Reviewer checks the template's checklist: simulation stays authoritative and deterministic, rule
    changes bump `PUZZLE_RULE_VERSION`, levels re-solved, mobile checked when input/UI changed, docs updated.
 6. **Merge**: squash only (the PR title becomes the commit), branch auto-deleted.

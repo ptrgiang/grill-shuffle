@@ -72,7 +72,7 @@ client/        browser game (Vite root)
 content/       levels/<pack>/*.json + pack.json, themes/*.json
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema
-scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, build-content, build-sw, make-icons, lib/browser.js
+scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, visual (+ visual-accept), build-content, build-sw, make-icons, lib/browser.js
 tests/         node:test suites: sim/, solver/, worker/, client/
 ```
 

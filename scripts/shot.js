@@ -6,6 +6,7 @@ import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { launchChrome, startVite, sleep, collectPageErrors } from './lib/browser.js';
 import { ROOT, parseArgs } from './lib/content.js';
+import { tapSelect } from './lib/pages.js';
 
 const args = parseArgs();
 const SET = [
@@ -37,25 +38,6 @@ const SET = [
 const jobs = args.set
   ? SET
   : [{ path: args._[0] ?? '/', w: Number(args.w ?? 900), h: Number(args.h ?? 600), mobile: !!args.mobile, select: !!args.select, out: args.out ?? 'shot.png' }];
-
-/** Tap (touch) the first food that has somewhere to go and at least one grill it cannot go to, else any movable food. */
-async function tapSelect(page) {
-  const at = await page.evaluate(() => {
-    const { app, view } = window.__gs;
-    const s = app.session;
-    let pick = null;
-    s.state.grills.forEach((g, gi) =>
-      g.slots.forEach((it, si) => {
-        if (!it || !s.canPick(gi, si)) return;
-        const n = s.targetsFor({ grill: gi, slot: si }).length;
-        const score = n > 0 ? (n < s.state.grills.length - 1 ? 2 : 1) : 0;
-        if (!pick || score > pick.score) pick = { gi, si, score };
-      }),
-    );
-    return pick && view.slotScreen(pick.gi, pick.si, 0.3);
-  });
-  if (at) await page.touchscreen.tap(at.x, at.y);
-}
 
 const vite = await startVite(ROOT);
 const errors = [];

@@ -5,7 +5,7 @@ Closes #
 ## How it was checked
 - [ ] `npm run ci` green locally (check, tests, validate:levels, build)
 - [ ] `npm run test:e2e` (input / UI changes)
-- [ ] Screenshots for visual changes (desktop + 390×844 phone)
+- [ ] UI change: before / after in this PR (`npm run pr-shots`), or `Screenshots: skipped (<reason>)`
 - [ ] Tried on a real touch device (mobile issues)
 
 ## Review checklist

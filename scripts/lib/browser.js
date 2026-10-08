@@ -179,7 +179,7 @@ function SAFE_STUBS() {
  * Launch the one headless Chrome. Returns { browser, page, close }. Always call close() in a finally.
  * opts: { width, height, life (ms, default 4 min, max 10), mobile (touch + DPR 3) }
  */
-export async function launchChrome({ width = 900, height = 600, life = 4 * 60_000, mobile = false } = {}) {
+export async function launchChrome({ width = 900, height = 600, life = 4 * 60_000, mobile = false, dpr = mobile ? 3 : 1 } = {}) {
   if (process.env.GS_NO_BROWSER === '1') throw new Error('GS_NO_BROWSER=1: no browser may be started now');
   if (existsSync(BLOCK_FILE)) throw new Error(`blocked by ${BLOCK_FILE}: the failed sign-in counter rose while a browser was up. The file lists the browsers that were up (OURS / FOREIGN): find out why, then delete it.`);
   const before = badPasswordAttempts();
@@ -210,7 +210,7 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
   startWatchdog(pid, profile, Math.min(10 * 60_000, life));
   const page = (await browser.pages())[0] ?? (await browser.newPage());
   await page.evaluateOnNewDocument(SAFE_STUBS);
-  await page.setViewport({ width, height, deviceScaleFactor: mobile ? 3 : 1, isMobile: mobile, hasTouch: mobile });
+  await page.setViewport({ width, height, deviceScaleFactor: dpr, isMobile: mobile, hasTouch: mobile });
   let closed = false;
   const close = async () => {
     if (closed) return;

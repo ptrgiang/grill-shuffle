@@ -6,3 +6,4 @@ shots/
 *.log
 content/generated/
 worker/content.gen.js
+.pr-base/

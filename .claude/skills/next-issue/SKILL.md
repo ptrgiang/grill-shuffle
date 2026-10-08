@@ -48,10 +48,35 @@ first part only. If something in the issue is ambiguous enough to change the des
 ```bash
 git push -u origin <branch>
 gh pr create --base main --title "<type>: <summary>" --body-file <file>   # .github/pull_request_template.md, "Closes #<n>"
+MSYS_NO_PATHCONV=1 npm run pr-shots -- --pages "<spec>,<spec>"          # UI PRs: before / after into the PR (5b)
 gh pr checks <pr> --watch
 ```
-Attach screenshots for visual changes (describe them if upload is not possible). Fix CI until green.
-Then STOP and report to the user: PR link, what changed, how it was verified, anything left open. Review is theirs.
+Fix CI until green.
+
+### 5b. Before / after screenshots (UI PRs: default ON)
+
+The reviewer should see the change without checking out the branch. `npm run pr-shots` captures each page on
+`origin/main` (temporary worktree `.pr-base/`) and on the branch, puts each pair side by side (left before, right
+after), pushes the images to the `pr-shots` branch and writes them into the PR body between
+`<!-- pr-shots:start -->` / `<!-- pr-shots:end -->`. It only shows pairs that changed; the rest are listed as
+unchanged. Re-run after every visual fix: the section is replaced, older images stay on `pr-shots`.
+
+- **When**: the diff (`git diff --name-only origin/main...HEAD`) touches anything that renders: `client/render/`,
+  `client/ui/`, `client/style.css`, `client/main.js`, `client/index.html`, `client/public/`, `content/` (levels,
+  themes), or food / theme data in `shared/`.
+- **Pages**: pick the ones that SHOW the change, not just the default set. Spec `<path>@<W>x<H>[m][+select]`
+  (`m` = phone with touch, `+select` = a food tap-selected first), e.g. `/level/27@390x844m+select`,
+  `/level/31@1280x800`, `/@390x844m`, `/sandbox/food?spin=0&seed=1@1200x700`. A phone (390×844) always; desktop too
+  when the layout or HUD changed; 360×640 / 844×390 when space is tight. States the URL cannot reach (a drag, a match
+  burst) are described in words.
+- **Check them yourself** (Read the PNGs in `shots/pr/<n>/`) before reporting: the "after" must show the intended
+  change and nothing else. An unexpected change in a page you did not mean to touch is a finding: fix it or explain it.
+- **Skip** when the change cannot be seen (pure logic, solver, worker, tests, docs, CI) or is a tiny tweak (a
+  constant, a copy fix) where pictures add nothing, and whenever the user says to skip screenshots. Then the PR body
+  says `Screenshots: skipped (<reason>)`, so the reviewer knows it was deliberate.
+
+Then STOP and report to the user: PR link, what changed (point at the before/after section), how it was verified,
+anything left open. Review is theirs.
 
 ## 6. After the user merges (or asks you to)
 
