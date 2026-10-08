@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
+  "boosters": {"torch":1,"tray_swap":1},
   "hint": "Four foods and a deep plate. Count before you fill.",
   "solver": {
     "minMoves": 5,

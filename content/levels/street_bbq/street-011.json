@@ -15,6 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter"],
+  "boosters": {"torch":1,"cooler":1},
   "hint": "The number on that shrimp is how many moves it can stay on the heat. Anything that chars ends the level, so serve it first!",
   "solver": {
     "minMoves": 6,

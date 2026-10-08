@@ -36,6 +36,9 @@ export const icons = {
   tongs: '<svg viewBox="0 0 24 24"><circle cx="12" cy="3.6" r="2" fill="currentColor"/><path d="M11 5 6.2 17.6M13 5l4.8 12.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.2 17.6 8.8 21M17.8 17.6 15.2 21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M8.2 12.4h7.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".6"/></svg>',
   hand: '<svg viewBox="0 0 24 24"><path d="M10.2 2.6a1.6 1.6 0 0 1 3.2 0V11l4.6.9a2.4 2.4 0 0 1 1.9 2.7l-.8 5.1a3 3 0 0 1-3 2.5h-5.3a3 3 0 0 1-2.4-1.2l-3.6-4.8a1.6 1.6 0 0 1 2.5-2l2.9 2.9Z"/></svg>',
   fan: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7s2 5-4 7Zm2 2c4 0 7 1 7 4s-5 2-7-4Zm-2 2c0 4-1 7-4 7s-2-5 4-7Zm-2-2c-4 0-7-1-7-4s5-2 7 4Z"/></svg>',
+  torch: '<svg viewBox="0 0 24 24"><path d="M12 2.2c.9 3.4 5.4 5.6 5.4 10.6a5.4 5.4 0 0 1-10.8 0c0-2.6 1.3-4.3 2.8-5.6.2 2 .9 3.3 2.2 3.9C11 8.2 11.2 5 12 2.2Z"/><path d="M12 13.2c.4 1.4 2.1 2.2 2.1 4a2.1 2.1 0 0 1-4.2 0c0-1 .5-1.6 1.1-2.1.1.6.4 1 .8 1.2-.1-1 0-2.1.2-3.1Z" fill="#fff3e3" opacity=".55"/></svg>',
+  tray_swap: '<svg viewBox="0 0 24 24"><path d="M4 8.5h14.5M15 5l3.5 3.5L15 12M20 15.5H5.5M9 12l-3.5 3.5L9 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  cooler: '<svg viewBox="0 0 24 24"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5M9.3 4.2 12 6.5l2.7-2.3M9.3 19.8 12 17.5l2.7 2.3M4.6 11.2l3.3 1.1-.6 3.4M19.4 12.8l-3.3-1.1.6-3.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
 export const iconEl = (name, cls = 'ico') => h(`span.${cls}`, { html: icons[name], 'aria-hidden': 'true' });

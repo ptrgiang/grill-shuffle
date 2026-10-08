@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter"],
+  "boosters": {"torch":1,"cooler":1},
   "hint": "Two clocks are ticking. The salmon runs out first: plan the order before you move.",
   "solver": {
     "minMoves": 6,

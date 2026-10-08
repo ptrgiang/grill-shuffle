@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
+  "boosters": {"torch":1,"tray_swap":1},
   "hint": "No lock, but nine moves. Do not waste the empty slots.",
   "solver": {
     "minMoves": 9,

@@ -15,6 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1,"tray_swap":1},
   "hint": "Short and sharp: the first move matters most.",
   "solver": {
     "minMoves": 5,

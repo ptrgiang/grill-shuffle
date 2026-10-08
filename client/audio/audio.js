@@ -11,6 +11,8 @@
 //     idle slice, so the first match never stalls on a slow phone; ambience (the big one) starts once it is built.
 import { SOUNDS } from './synth.js';
 
+const BOOSTER_SOUNDS = { fan: 'gust', tongs: 'tongs', torch: 'torch', cooler: 'cooler', tray_swap: 'swap' };
+
 export const GESTURE_EVENTS = ['pointerdown', 'touchend', 'click', 'keydown'];
 const AMBIENCE_LEVEL = 0.32; // ambience gain at volume 1
 const MASTER_LEVEL = 0.8;
@@ -250,7 +252,7 @@ export class Audio {
       case 'button':
         return this.play('button', { gain: 0.6 });
       case 'booster':
-        return ev.booster === 'fan' ? this.play('gust', { gain: 0.8 }) : this.play('tongs', { gain: 0.7, pan });
+        return this.play(BOOSTER_SOUNDS[ev.booster] ?? 'tongs', { gain: 0.75, pan });
     }
   }
 }

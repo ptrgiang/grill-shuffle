@@ -214,6 +214,38 @@ export function gustSound(sr, seed = 9) {
   return normalize(a, 0.6);
 }
 
+/** Torch booster: a lit burner (soft low roar swelling in), crackle on top. */
+export function torchSound(sr, seed = 13) {
+  const dur = 0.6;
+  const rng = mulberry32(seed);
+  const a = buf(sr, dur);
+  for (let i = 0; i < a.length; i++) a[i] = rng() * 2 - 1;
+  lowpass(a, sr, 900);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    a[i] *= (1 - Math.exp(-t / 0.08)) * Math.exp(-t / 0.3);
+  }
+  mix(a, sizzle(sr, 0.5, seed, { crackle: 0.9, bright: 0.8 }), sr, 0.05, 0.4);
+  return normalize(a, 0.6);
+}
+
+/** Cooler booster: an icy sparkle over a short, fading hiss. */
+export function coolerSound(sr) {
+  const a = buf(sr, 0.6);
+  mix(a, sparkle(sr, 21, 6, 0.55), sr, 0, 0.7);
+  mix(a, sizzle(sr, 0.45, 5, { crackle: 0, bright: 1.6 }), sr, 0, 0.25);
+  return normalize(a, 0.5);
+}
+
+/** Tray swap booster: two quick wooden slides (one per grill). */
+export function swapSound(sr) {
+  const a = buf(sr, 0.3);
+  mix(a, thud(sr, 300, 160, 0.09), sr, 0, 0.6);
+  mix(a, thud(sr, 240, 120, 0.09), sr, 0.1, 0.6);
+  mix(a, sizzle(sr, 0.25, 8, { crackle: 0, bright: 0.5 }), sr, 0, 0.15);
+  return normalize(a, 0.5);
+}
+
 /** Tongs booster: two light metal clicks (the tongs closing), then the item lifts. */
 export function tongsSound(sr) {
   const a = buf(sr, 0.2);
@@ -273,5 +305,8 @@ export const SOUNDS = {
   button: (sr) => buttonSound(sr),
   gust: (sr) => gustSound(sr),
   tongs: (sr) => tongsSound(sr),
+  torch: (sr) => torchSound(sr),
+  cooler: (sr) => coolerSound(sr),
+  swap: (sr) => swapSound(sr),
   ambience: (sr, params) => ambienceLoop(sr, params ?? undefined),
 };

@@ -67,3 +67,55 @@ test('session: without an armed booster a pick + drop is a plain move', () => {
   s.arm(null);
   assert.equal(s.actionFor({ grill: 0, slot: 1 }, { grill: 2, slot: 0 }).type, 'move');
 });
+
+const tapLevel = (boosters) => ({
+  formatVersion: 1,
+  id: 'test-tap-boosters',
+  moves: 10,
+  board: {
+    grills: [
+      { slots: ['beef', { food: 'corn', burn: 4 }, 'beef'] },
+      { slots: ['corn', 'beef', 'corn'] },
+      { slots: [null, null, null] },
+      { slots: ['corn', null], lock: 1 },
+    ],
+  },
+  goals: [{ type: 'clear_all' }],
+  boosters,
+});
+
+test('session: torch fires on one tap at a food; its grills light up while armed', () => {
+  const s = new Session(tapLevel({ torch: 1 }));
+  assert.equal(s.arm('torch'), 'torch');
+  assert.deepEqual(s.boosterGrills(), [0, 1]);
+  assert.equal(s.canPick(3, 0), false, 'torch is not a pick-and-drop booster');
+  assert.ok(s.tapTarget({ grill: 2, slot: 0 }).invalid, 'empty slot');
+  const r = s.tapTarget({ grill: 0, slot: 0 });
+  assert.deepEqual(r.action, { type: 'booster', booster: 'torch', from: { grill: 0, slot: 0 } });
+  assert.ok(s.apply(r.action).ok);
+  assert.equal(s.armed, null);
+});
+
+test('session: tray swap takes two grill taps; the first tap again cancels; partners must fit', () => {
+  const s = new Session(tapLevel({ tray_swap: 1 }));
+  s.arm('tray_swap');
+  assert.ok(s.tapTarget({ grill: 3, slot: 0 }).invalid, 'locked grill');
+  assert.deepEqual(s.tapTarget({ grill: 0, slot: 1 }).pending, [1, 2]);
+  assert.ok(s.tapTarget({ grill: 0, slot: 2 }).cancel);
+  assert.deepEqual(s.tapTarget({ grill: 2, slot: 0 }).pending, [0, 1]);
+  const r = s.tapTarget({ grill: 0, slot: 0 });
+  assert.deepEqual(r.action, { type: 'booster', booster: 'tray_swap', from: { grill: 2 }, to: { grill: 0 } });
+  assert.ok(s.apply(r.action).ok);
+  assert.equal(s.state.grills[2].slots[1].burn, 4, 'the burning corn moved with its counter');
+});
+
+test('session: cooler fires on a grill with burning food only', () => {
+  const s = new Session(tapLevel({ cooler: 1 }));
+  s.arm('cooler');
+  assert.deepEqual(s.boosterGrills(), [0]);
+  assert.ok(s.tapTarget({ grill: 1, slot: 0 }).invalid);
+  const r = s.tapTarget({ grill: 0, slot: 2 });
+  assert.ok(s.apply(r.action).ok);
+  assert.equal(s.state.grills[0].slots[1].burn, undefined);
+  assert.equal(s.canUseBooster('cooler'), false);
+});

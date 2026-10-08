@@ -3,7 +3,8 @@
 // Same command format for gameplay, solver, undo, replay, challenge sharing and debugging.
 //
 // Compact string form (replays, share links, D1): "m<fromGrill>.<fromSlot>-<toGrill>.<toSlot>",
-// boosters: "b<id>[:<grill>.<slot>[-<grill>.<slot>]]".
+// boosters: "b<id>[:<target>[-<target>]]", a target being "<grill>.<slot>" (an item / slot) or "<grill>" (a whole
+// grill: tray_swap, cooler), e.g. "btongs:1.0-3.2", "btorch:2.1", "btray_swap:0-3", "bcooler:2", "bfan".
 
 /** Can the item at (grill, slot) be picked up under the normal rules? */
 export function canPick(state, grill, slot) {
@@ -71,10 +72,10 @@ export function getLegalMoves(state, { unique = false } = {}) {
   return out;
 }
 
-const pos = (p) => `${p.grill}.${p.slot}`;
+const pos = (p) => (p.slot === undefined ? `${p.grill}` : `${p.grill}.${p.slot}`);
 const unPos = (s) => {
   const [grill, slot] = s.split('.').map(Number);
-  return { grill, slot };
+  return slot === undefined ? { grill } : { grill, slot };
 };
 
 export function encodeAction(a) {
@@ -89,7 +90,7 @@ export function encodeAction(a) {
 }
 
 const MOVE_RE = /^m(\d+)\.(\d+)-(\d+)\.(\d+)$/;
-const BOOSTER_RE = /^b([a-z_]+)(?::(\d+\.\d+))?(?:-(\d+\.\d+))?$/;
+const BOOSTER_RE = /^b([a-z_]+)(?::(\d+(?:\.\d+)?))?(?:-(\d+(?:\.\d+)?))?$/;
 
 export function decodeAction(s) {
   let m = MOVE_RE.exec(s);

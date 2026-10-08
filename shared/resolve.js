@@ -13,7 +13,7 @@
 //      0 char
 //   4. no match at all during the move -> combo resets
 //   5. status: anything charred -> lost ('charred'); all goals done -> won; else no moves left or no legal move -> lost
-// Boosters cost no move, so they never tick burn counters.
+// Boosters cost no move, so they never tick burn counters. The torch serves its set as a match first (chain 0).
 // Events describe every step, in order, for the renderer/audio. Skipping them changes nothing.
 
 import { cloneState } from './state.js';
@@ -28,29 +28,39 @@ import { canUseBooster, applyBoosterEffect, hasUsableBooster } from './boosters.
  * Resolve matches/unlocks/reveals until the board is stable. Mutates `s`; returns { events, matchCount, chain }.
  * `chain`: index given to the first round of matches (0 = caused directly by the action).
  */
+/**
+ * Score one match whose items are already off the board: match count, combo, score, goals, lock counters.
+ * Mutates `s`; `emit` receives each event (and adds the goal progress it causes). `extra` goes onto the match event.
+ */
+function serveMatch(s, { grill, key, items, slots }, chain, emit, extra = null) {
+  s.matches += 1;
+  const combo = comboOnMatch(s);
+  const points = s.rules.matchScore * combo;
+  s.score += points;
+  const ev = { type: 'match', grill, key, food: items[0].food, foods: items.map((it) => it.food), itemIds: items.map((it) => it.id), slots, chain, combo, ...extra };
+  for (const it of items) if (it.burn) (ev.burning ??= []).push(it.food); // foods saved before they charred
+  emit(ev);
+  emit({ type: 'score', points, total: s.score, combo });
+  for (const ev of tickLocks(s)) emit(ev);
+}
+
+const emitter = (s, events) => (ev) => {
+  events.push(ev);
+  for (const g of goalsOnEvent(s.goals, ev, s.score)) events.push(g);
+};
+
 export function resolveMatches(s, chain = 0) {
   const events = [];
   let matchCount = 0;
-  const emit = (ev) => {
-    events.push(ev);
-    for (const g of goalsOnEvent(s.goals, ev, s.score)) events.push(g);
-  };
+  const emit = emitter(s, events);
   for (let guard = 0; guard < 1000; guard++) {
     const matches = findMatches(s);
     for (const m of matches) {
       const grill = s.grills[m.grill];
       const items = m.slots.map((slot) => grill.slots[slot]);
       for (const slot of m.slots) grill.slots[slot] = null;
-      s.matches += 1;
       matchCount += 1;
-      const combo = comboOnMatch(s);
-      const points = s.rules.matchScore * combo;
-      s.score += points;
-      const ev = { type: 'match', grill: m.grill, key: m.key, food: items[0].food, foods: items.map((it) => it.food), itemIds: items.map((it) => it.id), slots: m.slots, chain, combo };
-      for (const it of items) if (it.burn) (ev.burning ??= []).push(it.food); // foods saved before they charred
-      emit(ev);
-      emit({ type: 'score', points, total: s.score, combo });
-      for (const ev of tickLocks(s)) emit(ev);
+      serveMatch(s, { grill: m.grill, key: m.key, items, slots: m.slots }, chain, emit);
     }
     const reveals = revealLayers(s);
     for (const ev of reveals) emit(ev);
@@ -113,10 +123,18 @@ export function applyAction(state, action) {
   if (action?.type === 'booster') {
     if (!canUseBooster(state, action)) return { ok: false, state, events: [], reason: 'booster unavailable' };
     const s = cloneState(state);
-    const events = applyBoosterEffect(s, action);
-    const r = resolveMatches(s);
+    const { events, serve } = applyBoosterEffect(s, action);
+    let served = 0;
+    if (serve) {
+      // the torch's set: one match, scored like any other; whatever it opens or reveals chains on from it
+      const { grill, key, items, places } = serve;
+      const slots = places.filter((p) => p.grill === grill).map((p) => p.slot);
+      serveMatch(s, { grill, key, items, slots }, 0, emitter(s, events), { places, booster: 'torch' });
+      served = 1;
+    }
+    const r = resolveMatches(s, served);
     events.push(...r.events);
-    finishTurn(s, events, r.matchCount, { countsAsMove: false });
+    finishTurn(s, events, r.matchCount + served, { countsAsMove: false });
     return { ok: true, state: s, events };
   }
   return { ok: false, state, events: [], reason: 'unknown action' };
