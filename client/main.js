@@ -13,7 +13,9 @@ import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition } from './game/routes.js';
-import { PACKS, STORY, SHARE, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { PACKS, STORY, SHARE, THEMES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { packStatus, packIndexOf, levelOpen, lockReason, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
+import { resolveTheme } from '../shared/themes.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
@@ -23,7 +25,7 @@ import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { Coach, coachMove } from './ui/coach.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
-import { starThresholds, isUnlocked, totalStars } from '../shared/progression.js';
+import { starThresholds, totalStars } from '../shared/progression.js';
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
 import { registerServiceWorker } from './ui/update.js';
@@ -179,6 +181,12 @@ async function render() {
   if (r.name === 'play') {
     const lvl = r.missing ? null : getLevel(r.id ?? nextStoryLevel());
     if (!lvl) return go('/', { replace: true });
+    const k = packIndexOf(PACKS, lvl.id);
+    const status = k > 0 ? packStatus(PACKS, k, app.progress, THEMES) : null;
+    if (status && !status.open) {
+      toast(`${PACKS[k].name} is locked. ${lockReason(status)}.`);
+      return go('/levels', { replace: true });
+    }
     const canonical = levelPath(lvl.id);
     if (canonical && location.pathname !== canonical) history.replaceState(null, '', canonical + location.search);
     return startLevel(lvl, { mode: 'story' });
@@ -188,7 +196,7 @@ async function render() {
 }
 
 function nextStoryLevel() {
-  return STORY.find((id) => !(app.progress[id]?.stars > 0)) ?? STORY.at(-1);
+  return firstOpenLevel(PACKS, app.progress, THEMES);
 }
 
 // ---------------------------------------------------------------- screens
@@ -202,10 +210,10 @@ function showMenu() {
   app.hud = null;
   // an idle board behind the menu, as a live preview
   const demo = getLevel(STORY[2] ?? STORY[0]);
-  useTheme(themeFor(demo));
   const stars = totalStars(app.progress);
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
+  useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
   screen(
     h('div.menu',
       h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', 'Grill Shuffle'), h('p.subtitle', 'Food Sort & Match Puzzle')),
@@ -320,11 +328,11 @@ function showLevels() {
   app.route = 'levels';
   app.hud = null;
   app.fit = null;
-  // grouped by pack, numbered inside each pack (the URL number); unlocks run along the whole story, so a pack's first
-  // level opens when the previous pack's last one is won
+  // grouped by pack, numbered inside each pack (the URL number); a pack opens when the previous one is finished and its
+  // theme's star requirement is met (game/unlock.js); a locked pack shows what it needs
   const card = (id, n) => {
     const lvl = getLevel(id);
-    const open = isUnlocked(STORY, storyIndex(id), app.progress);
+    const open = levelOpen(PACKS, id, app.progress, THEMES);
     const stars = app.progress[id]?.stars ?? 0;
     return open
       ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', lvl.name ?? id), starsEl(stars, 3, 'stars.small'))
@@ -334,10 +342,18 @@ function showLevels() {
   screen(
     h('div.levels',
       h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? PACKS[0].name : 'Levels'), h('span.badge', `★ ${totalStars(app.progress)}/${STORY.length * 3}`)),
-      ...PACKS.flatMap((pack) => [
-        one ? null : h('h3.pack-head', pack.name),
-        h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
-      ]),
+      ...PACKS.flatMap((pack, k) => {
+        const status = packStatus(PACKS, k, app.progress, THEMES);
+        const t = resolveTheme(THEMES[pack.theme] ?? {});
+        const swatch = h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
+        return [
+          one ? null : h(`section.pack${status.open ? '' : '.locked'}`, { 'data-pack': pack.id },
+            h('h3.pack-head', swatch, h('span', pack.name), status.open ? null : iconEl('lock')),
+            status.open ? null : h('p.pack-lock', lockReason(status)),
+          ),
+          h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
+        ];
+      }),
     ),
   );
 }
@@ -597,7 +613,8 @@ async function showResult(won, reason) {
   const daily = app.mode === 'daily' ? await dailyPanel(level.id.slice(6), s.movesUsed, submitted) : null;
   const t = min ? starThresholds(min) : null;
   const idx = storyIndex(level.id);
-  const nextId = app.mode === 'story' && idx >= 0 ? STORY[idx + 1] : null;
+  const nextId = app.mode === 'story' && idx >= 0 ? nextLevelAfter(PACKS, level.id, app.progress, THEMES) : null;
+  const moreLocked = app.mode === 'story' && !nextId && idx >= 0 && idx < STORY.length - 1; // next pack not open yet
   const beat = app.target ? (s.movesUsed < app.target ? `You beat your friend's ${app.target} moves!` : s.movesUsed === app.target ? `Tied with your friend's ${app.target} moves.` : `Your friend did it in ${app.target}. Rematch?`) : null;
   openModal(
     h('h2.win', stars === 3 ? 'Chef’s kiss!' : 'Order up!'),
@@ -612,7 +629,11 @@ async function showResult(won, reason) {
     daily,
     improved && app.mode === 'story' ? h('p.muted', 'New best saved.') : null,
     h('div.modal-buttons',
-      nextId ? h('a.btn.primary', { href: levelPath(nextId), 'data-nav': true }, 'Next level') : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
+      nextId
+        ? h('a.btn.primary', { href: levelPath(nextId), 'data-nav': true }, 'Next level')
+        : moreLocked
+          ? h('a.btn.primary', { href: '/levels', 'data-nav': true }, 'Levels')
+          : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
       h('button.btn', { on: { click: () => share(s.movesUsed) } }, iconEl('share'), ' Challenge a friend'),
       h('button.btn.ghost', { on: { click: restart } }, 'Replay'),
     ),
@@ -730,4 +751,4 @@ window.addEventListener('online', syncNow);
 boot();
 
 // test / debugging hooks (the e2e script reads the authoritative state through these, never from meshes)
-window.__gs = { app, view, stage, audio, go, doAction, idle, get state() { return app.session?.state; } };
+window.__gs = { app, view, stage, audio, go, doAction, idle, packs: PACKS, get state() { return app.session?.state; } };
