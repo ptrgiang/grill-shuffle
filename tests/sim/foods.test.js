@@ -5,7 +5,7 @@ import { createState, serializeState, deserializeState } from '../../shared/stat
 import { level } from '../helpers/levels.js';
 
 // Codes are part of serialized states and canonical hashes: shipped ones never change, new ones are appended.
-const SHIPPED = { beef: 'b', shrimp: 's', chicken: 'c', corn: 'k', carrot: 'r', salmon: 'l', bread: 'd', sausage: 'u', mushroom: 'm', pepper: 'p', skewer: 'w' };
+const SHIPPED = { beef: 'b', shrimp: 's', chicken: 'c', corn: 'k', carrot: 'r', salmon: 'l', bread: 'd', sausage: 'u', mushroom: 'm', pepper: 'p', skewer: 'w', squid: 'q', scallop: 'v', pineapple: 'n' };
 
 test('food codes: shipped codes unchanged, catalog append-only', () => {
   for (const [id, code] of Object.entries(SHIPPED)) assert.equal(foodCode(id), code, id);

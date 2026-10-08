@@ -13,6 +13,9 @@ export const FOODS = Object.freeze({
   mushroom: { id: 'mushroom', code: 'm', name: 'Mushroom', color: '#9a7258', accent: '#efe6d4', shape: 'cap', category: 'veg' },
   pepper: { id: 'pepper', code: 'p', name: 'Bell pepper', color: '#3c9a3a', accent: '#6cc35a', shape: 'bell', category: 'veg' },
   skewer: { id: 'skewer', code: 'w', name: 'Skewer', color: '#8b4a2b', accent: '#d63a2a', shape: 'kebab', category: 'meat' },
+  squid: { id: 'squid', code: 'q', name: 'Squid', color: '#f3e4d8', accent: '#8e4f8a', shape: 'mantle', category: 'seafood' },
+  scallop: { id: 'scallop', code: 'v', name: 'Scallop', color: '#f6efe2', accent: '#f08a5d', shape: 'shell', category: 'seafood' },
+  pineapple: { id: 'pineapple', code: 'n', name: 'Pineapple', color: '#f7c948', accent: '#c98a1c', shape: 'ring', category: 'fruit' },
 });
 
 export const FOOD_IDS = Object.freeze(Object.keys(FOODS));

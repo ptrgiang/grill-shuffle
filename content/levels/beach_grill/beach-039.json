@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-039",
+  "name": "Catch of the Day",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["corn","salmon",null],"layers":[["pineapple","shrimp","pineapple"]]},
+      {"slots":["shrimp","shrimp","corn"]},
+      {"slots":["scallop","pineapple","salmon"],"layers":[[null,"pineapple","pineapple"]]},
+      {"slots":["salmon","scallop","pineapple"],"lock":2},
+      {"slots":["corn","scallop",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Five foods, hidden plates. Reveal before you commit.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 67,
+    "rating": "very_hard",
+    "states": 15491,
+    "solution": "m1.2-0.2 m2.0-4.2 m0.1-2.0 m4.0-0.1 m0.1-1.2 m2.1-0.1 m3.0-2.1 m3.1-4.0 m3.2-2.0"
+  }
+}

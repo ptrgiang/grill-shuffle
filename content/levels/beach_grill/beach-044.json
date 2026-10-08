@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-044",
+  "name": "Storm Clouds",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["squid","squid","sausage"]},
+      {"slots":[null,"squid","pepper"],"layers":[["squid","sausage","sausage"]]},
+      {"slots":[null,"squid",null],"lock":3},
+      {"slots":["corn","pepper","scallop"]},
+      {"slots":["pepper","corn","scallop"],"layers":[["scallop","squid","corn"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The lock hides the key food. Open it early.",
+  "solver": {
+    "minMoves": 11,
+    "difficulty": 69,
+    "rating": "very_hard",
+    "states": 14726,
+    "solution": "m3.0-1.0 m4.2-3.0 m1.2-4.2 m4.1-1.2 m3.1-4.1 m4.0-3.1 m1.1-4.0 m4.2-1.1 m1.0-4.2 m0.2-1.0 m2.1-0.2"
+  }
+}

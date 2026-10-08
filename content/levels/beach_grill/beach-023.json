@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-023",
+  "name": "Driftwood",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["skewer",null,"squid"]},
+      {"slots":[null,null,null]},
+      {"slots":["squid",null,"pepper"]},
+      {"slots":["skewer","pepper","skewer"],"layers":[[null,"squid","pepper"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Hidden food decides the order here. Reveal it early.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 53,
+    "rating": "hard",
+    "states": 297,
+    "solution": "m2.0-0.1 m3.1-2.0 m0.0-3.1 m3.1-0.0 m3.2-2.1"
+  }
+}

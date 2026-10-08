@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-026",
+  "name": "Coral Reef",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 11,
+  "board": {
+    "grills": [
+      {"slots":["squid","skewer","pepper"],"layers":[["scallop","scallop","pepper"]]},
+      {"slots":["scallop",null,"scallop"]},
+      {"slots":[null,"skewer","pepper"],"layers":[["scallop",null,"squid"]]},
+      {"slots":["scallop","scallop","squid"]},
+      {"slots":["scallop","scallop","skewer"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "No lock, but nine moves. Do not waste the empty slots.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 54,
+    "rating": "hard",
+    "states": 36441,
+    "solution": "m0.2-2.0 m2.1-0.2 m3.0-1.1 m0.0-3.0 m4.2-0.0 m0.2-2.1 m2.0-0.2 m3.1-4.2 m2.2-3.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-030",
+  "name": "Tropical Mix",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["corn","corn","squid"]},
+      {"slots":[null,null,"scallop"]},
+      {"slots":[null,null,"pineapple"],"layers":[["corn",null,"scallop"]]},
+      {"slots":["scallop","squid","squid"]},
+      {"slots":["pineapple",null,"pineapple"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Four foods and a deep plate. Count before you fill.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 57,
+    "rating": "hard",
+    "states": 5707,
+    "solution": "m2.2-4.1 m2.2-1.0 m3.0-1.1 m0.2-3.0 m2.0-0.2"
+  }
+}

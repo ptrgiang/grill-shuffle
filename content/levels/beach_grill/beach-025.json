@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-025",
+  "name": "Fishing Net",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":[null,"skewer","skewer"],"layers":[["pepper","pepper","skewer"]]},
+      {"slots":["pepper","skewer",null],"layers":[["scallop","skewer",null]]},
+      {"slots":["skewer","squid","squid"]},
+      {"slots":["skewer","skewer","scallop"],"lock":2},
+      {"slots":["scallop","squid","skewer"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Five grills and a lock. Think two matches ahead.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 54,
+    "rating": "hard",
+    "states": 12116,
+    "solution": "m2.0-0.0 m0.2-1.2 m1.0-0.2 m4.1-2.0 m3.2-4.1 m4.2-1.0 m1.0-4.2 m1.1-3.2"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-047",
+  "name": "Night Swim",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":[null,"skewer","sausage"]},
+      {"slots":[null,"salmon","corn"]},
+      {"slots":["scallop","scallop","sausage"],"layers":[["sausage","scallop","corn"]]},
+      {"slots":["skewer","corn",null],"layers":[["salmon","salmon",null]]},
+      {"slots":[null,"skewer",null],"lock":3}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "A long one. Think three moves ahead.",
+  "solver": {
+    "minMoves": 11,
+    "difficulty": 70,
+    "rating": "very_hard",
+    "states": 9177,
+    "solution": "m3.0-0.0 m3.1-1.0 m1.1-3.2 m2.0-3.0 m2.1-3.1 m2.2-1.1 m2.1-3.2 m1.1-2.1 m2.2-1.1 m0.2-2.2 m4.1-0.2"
+  }
+}

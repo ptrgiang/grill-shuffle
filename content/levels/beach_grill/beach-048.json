@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-048",
+  "name": "Bonfire",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["salmon",null,"corn"]},
+      {"slots":["corn","salmon","sausage"]},
+      {"slots":[null,"sausage","pineapple"],"layers":[["salmon",null,"skewer"]]},
+      {"slots":[null,"skewer","pineapple"],"layers":[[null,"sausage","corn"]]},
+      {"slots":[null,"pineapple","skewer"],"lock":2}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Few free slots. Use the plates wisely.",
+  "solver": {
+    "minMoves": 11,
+    "difficulty": 71,
+    "rating": "very_hard",
+    "states": 12551,
+    "solution": "m1.0-0.1 m3.1-1.0 m3.2-2.0 m1.2-3.0 m0.0-1.2 m3.2-0.0 m2.1-3.2 m1.0-4.0 m4.1-2.1 m2.0-1.0 m2.2-4.1"
+  }
+}

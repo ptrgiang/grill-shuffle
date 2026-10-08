@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-014",
+  "name": "Boardwalk",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["sausage","pepper",null],"layers":[["sausage",null,"sausage"]]},
+      {"slots":[null,"skewer","skewer"]},
+      {"slots":["skewer",null,"pepper"]},
+      {"slots":[null,null,"pepper"],"lock":1}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "A lock and a hidden plate. Open the lock with the matches you can see.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 100,
+    "solution": "m0.0-1.0 m0.1-2.1 m1.0-0.1 m2.0-1.0 m3.2-2.0"
+  }
+}

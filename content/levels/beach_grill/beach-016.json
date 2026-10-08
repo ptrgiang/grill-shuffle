@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-016",
+  "name": "Calamari Cove",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["squid","squid","sausage"]},
+      {"slots":["pepper","skewer","pepper"]},
+      {"slots":["skewer","sausage","pepper"],"layers":[[null,"squid","pepper"]]},
+      {"slots":["skewer",null,"sausage"]},
+      {"slots":["pepper","pepper",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Five grills, one hidden plate. Count what is still under it.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 9596,
+    "solution": "m0.2-3.1 m2.2-4.2 m3.0-2.2 m2.1-3.0 m1.1-2.1 m2.1-0.2 m2.2-1.1"
+  }
+}

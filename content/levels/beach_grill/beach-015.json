@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-015",
+  "name": "Squid Pro Quo",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["salmon","corn","salmon"],"layers":[["squid","shrimp","shrimp"]]},
+      {"slots":["salmon","squid","shrimp"],"lock":2},
+      {"slots":["salmon",null,"corn"]},
+      {"slots":["salmon",null,"salmon"],"layers":[[null,"corn","squid"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Squid and shrimp look nothing alike: sort them before you dig.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 415,
+    "solution": "m0.1-2.1 m2.0-3.1 m3.1-2.0 m1.0-0.1 m0.0-1.0 m1.2-0.0 m3.2-1.2"
+  }
+}

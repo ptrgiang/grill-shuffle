@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-018",
+  "name": "Pier Pressure",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["skewer","sausage","skewer"]},
+      {"slots":["squid","pepper","squid"]},
+      {"slots":[null,"pepper","sausage"],"layers":[["skewer","sausage","skewer"]]},
+      {"slots":[null,"pepper","skewer"]},
+      {"slots":[null,"skewer","squid"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "Every grill is busy. Find the move that frees two.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 48,
+    "rating": "hard",
+    "states": 9197,
+    "solution": "m0.0-3.0 m1.1-2.0 m2.2-0.0 m3.1-2.2 m0.2-3.1 m2.1-0.2 m4.1-2.1 m4.2-1.1"
+  }
+}

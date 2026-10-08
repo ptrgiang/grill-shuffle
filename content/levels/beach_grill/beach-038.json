@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-038",
+  "name": "Seafood Platter",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["squid","squid","pepper"],"lock":3},
+      {"slots":[null,"scallop","sausage"]},
+      {"slots":[null,"skewer","scallop"]},
+      {"slots":["pepper",null,null],"layers":[[null,"scallop","skewer"]]},
+      {"slots":["sausage","sausage","squid"],"layers":[["skewer","pepper",null]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Squid, scallops and a lock. Plan the order.",
+  "solver": {
+    "minMoves": 9,
+    "difficulty": 66,
+    "rating": "very_hard",
+    "states": 7269,
+    "solution": "m1.1-2.0 m4.2-1.0 m1.2-4.2 m3.0-4.2 m2.1-3.0 m3.1-2.1 m4.0-3.1 m0.2-4.0 m1.0-0.2"
+  }
+}

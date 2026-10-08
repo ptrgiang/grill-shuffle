@@ -91,9 +91,11 @@ each with a name, tier and hint. `tests/content/rules.test.js` covers the conten
 ## Beach Grill — curve (#17)
 
 The second pack (`/beach-grill/<n>`, theme `beach_grill`): a sunny beach look, catalog shrimp, salmon, corn, pepper,
-skewer, sausage; mechanics prep tray, stacked tray and lock (no burn counters). Opens after Street BBQ with ★ 75.
-Its own curve from easy, never easier (#62): four generator runs, one per stage, picks ordered by difficulty.
-**12 of its 50 levels** so far; the pack grows to 50 with the beach foods (#70).
+skewer, sausage + the beach foods **squid, scallop, pineapple** (#70); mechanics prep tray, stacked tray and lock
+(no burn counters). Opens after Street BBQ with ★ 75. **Full: 50 levels**, its own curve from easy, never easier
+(#62). Levels 1–12 (#17) teach the basics and the mechanics; 13–50 (#70) bring one new food per stage, then mix all
+nine. 37–50 use the `expert` tier (minimum + 1 moves): under `hard` the generator tops out at difficulty 59, and the
+pack's last stretch has to stay above level 36 (owner's choice, 2026-10-08).
 
 | # | id | Name | Teaches | min | moves | difficulty |
 |---|---|---|---|---|---|---|
@@ -109,6 +111,10 @@ Its own curve from easy, never easier (#62): four generator runs, one per stage,
 | 10 | `beach-010` | Rising Tide | lock + stack | 8 | 10 | 44 hard |
 | 11 | `beach-011` | Sunset Rush | lock 3 + stack, five grills | 8 | 10 | 44 hard |
 | 12 | `beach-012` | Last Light | lock + stack, longest line | 10 | 12 | 44 hard |
+| 13–20 | `beach-013`…`020` | Ink Spot … Rip Current | **squid** (13), with the lock and stacks | 4–8 | 5–10 | 48–50 hard |
+| 21–28 | `beach-021`…`028` | Sea Glass … Lighthouse | **scallop** (22) | 4–10 | 5–12 | 52–56 hard |
+| 29–36 | `beach-029`…`036` | Golden Ring … Salt Spray | **pineapple** (29) | 5–10 | 6–12 | 56–59 hard |
+| 37–50 | `beach-037`…`050` | Beach Party … Moonlit Grill | five of the nine foods, two plates + a lock | 8–13 | 9–14 | 66–72 expert |
 
 Generated with (staging, then picked by hand):
 ```
@@ -117,7 +123,16 @@ npm run generate:levels -- --theme beach_grill --prefix beach-b --count 6 --diff
 npm run generate:levels -- --theme beach_grill --prefix beach-c --count 6 --difficulty 26:40 --grills 4:5 --layers 1:1 --food-count 4:4 --empty 2:3 --candidates 3000 --seed 303 --out content/generated/beach-c
 npm run generate:levels -- --theme beach_grill --prefix beach-d --count 6 --difficulty 36:52 --grills 4:5 --layers 1:2 --locks 1:1 --food-count 4:5 --empty 2:3 --candidates 4000 --seed 404 --out content/generated/beach-d
 ```
-New Beach levels are appended with `--append beach_grill` (difficulty ≥ 44) until the pack has 50.
+Levels 13–50 came from runs like these (staging, picked by hand, ordered by difficulty; `--tier` sets the move budget
+the boards are rated under):
+```
+npm run generate:levels -- --theme beach_grill --prefix bA --foods squid,shrimp,salmon,corn --food-count 4:4 --difficulty 44:52 --grills 4:5 --layers 1:2 --locks 0:1 --empty 2:3 --count 14 --candidates 700 --seed 701 --out content/generated/bA
+npm run generate:levels -- --theme beach_grill --prefix bB --foods scallop,squid,pepper,skewer --food-count 4:4 --difficulty 50:58 --grills 4:5 --layers 1:2 --locks 0:1 --empty 2:3 --count 14 --candidates 700 --seed 702 --out content/generated/bB
+npm run generate:levels -- --theme beach_grill --prefix bC --foods pineapple,scallop,squid,corn --food-count 4:4 --difficulty 54:64 --grills 5:5 --layers 1:2 --locks 0:1 --empty 2:3 --count 14 --candidates 300 --seed 703 --out content/generated/bC
+npm run generate:levels -- --theme beach_grill --prefix bD --food-count 5:5 --difficulty 60:75 --grills 5:5 --layers 1:2 --locks 1:1 --empty 2:3 --count 12 --candidates 400 --seed 704 --out content/generated/bD
+```
+(plus `bE` 62:80 with two plates, seed 705, and `bF` squid/pepper/skewer/sausage 44:52, seed 706). The pack is full:
+new features now go into these levels (rule 3).
 
 ## Street BBQ — curve (50 legacy levels)
 

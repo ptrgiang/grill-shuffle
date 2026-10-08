@@ -2,7 +2,7 @@
   "id": "beach_grill",
   "name": "Beach Grill",
   "description": "A sunny afternoon grill on the sand: bleached driftwood planks, sea-blue light, white grills.",
-  "foods": ["shrimp", "salmon", "corn", "pepper", "skewer", "sausage"],
+  "foods": ["shrimp", "salmon", "corn", "pepper", "skewer", "sausage", "squid", "scallop", "pineapple"],
   "mechanics": ["prep_tray", "stacked_tray", "locked_grill"],
   "palette": { "background": "#7cc4dc", "vignette": "#3a6a78" },
   "lights": { "sky": "#fff4dc", "ground": "#b89a6a", "key": "#fff8ea", "rim": "#9fdcff", "skyIntensity": 1.45, "keyIntensity": 2.2, "rimIntensity": 0.8, "exposure": 1.0 },

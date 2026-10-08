@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-034",
+  "name": "Tiki Bar",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":[null,"scallop","scallop"]},
+      {"slots":["corn","pineapple","corn"]},
+      {"slots":["scallop",null,null]},
+      {"slots":["scallop","pineapple","pineapple"],"layers":[["scallop","scallop","squid"]]},
+      {"slots":["squid","corn","squid"],"lock":2}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The lock opens late. Build towards it.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 58,
+    "rating": "hard",
+    "states": 793,
+    "solution": "m3.0-0.0 m1.1-3.0 m4.1-1.1 m3.2-4.1 m2.0-3.2"
+  }
+}

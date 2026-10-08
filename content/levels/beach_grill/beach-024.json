@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-024",
+  "name": "Half Shell",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["scallop","pepper","scallop"]},
+      {"slots":["squid","scallop",null],"lock":2},
+      {"slots":["pepper","pepper",null],"layers":[["squid","skewer",null]]},
+      {"slots":["skewer","skewer","squid"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Scallops behind a lock. Unlock it before you need the space.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 54,
+    "rating": "hard",
+    "states": 153,
+    "solution": "m0.1-2.2 m3.2-2.2 m2.1-3.2 m1.0-2.1 m1.1-0.1"
+  }
+}

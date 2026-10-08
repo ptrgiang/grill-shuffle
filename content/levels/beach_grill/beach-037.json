@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-037",
+  "name": "Beach Party",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["skewer","skewer",null]},
+      {"slots":["scallop",null,null],"layers":[["corn",null,"sausage"]]},
+      {"slots":["corn","corn","pineapple"],"lock":3},
+      {"slots":["pineapple",null,"sausage"]},
+      {"slots":["scallop","pineapple","skewer"],"layers":[["scallop","sausage",null]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Five foods now. Keep one grill free as workspace.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 66,
+    "rating": "very_hard",
+    "states": 5490,
+    "solution": "m4.0-1.1 m4.1-3.1 m4.2-0.2 m3.2-4.2 m4.0-1.2 m1.2-4.0 m2.2-3.2 m1.0-2.2"
+  }
+}

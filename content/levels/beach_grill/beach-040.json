@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-040",
+  "name": "Deep Blue",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 12,
+  "board": {
+    "grills": [
+      {"slots":["salmon","shrimp","salmon"],"layers":[["scallop",null,"salmon"]]},
+      {"slots":["shrimp","scallop","squid"]},
+      {"slots":["squid","corn",null]},
+      {"slots":["squid","corn","scallop"]},
+      {"slots":["corn","shrimp",null],"lock":3}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Eleven moves. Work from the lock outwards.",
+  "solver": {
+    "minMoves": 11,
+    "difficulty": 67,
+    "rating": "very_hard",
+    "states": 3032,
+    "solution": "m3.0-2.2 m2.1-3.0 m1.2-2.1 m0.0-2.0 m0.1-1.2 m0.2-2.1 m0.2-2.2 m1.1-0.1 m3.2-0.2 m4.0-3.2 m4.1-1.1"
+  }
+}

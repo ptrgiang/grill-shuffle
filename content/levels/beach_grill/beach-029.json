@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-029",
+  "name": "Golden Ring",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 6,
+  "board": {
+    "grills": [
+      {"slots":["scallop",null,null],"layers":[["corn","corn","corn"]]},
+      {"slots":[null,"scallop","squid"],"lock":2},
+      {"slots":["pineapple","scallop","scallop"]},
+      {"slots":["pineapple","scallop","pineapple"]},
+      {"slots":["squid","squid","scallop"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "New catch: pineapple, the golden ring. Three of a kind clear it.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 56,
+    "rating": "hard",
+    "states": 611,
+    "solution": "m3.1-0.1 m2.0-3.1 m4.2-0.2 m1.1-2.0 m1.2-4.2"
+  }
+}

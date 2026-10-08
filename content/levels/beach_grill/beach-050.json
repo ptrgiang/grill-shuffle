@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-050",
+  "name": "Moonlit Grill",
+  "theme": "beach_grill",
+  "tier": "expert",
+  "moves": 14,
+  "board": {
+    "grills": [
+      {"slots":["skewer",null,"salmon"],"layers":[["salmon","skewer","pepper"]]},
+      {"slots":["sausage",null,null]},
+      {"slots":[null,null,"sausage"],"lock":3},
+      {"slots":["scallop","scallop","pepper"]},
+      {"slots":["skewer","salmon","sausage"],"layers":[["pepper",null,"scallop"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "The final grill on the beach. Everything you learned.",
+  "solver": {
+    "minMoves": 13,
+    "difficulty": 72,
+    "rating": "very_hard",
+    "states": 9177,
+    "solution": "m4.0-0.1 m4.1-1.1 m4.2-1.2 m3.2-4.1 m4.2-3.2 m0.0-3.0 m0.1-3.1 m0.2-3.2 m0.2-4.2 m3.2-0.2 m0.1-3.2 m1.1-0.1 m2.2-1.1"
+  }
+}
