@@ -1,9 +1,9 @@
 // English. Same keys as vi.js (tests/client/i18n.test.js). Values: string with {placeholders}, function, or array.
-const name = 'Grill Shuffle';
+const name = 'Bà Năm’s Grill';
 
 export default {
   'app.name': name,
-  'app.subtitle': 'Food Sort & Match Puzzle',
+  'app.subtitle': 'A food-sorting puzzle from a Saigon alley',
   'app.board': `${name} game board`,
 
   // menu
