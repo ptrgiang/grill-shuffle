@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter","prep_tray"],
+  "boosters": {"torch":1,"cooler":1},
   "hint": "Food on the prep tray stops cooking. Park what is burning there while you set up its match.",
   "solver": {
     "minMoves": 9,

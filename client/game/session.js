@@ -4,7 +4,7 @@ import { createState } from '../../shared/state.js';
 import { applyAction } from '../../shared/resolve.js';
 import { getLegalMoves, canPick, canDrop, encodeActions } from '../../shared/moves.js';
 import { hashState } from '../../shared/hash.js';
-import { BOOSTERS, canUseBooster } from '../../shared/boosters.js';
+import { BOOSTERS, canUseBooster, boosterActions } from '../../shared/boosters.js';
 import { starsFor } from '../../shared/progression.js';
 
 export class Session {
@@ -19,7 +19,8 @@ export class Session {
     this.actions = []; // applied actions, in order
     this.undos = 0;
     this.hints = 0;
-    this.armed = null; // a targeted booster ('tongs') waiting for its pick and drop
+    this.armed = null; // a targeted booster waiting for its target(s) on the board
+    this.pendingGrill = null; // grill+grill boosters: the first grill tapped
   }
 
   get status() {
@@ -34,6 +35,7 @@ export class Session {
       this.actions.push(action);
       this.state = r.state;
       this.armed = null;
+      this.pendingGrill = null;
     }
     return r;
   }
@@ -49,18 +51,60 @@ export class Session {
     return this.state.boosters[id] ?? 0;
   }
 
-  /** Could `id` be used now? Targeted boosters: is there any pick + drop at all. */
+  /** Could `id` be used now? Targeted boosters: is there any target at all. */
   canUseBooster(id) {
-    if (this.state.status !== 'playing' || this.charges(id) <= 0) return false;
-    if (BOOSTERS[id]?.needs === 'none') return canUseBooster(this.state, { type: 'booster', booster: id });
-    const st = this.state;
-    return st.grills.some((g, gi) => g.slots.some(Boolean) && st.grills.some((_, ti) => ti !== gi && st.grills[ti].slots.some((__, s) => canDrop(st, ti, s))));
+    return this.state.status === 'playing' && this.charges(id) > 0 && boosterActions(this.state, id).length > 0;
   }
 
-  /** Aim a targeted booster (the next pick + drop uses it), or disarm with null. Returns the armed id. */
+  /** What the armed booster asks for: 'from+to' | 'item' | 'grill' | 'grill+grill', or null when none is armed. */
+  get armedNeeds() {
+    return this.armed ? BOOSTERS[this.armed].needs : null;
+  }
+
+  /** Aim a targeted booster (the next tap(s) on the board use it), or disarm with null. Returns the armed id. */
   arm(id) {
-    this.armed = id && BOOSTERS[id]?.needs === 'from+to' && this.canUseBooster(id) ? id : null;
+    this.armed = id && BOOSTERS[id] && BOOSTERS[id].needs !== 'none' && this.canUseBooster(id) ? id : null;
+    this.pendingGrill = null;
     return this.armed;
+  }
+
+  /**
+   * A tap on the board while a tap-targeted booster (item / grill / grill+grill) is armed.
+   * Returns { action } when the tap completes a legal use, { pending: [grills] } after the first of two grills
+   * (the grills it can swap with), { cancel: true } when that first grill is tapped again, { invalid: true } else.
+   */
+  tapTarget(hit) {
+    const id = this.armed;
+    const needs = this.armedNeeds;
+    if (!hit || !needs || needs === 'from+to') return { invalid: true };
+    const legal = (a) => (canUseBooster(this.state, a) ? { action: a } : { invalid: true });
+    if (needs === 'item') return legal({ type: 'booster', booster: id, from: { grill: hit.grill, slot: hit.slot } });
+    if (needs === 'grill') return legal({ type: 'booster', booster: id, from: { grill: hit.grill } });
+    // grill+grill: first tap picks a grill, the second its partner
+    if (this.pendingGrill === null || this.pendingGrill === undefined) {
+      const partners = boosterActions(this.state, id).flatMap((a) => (a.from.grill === hit.grill ? [a.to.grill] : a.to.grill === hit.grill ? [a.from.grill] : []));
+      if (!partners.length) return { invalid: true };
+      this.pendingGrill = hit.grill;
+      return { pending: partners };
+    }
+    if (hit.grill === this.pendingGrill) {
+      this.pendingGrill = null;
+      return { cancel: true };
+    }
+    const r = legal({ type: 'booster', booster: id, from: { grill: this.pendingGrill }, to: { grill: hit.grill } });
+    if (r.action) this.pendingGrill = null;
+    return r;
+  }
+
+  /** Grills the armed tap-targeted booster could act on now (to light them up); [] for tongs / none armed. */
+  boosterGrills() {
+    if (!this.armed || this.armedNeeds === 'from+to') return [];
+    const set = new Set();
+    for (const a of boosterActions(this.state, this.armed)) {
+      set.add(a.from.grill);
+      if (a.to) set.add(a.to.grill);
+    }
+    return [...set].sort((a, b) => a - b);
   }
 
   /** Boosters used so far in this attempt, e.g. { tongs: 1 } (the result screen notes them; stars are unaffected). */
@@ -72,7 +116,7 @@ export class Session {
 
   /** The action a pick at `from` and a drop at `to` mean right now: a plain move, or the armed booster. */
   actionFor(from, to) {
-    return this.armed ? { type: 'booster', booster: this.armed, from, to } : { type: 'move', from, to };
+    return this.armedNeeds === 'from+to' ? { type: 'booster', booster: this.armed, from, to } : { type: 'move', from, to };
   }
 
   canUndo() {
@@ -85,6 +129,7 @@ export class Session {
     this.actions.pop();
     this.undos++;
     this.armed = null;
+    this.pendingGrill = null;
     return this.state;
   }
 
@@ -92,7 +137,7 @@ export class Session {
   canPick(grill, slot) {
     if (this.state.status !== 'playing') return false;
     // tongs reach any item, locked grills included
-    if (this.armed) return !!this.state.grills[grill]?.slots[slot];
+    if (this.armedNeeds === 'from+to') return !!this.state.grills[grill]?.slots[slot];
     return canPick(this.state, grill, slot);
   }
 

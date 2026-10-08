@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1,"tray_swap":1},
   "hint": "Short, but every move counts.",
   "solver": {
     "minMoves": 5,

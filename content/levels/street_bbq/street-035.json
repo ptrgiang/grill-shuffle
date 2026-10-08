@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray","stacked_tray"],
+  "boosters": {"torch":1},
   "hint": "A tray and a stack. Fill the tray only when it buys you a match.",
   "solver": {
     "minMoves": 6,

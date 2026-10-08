@@ -138,7 +138,7 @@ function tapBooster(id) {
     db.set('seenBoosters', app.seenBoosters);
   }
   if (!s.canUseBooster(id) && s.armed !== id) {
-    app.hud.tip(s.charges(id) > 0 ? `Nothing for the ${BOOSTERS[id].name.toLowerCase()} to do right now.` : `No ${BOOSTERS[id].name} left.`);
+    app.hud.tip(s.charges(id) > 0 ? BOOSTER_IDLE[id] ?? `Nothing for the ${BOOSTERS[id].name.toLowerCase()} to do right now.` : `No ${BOOSTERS[id].name} left.`);
     return app.hud.update(s.state);
   }
   input.deselect();
@@ -155,14 +155,28 @@ function tapBooster(id) {
   } else {
     app.hud.confirm(null);
     if (s.armed === id) s.arm(null);
-    else if (s.arm(id)) app.hud.tip(BOOSTER_TIPS[id]);
+    else if (s.arm(id)) {
+      app.hud.tip(BOOSTER_TIPS[id]);
+      const grills = s.boosterGrills(); // torch / cooler / tray swap: the grills it can act on light up
+      if (grills.length) view.setTargets(grills, -1, { slots: false });
+    }
   }
   app.hud.update(s.state);
 }
 
+// tapped while it has a charge but nothing to act on: why not (yet)
+const BOOSTER_IDLE = {
+  torch: 'The torch needs three of one food on open grills. Make some room first.',
+  tray_swap: 'Tray Swap needs two open grills of the same size.',
+  cooler: 'Nothing is burning on an open grill.',
+};
+
 const BOOSTER_TIPS = {
   tongs: 'Tongs: pick any food, even off a locked grill, and drop it on an open one. Free, no move used.',
   fan: 'Fan: tap again to blow the food on the open grills into new spots. Free, no move used.',
+  torch: 'Torch: tap a food. It and two more of the same are served at once. Free, no move used.',
+  tray_swap: 'Tray Swap: tap two grills of the same size to swap everything on them. Free, no move used.',
+  cooler: 'Cooler: tap a grill. Nothing on it burns any more. Free, no move used.',
 };
 
 /** Presentation events, on the animation's beat. Never feeds back into the simulation. */

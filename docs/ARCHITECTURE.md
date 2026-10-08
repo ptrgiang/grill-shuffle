@@ -37,7 +37,7 @@ shared/        pure, deterministic puzzle engine (no DOM, no three.js, no Math.r
   obstacles.js   locked grills, stacked trays
   combo.js       combo on consecutive productive moves
   goals.js       composable objectives
-  boosters.js    tongs, fan (deterministic, seeded from the state hash)
+  boosters.js    tongs, fan, torch, tray swap, cooler (deterministic; the fan is seeded from the state hash)
   hash.js        canonicalKey / hashState / hashBoard
   replay.js      replay(level, actions) -> same final hash
   progression.js move budgets + stars from solver minimum, unlocks

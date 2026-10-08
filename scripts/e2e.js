@@ -16,6 +16,7 @@ import { ROOT } from './lib/content.js';
 import { decodeActions, getLegalMoves } from '../shared/moves.js';
 import { createState } from '../shared/state.js';
 import { applyAction } from '../shared/resolve.js';
+import { boosterActions } from '../shared/boosters.js';
 import { POINTER_TUNING } from '../client/game/input.js';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -345,6 +346,34 @@ async function runBoosters(name, { w, h }) {
     check(s.movesUsed === 0 && s.boosters.tongs === 0 && s.armed === null, `${name}: no move spent, charge used, disarmed (${JSON.stringify({ moves: s.movesUsed, boosters: s.boosters })})`);
     check(s.tongs.disabled && s.tongs.charge === '0', `${name}: the empty Tongs button is disabled`);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-used.png`) });
+
+    // Tray Swap (same level): tap the button, then two grills; their contents trade places
+    const swap = boosterActions(createState(lvl), 'tray_swap').find((a) => a.from.grill !== toGrill && a.to.grill !== toGrill && a.from.grill !== lockedGrill && a.to.grill !== lockedGrill);
+    const before = await st();
+    await page.tap('.tool.booster[data-booster="tray_swap"]');
+    await sleep(200);
+    for (const g of [swap.from.grill, swap.to.grill]) {
+      const p = await slotXY(page, g, 1);
+      await page.touchscreen.tap(p.x, p.y);
+      await sleep(250);
+    }
+    await settle(page, 900);
+    s = await st();
+    const swapped = JSON.stringify(s.grills[swap.from.grill]) === JSON.stringify(before.grills[swap.to.grill]) && JSON.stringify(s.grills[swap.to.grill]) === JSON.stringify(before.grills[swap.from.grill]);
+    check(swapped && s.movesUsed === 0 && s.boosters.tray_swap === 0, `${name}: Tray Swap trades grills ${swap.from.grill} and ${swap.to.grill} with two taps (${JSON.stringify(s.grills)})`);
+
+    // Torch (Street BBQ 32): tap the button, tap a food: it and two more of it are served as one match
+    await page.evaluate(() => window.__gs.go('/street-bbq/32'));
+    await page.waitForFunction(() => window.__gs.app.level?.id === 'street-035', { timeout: 15000 });
+    await settle(page, 600);
+    const torch = boosterActions(createState(level('street-035')), 'torch')[0];
+    await page.tap('.tool.booster[data-booster="torch"]');
+    await sleep(200);
+    const tp = await slotXY(page, torch.from.grill, torch.from.slot, 0.4);
+    await page.touchscreen.tap(tp.x, tp.y);
+    await settle(page, 1200);
+    const t = await page.evaluate(() => ({ matches: window.__gs.state.matches, moves: window.__gs.state.movesUsed, torch: window.__gs.state.boosters.torch }));
+    check(t.matches === 1 && t.moves === 0 && t.torch === 0, `${name}: Torch serves a set with one tap, no move spent (${JSON.stringify(t)})`);
     check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
   } finally {
     await close();

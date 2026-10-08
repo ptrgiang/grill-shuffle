@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1},
   "hint": "Five foods and a lock. Keep one grill free as workspace.",
   "solver": {
     "minMoves": 9,

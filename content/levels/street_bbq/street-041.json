@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "boosters": {"tongs":1},
+  "boosters": {"tongs":1,"tray_swap":1},
   "hint": "Every grill counts. Think three moves ahead.",
   "solver": {
     "minMoves": 7,

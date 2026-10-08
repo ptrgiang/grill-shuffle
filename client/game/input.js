@@ -6,7 +6,8 @@
 //
 // Both paths end in the same call: onMove(action, { dropped }). The input layer only asks the session what is legal;
 // it never changes game state itself. With a targeted booster armed (Session.arm('tongs')) the same pick + drop
-// becomes that booster: the session widens what can be picked and builds the booster action.
+// becomes that booster: the session widens what can be picked and builds the booster action. Boosters aimed by taps
+// alone (torch: one item; cooler: one grill; tray swap: two grills) take the tap as their target instead.
 //
 // Touch differs from mouse in three ways (POINTER_TUNING): a thumb jitters more, so a tap needs a larger drag
 // threshold; it is fat, so grills get a wider hit margin; and it covers what it carries, so a dragged item is drawn
@@ -118,6 +119,8 @@ export class Input {
     const { x, y } = this.#xy(e);
     const hit = this.view.pick(x, y, { margin: tune.margin });
     const s = this.session();
+    // a booster aimed by taps (torch: an item; cooler: a grill; tray swap: two grills): the tap is its target
+    if (s.armedNeeds && s.armedNeeds !== 'from+to') return this.#boosterTap(hit, tune);
     // a grill tapped while something is selected: send it there
     if (this.selected && hit && hit.grill !== this.selected.grill && !s.canPick(hit.grill, hit.slot)) {
       const from = this.selected;
@@ -149,6 +152,27 @@ export class Input {
     if (this.selected) this.deselect();
     if (hit) {
       this.hooks.onInvalid?.(hit.grill, { quiet: true });
+    }
+  }
+
+  #boosterTap(hit, tune) {
+    if (!hit) return;
+    const r = this.session().tapTarget(hit);
+    if (r.action) {
+      this.view.setTargets(null);
+      this.hooks.onMove(r.action, { dropped: false });
+      this.#haptic(tune);
+    } else if (r.pending) {
+      this.view.setTargets(r.pending, hit.grill, { slots: false }); // the grills it can swap with light up
+      this.hooks.onSelect?.(hit.grill, null);
+      this.#haptic(tune);
+    } else if (r.cancel) {
+      this.view.setTargets(null);
+      this.hooks.onDeselect?.();
+    } else {
+      this.hooks.onInvalid?.(hit.grill);
+      this.view.flashInvalid(hit.grill);
+      this.#haptic(tune, [14, 50, 14]);
     }
   }
 

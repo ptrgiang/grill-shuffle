@@ -85,20 +85,46 @@ No timers, no reflexes.
 
 ## Boosters
 
-Deterministic actions `{ type: 'booster', booster, from?, to? }`; cost no move; one charge each.
-- **Tongs** — lift one item from any grill, *including a locked one*, into an empty slot of another open grill.
-- **Fan** — redistribute every item on the open grills over the same occupied slots (seeded from the state hash).
+Deterministic actions `{ type: 'booster', booster, from?, to? }`; cost no move; one charge each; resolved like a
+move afterwards (matches, unlocks, reveals). `from` / `to` are `{ grill, slot }` or, for whole-grill boosters, `{ grill }`.
+- **Tongs** (`from`, `to`: slots) — lift one item from any grill, *including a locked one*, into an empty slot of another
+  open grill.
+- **Fan** (no target) — redistribute every item on the open grills over the same occupied slots (seeded from the state
+  hash).
+- **Torch** (`from`: an item on an open grill) — serve a set: the chosen item plus the nearest `matchSize - 1` items with
+  its match key on open grills (its own grill first in slot order, then the other grills in order; hidden layers do
+  not count) clear as **one match**: match count, combo, score, goals and lock counters treat it like any match
+  (event `match` with `booster: 'torch'`, `places` = every cleared slot, `grill` = the chosen one, chain 0; what it
+  opens or reveals chains on from 1). Needs `matchSize` such items in view.
+- **Tray Swap** (`from`, `to`: grills) — swap everything on two open grills with the same number of slots (any types,
+  e.g. a prep tray and a grill). Hidden layers stay; burn counters travel with their items. Then it resolves: food
+  leaving a tray for a grill can match, an emptied grill reveals its next layer.
+- **Cooler** (`from`: a grill) — every burning item on one open grill stops burning for good (event `cooled`).
 
-`canUseBooster(state, action)`, `applyAction(state, action)`. Levels grant charges via `"boosters": { "tongs": 1 }`.
+Compact form: `btongs:1.0-3.2`, `bfan`, `btorch:2.1`, `btray_swap:0-3`, `bcooler:2`.
+`canUseBooster(state, action)`, `boosterActions(state, id)` (every legal use), `applyAction(state, action)`. A board with
+no legal move is not lost while any booster charge still has a use (`hasUsableBooster`). Levels grant charges via
+`"boosters": { "tongs": 1 }`. Adding a booster changed no existing action sequence: no rule-version bump.
 
-**In the game** (#9): one HUD button per booster the level grants, after Undo / Hint / Restart, with its charges.
-Tongs arm the input (`Session.arm('tongs')`): the next pick, from any grill including a locked one, and drop is the
-booster action; tapping the button again disarms. Fan asks for a second tap within 4 s, then blows. The client is
-generic over `BOOSTERS` (`needs: 'none'` fires on confirm, `needs: 'from+to'` arms), so new boosters only need an
-icon (`client/ui/dom.js`) and a tip line (`client/main.js` `BOOSTER_TIPS`).
+**In the game** (#9, #28): one HUD button per booster the level grants, after Undo / Hint / Restart, with its charges.
+The client is generic over each booster's `needs`:
+- `none` (fan): a second tap within 4 s fires it.
+- `from+to` (tongs): arms the input (`Session.arm`); the next pick (any grill, locked ones too) and drop is the booster.
+- `item` (torch), `grill` (cooler), `grill+grill` (tray swap): arms it and lights up the grills it can act on; the next
+  tap(s) on the board are its target (`Session.tapTarget`; tray swap: first grill, then a partner, the first again
+  cancels).
+Tapping the button again (or Esc) disarms. A new booster needs an icon (`client/ui/dom.js`), a tip and an idle line
+(`client/main.js` `BOOSTER_TIPS` / `BOOSTER_IDLE`) and a sound (`client/audio/audio.js`).
 **Stars are unaffected** by boosters (charges are scarce, granted per level); the result screen lists the boosters
-used. Charges come only from the level for now; a persistent inventory is a separate issue.
-Granted today: Street BBQ 41–50 one Tongs each; Beach Grill 37–50 one Tongs + one Fan each.
+used. Charges come only from the level for now; a persistent inventory is #74.
+
+Granted today (at most two boosters per level, so the HUD fits a 360 px phone):
+| Levels | Boosters |
+|---|---|
+| Street BBQ 31–40 | Torch (33–35, the burn levels: + Cooler) |
+| Street BBQ 41–50 | Tongs + Tray Swap |
+| Beach Grill 25–36 | Torch + Tray Swap |
+| Beach Grill 37–50 | Tongs + Fan |
 
 ## Stars and budgets
 

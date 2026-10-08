@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1,"tray_swap":1},
   "hint": "The lock opens late. Build towards it.",
   "solver": {
     "minMoves": 5,

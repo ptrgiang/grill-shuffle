@@ -222,7 +222,7 @@ export class BoardView {
   #refreshSlots() {
     if (!this.state) return;
     this.state.grills.forEach((g, gi) => {
-      const candidate = !!this.targets?.includes(gi) && !this.hover;
+      const candidate = !!this.targets?.includes(gi) && !this.hover && this.targetSlots !== false;
       g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0 && !this.reach, candidate, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
     });
   }
@@ -245,12 +245,17 @@ export class BoardView {
     for (const ev of events) {
       switch (ev.type) {
         case 'booster':
-          // the gust sweeps the board before the food shuffles; tongs show on their item's move below
+          // the gust sweeps the board before the food shuffles; tongs and tray swap show on their items' moves, the
+          // torch on its match, the cooler on its 'cooled' event
           if (ev.booster === 'fan') {
             this.particles.gust(this.layout.width, this.layout.depth);
             this.stage.addShake(0.04);
           }
-          this.onFx(ev, null);
+          this.onFx(ev, ev.from ? this.#screen(ev.from.grill) : null);
+          break;
+        case 'cooled':
+          for (const it of ev.items) this.particles.poof(this.slotPos(it.grill, it.slot).setY(0.35), '#bfe8ff');
+          this.#fxAt(now, ev, ev.grill);
           break;
         case 'move': {
           const v = this.items.get(ev.itemId);
@@ -258,14 +263,15 @@ export class BoardView {
           if (ev.booster === 'tongs' && ev.from) this.particles.poof(this.slotPos(ev.from.grill, ev.from.slot).setY(0.4), '#ffe7b0');
           v.grill = ev.to.grill;
           v.slot = ev.to.slot;
-          // fan: every item hops at once, a few ms apart, pushed along by the gust; tongs: a high, slower lift
-          const delay = ev.booster === 'fan' ? 0.08 + Math.random() * 0.14 : 0;
+          // fan / tray swap: every item hops at once, a few ms apart; tongs: a high, slower lift
+          const many = ev.booster === 'fan' || ev.booster === 'tray_swap';
+          const delay = ev.booster === 'fan' ? 0.08 + Math.random() * 0.14 : ev.booster === 'tray_swap' ? Math.random() * 0.06 : 0;
           const dur = (dropped ? TIMING.dragLand : TIMING.move) * (ev.booster ? 1.6 : 1);
           this.#moveTo(v, dur, { arc: !dropped, delay, lift: ev.booster === 'tongs' ? 0.6 : 0 });
           const at = now + delay + (ev.booster ? v.motion.dur : dur);
           land = Math.max(land, at);
           cursor = land;
-          const quiet = ev.booster === 'fan' && landed++ > 0; // one landing sound for the whole gust
+          const quiet = many && landed++ > 0; // one landing sound for the whole gust / swap
           this.#at(at, () => {
             this.particles.steam(this.slotPos(ev.to.grill, ev.to.slot), 3);
             if (!quiet) this.onFx({ type: 'land', food: ev.food, booster: ev.booster }, this.#screen(ev.to.grill));
@@ -351,6 +357,8 @@ export class BoardView {
   #playMatch(ev, start) {
     const views = ev.itemIds.map((id) => this.items.get(id)).filter(Boolean);
     const centre = this.slotPos(ev.grill, 0).add(this.slotPos(ev.grill, this.layout.grills[ev.grill].slots - 1)).multiplyScalar(0.5);
+    // torch: each item of the set catches fire where it stands, then flies to the served grill
+    if (ev.booster === 'torch') for (const v of views) this.#at(start, () => this.particles.flameBurst(this.slotPos(v.grill, v.slot).setY(0.1), 0.5));
     for (const v of views) {
       this.items.delete(v.id);
       // a match can follow the landing of the very item that made it: start from where it will be
@@ -461,9 +469,11 @@ export class BoardView {
   /**
    * Show where the selected item can go: `targets` (grill indexes) pulse, every other grill except `fromGrill`
    * dims. Touch has no hover, so this is the whole answer to "where can this go?". null clears.
+   * `slots: false` lights the grills only (a booster that acts on whole grills or items, not on a free slot).
    */
-  setTargets(targets, fromGrill = -1) {
+  setTargets(targets, fromGrill = -1, { slots = true } = {}) {
     this.targets = targets ? [...targets] : null;
+    this.targetSlots = slots; // false: the grills themselves are the target (tap boosters), not a free slot on them
     this.grills.forEach((g, i) => {
       g.setGlow(targets?.includes(i) ? 1 : 0);
       g.setDim(!!targets && !targets.includes(i) && i !== fromGrill);

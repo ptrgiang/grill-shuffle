@@ -10,7 +10,7 @@ import { applyAction } from '../../shared/resolve.js';
 import { hashState } from '../../shared/hash.js';
 import { replay } from '../../shared/replay.js';
 import { findMatches } from '../../shared/match.js';
-import { canUseBooster, hasUsableBooster } from '../../shared/boosters.js';
+import { canUseBooster, hasUsableBooster, boosterActions } from '../../shared/boosters.js';
 
 const CONFIG = { grills: [2, 6], foodCount: [1, 5], trays: [0, 1], emptySlots: [1, 5], layers: [0, 3], locks: [0, 2], lockMatches: [1, 3], foods: ['shrimp', 'beef', 'corn', 'chicken', 'carrot', 'salmon', 'bread'] };
 
@@ -50,19 +50,11 @@ export function invariants(level, state, ctx) {
   check(hashState(round) === hashState(state), 'serialization changed the hash', ctx);
 }
 
-function tongsActions(state) {
-  const out = [];
-  state.grills.forEach((g, fg) =>
-    g.slots.forEach((it, fs) => {
-      if (!it) return;
-      state.grills.forEach((t, tg) => t.slots.forEach((x, ts) => {
-        const a = { type: 'booster', booster: 'tongs', from: { grill: fg, slot: fs }, to: { grill: tg, slot: ts } };
-        if (canUseBooster(state, a)) out.push(a);
-      }));
-    }),
-  );
-  return out;
-}
+// boosters added after tongs / fan draw from their own stream, so the older cases keep their action sequences
+const NEW_BOOSTERS = ['torch', 'tray_swap', 'cooler'];
+
+/** Booster uses so far, by id (the long run prints them: coverage, not an invariant). */
+export const boosterUses = {};
 
 /** Half the boards get burning items. Mutates the level; keeps it valid. */
 function addBurn(level, rng) {
@@ -88,6 +80,8 @@ export function fuzzCase(seed) {
   addBurn(level, mulberry32(deriveSeed(seed, 'burn'))); // own stream: the pre-burn cases keep their move sequences
   level.moves = rng.int(3, 40);
   level.boosters = { tongs: rng.int(0, 2), fan: rng.int(0, 2) };
+  const brng = mulberry32(deriveSeed(seed, 'boosters'));
+  for (const id of NEW_BOOSTERS) level.boosters[id] = brng.int(0, 2);
   let state = createState(level);
   const actions = [];
   const ctx = { seed };
@@ -95,9 +89,11 @@ export function fuzzCase(seed) {
   while (state.status === 'playing') {
     let action;
     const moves = getLegalMoves(state);
-    const tongs = tongsActions(state);
-    if ((rng.chance(0.08) || (!moves.length && !tongs.length)) && canUseBooster(state, { type: 'booster', booster: 'fan' })) action = { type: 'booster', booster: 'fan' };
+    const tongs = boosterActions(state, 'tongs');
+    const extra = NEW_BOOSTERS.flatMap((id) => boosterActions(state, id));
+    if ((rng.chance(0.08) || (!moves.length && !tongs.length && !extra.length)) && canUseBooster(state, { type: 'booster', booster: 'fan' })) action = { type: 'booster', booster: 'fan' };
     else if ((rng.chance(0.05) || !moves.length) && tongs.length) action = rng.pick(tongs);
+    else if ((brng.chance(0.06) || !moves.length) && extra.length) action = brng.pick(extra);
     else {
       check(moves.length > 0, 'no legal moves while playing', ctx);
       action = rng.pick(moves);
@@ -109,6 +105,7 @@ export function fuzzCase(seed) {
     check(hashState(a.state) === hashState(b.state), 'same state + action -> different result', ctx);
     check(JSON.stringify(a.events) === JSON.stringify(b.events), 'same state + action -> different events', ctx);
     actions.push(action);
+    if (action.type === 'booster') boosterUses[action.booster] = (boosterUses[action.booster] ?? 0) + 1;
     state = a.state;
     invariants(level, state, { ...ctx, step: actions.length });
   }

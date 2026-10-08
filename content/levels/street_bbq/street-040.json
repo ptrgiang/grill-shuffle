@@ -15,6 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1},
   "hint": "A lighter one: two stacks and a single lock.",
   "solver": {
     "minMoves": 8,

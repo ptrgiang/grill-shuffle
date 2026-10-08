@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"torch":1},
   "hint": "The lock needs two matches before that grill opens.",
   "solver": {
     "minMoves": 8,

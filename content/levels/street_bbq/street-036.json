@@ -15,6 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
+  "boosters": {"torch":1},
   "hint": "Two hidden trays and no lock. Count what is still missing.",
   "solver": {
     "minMoves": 6,
