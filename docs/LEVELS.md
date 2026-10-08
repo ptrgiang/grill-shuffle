@@ -53,8 +53,9 @@ link, the unlock and its theme. `?fixtures=1` on the dev server adds a third tes
 
 1. **One pack per theme, at most 50 levels.** Each theme ships one pack that grows to 50 levels and then is full.
    Each new theme starts its own curve from easy and introduces its own new foods (taught inside its 50).
-2. **Ids and positions never change.** Shipped levels are never inserted between, reordered, removed or renamed:
-   `/<pack-slug>/<n>` (#63) and share codes always open the same level. While a pack has fewer than 50 levels, new
+2. **Ids and positions never change.** Shipped levels are never inserted between, reordered or removed, and their ids
+   never change: `/<pack-slug>/<n>` (#63) and share codes always open the same level. Display **names and hints may be
+   rewritten** for the story (owner, 2026-10-08, `docs/STORY.md`), always in vi and en. While a pack has fewer than 50 levels, new
    ones go at the **end** only.
 3. **New features go into existing levels.** A new booster, mechanic or food does not get new levels or a new pack:
    the levels it suits are **edited in place** (board, `boosters`, `modifiers`, foods; difficulty may go up), then
