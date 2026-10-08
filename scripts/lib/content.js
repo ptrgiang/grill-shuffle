@@ -21,7 +21,8 @@ export function loadPacks() {
     });
     out.push({ dir, packFile, pack, levels });
   }
-  return out;
+  // story order, same as the client (client/game/content.js): pack.json `order`, then id
+  return out.sort((a, b) => (a.pack.order ?? 0) - (b.pack.order ?? 0) || a.pack.id.localeCompare(b.pack.id));
 }
 
 export const THEMES_DIR = join(ROOT, 'content', 'themes');

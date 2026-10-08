@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-001",
+  "name": "Low Tide",
+  "theme": "beach_grill",
+  "tier": "easy",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["pepper",null,"salmon"]},
+      {"slots":[null,"corn","pepper"]},
+      {"slots":["salmon","corn","corn"]},
+      {"slots":["pepper",null,"salmon"]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Welcome to the beach. Three of a kind on one grill clear it.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 15,
+    "rating": "easy",
+    "states": 114,
+    "solution": "m0.0-1.0 m2.0-0.0 m1.1-2.0 m3.0-1.1 m3.2-0.1"
+  }
+}

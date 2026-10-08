@@ -40,13 +40,13 @@ Packs play in `order` (then id).
 the story star total reaches its theme's `unlock.stars`; once one of its levels has a star it stays open (appended
 levels or a raised requirement never lock a player out). Inside a pack levels open one by one (previous level won).
 Only story stars count, not dailies or challenges. The level select groups by pack: a locked pack shows its theme
-swatch and what it needs ("Finish Street BBQ and earn ★ 40"), its levels are not links. A deep link into a locked
-pack lands on `/levels` with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
+swatch and what it needs ("Finish Street BBQ and earn ★ 75"), its levels are not links. A deep link into a locked
+pack lands on `/levels#pack-<id>` (scrolled to it) with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
 (the result screen offers "Levels" instead). The menu wears the theme of the level "Continue" opens.
 
-To see it with two packs: `npm run dev`, open `/levels?fixtures=1` (dev server only): `tests/fixtures/levels/test_mint`
-is a two-level pack on the `test_mint` theme (★ 40). `npm run test:e2e` (`packs-390`) checks lock, deep link, unlock
-and the pack's theme.
+Shipped: Street BBQ, then Beach Grill (★ 75). `npm run test:e2e` (`packs-390`) checks Beach Grill's lock, the deep
+link, the unlock and its theme. `?fixtures=1` on the dev server adds a third test pack (`tests/fixtures/levels/test_mint`,
+`order` 99, theme `test_mint`, ★ 40).
 
 ### Content rules (#62, decided 2026-10-08: the game's content direction)
 
@@ -78,6 +78,36 @@ stored difficulty is current.
 replays legally to a win inside the move budget, the solver re-proves the board winnable from scratch with the same
 minimum, and its own line wins too. It also checks that Street BBQ still starts with its legacy levels (at least 50),
 each with a name, tier and hint. `tests/content/rules.test.js` covers the content-rule checks.
+
+## Beach Grill — curve (#17)
+
+The second pack (`/beach-grill/<n>`, theme `beach_grill`): a sunny beach look, catalog shrimp, salmon, corn, pepper,
+skewer, sausage; mechanics prep tray, stacked tray and lock (no burn counters). Opens after Street BBQ with ★ 75.
+Its own curve from easy, never easier (#62): four generator runs, one per stage, picks ordered by difficulty.
+
+| # | id | Name | Teaches | min | moves | difficulty |
+|---|---|---|---|---|---|---|
+| 1 | `beach-001` | Low Tide | three foods, the basics | 5 | 9 | 15 easy |
+| 2 | `beach-002` | Shrimp on the Sand | shrimp + skewer | 5 | 9 | 15 easy |
+| 3 | `beach-003` | Sausage Sizzle | sausage | 4 | 7 | 18 easy |
+| 4 | `beach-004` | Salt Breeze | salmon + corn + skewer | 4 | 7 | 19 easy |
+| 5 | `beach-005` | Cooler Box | **prep tray** | 6 | 9 | 29 normal |
+| 6 | `beach-006` | Picnic Spread | tray, five grills | 7 | 10 | 29 normal |
+| 7 | `beach-007` | Buried Treasure | **stacked tray** | 6 | 9 | 33 normal |
+| 8 | `beach-008` | Sandcastle | stack, five grills | 8 | 12 | 33 normal |
+| 9 | `beach-009` | Lifeguard Tower | **lock** + stack | 7 | 9 | 44 hard |
+| 10 | `beach-010` | Rising Tide | lock + stack | 8 | 10 | 44 hard |
+| 11 | `beach-011` | Sunset Rush | lock 3 + stack, five grills | 8 | 10 | 44 hard |
+| 12 | `beach-012` | Last Light | lock + stack, longest line | 10 | 12 | 44 hard |
+
+Generated with (staging, then picked by hand):
+```
+npm run generate:levels -- --theme beach_grill --prefix beach-a --count 8 --difficulty 10:24 --grills 3:4 --food-count 3:3 --empty 2:4 --candidates 1500 --seed 101 --out content/generated/beach-a
+npm run generate:levels -- --theme beach_grill --prefix beach-b --count 6 --difficulty 22:36 --grills 4:4 --trays 1:1 --food-count 3:4 --empty 2:3 --candidates 3000 --seed 202 --out content/generated/beach-b
+npm run generate:levels -- --theme beach_grill --prefix beach-c --count 6 --difficulty 26:40 --grills 4:5 --layers 1:1 --food-count 4:4 --empty 2:3 --candidates 3000 --seed 303 --out content/generated/beach-c
+npm run generate:levels -- --theme beach_grill --prefix beach-d --count 6 --difficulty 36:52 --grills 4:5 --layers 1:2 --locks 1:1 --food-count 4:5 --empty 2:3 --candidates 4000 --seed 404 --out content/generated/beach-d
+```
+New Beach levels are appended with `--append beach_grill` (difficulty ≥ 44).
 
 ## Street BBQ — curve (50 legacy levels)
 

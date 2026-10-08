@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-004",
+  "name": "Salt Breeze",
+  "theme": "beach_grill",
+  "tier": "easy",
+  "moves": 7,
+  "board": {
+    "grills": [
+      {"slots":["corn","corn","salmon"]},
+      {"slots":[null,"salmon",null]},
+      {"slots":["corn","skewer","skewer"]},
+      {"slots":["salmon","skewer",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Every grill has a gap. Use them as workspace.",
+  "solver": {
+    "minMoves": 4,
+    "difficulty": 19,
+    "rating": "easy",
+    "states": 114,
+    "solution": "m0.2-1.0 m2.0-0.2 m3.0-1.2 m3.1-2.0"
+  }
+}

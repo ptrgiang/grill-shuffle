@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-007",
+  "name": "Buried Treasure",
+  "theme": "beach_grill",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["salmon",null,"salmon"]},
+      {"slots":["salmon","skewer","shrimp"]},
+      {"slots":["shrimp","skewer",null],"layers":[["shrimp","pepper","pepper"]]},
+      {"slots":["pepper","skewer",null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["stacked_tray"],
+  "hint": "A plate under a grill hides more food. Clear the grill to reveal it.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 33,
+    "rating": "normal",
+    "states": 997,
+    "solution": "m1.0-0.1 m1.1-2.2 m2.0-1.0 m3.1-2.0 m2.0-1.1 m3.0-2.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-010",
+  "name": "Rising Tide",
+  "theme": "beach_grill",
+  "tier": "hard",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["corn",null,"skewer"]},
+      {"slots":["pepper","skewer","salmon"],"lock":2},
+      {"slots":[null,"skewer","skewer"],"layers":[["skewer","corn","corn"]]},
+      {"slots":["pepper","skewer",null],"layers":[["pepper","salmon","salmon"]]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["locked_grill","stacked_tray"],
+  "hint": "Plan the matches that open the lock first.",
+  "solver": {
+    "minMoves": 8,
+    "difficulty": 44,
+    "rating": "hard",
+    "states": 410,
+    "solution": "m0.2-2.0 m2.0-3.2 m0.0-2.0 m1.0-0.0 m3.0-0.1 m1.1-3.0 m3.0-0.2 m1.2-3.0"
+  }
+}

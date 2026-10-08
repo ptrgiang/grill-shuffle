@@ -1,0 +1,26 @@
+{
+  "formatVersion": 1,
+  "id": "beach-002",
+  "name": "Shrimp on the Sand",
+  "theme": "beach_grill",
+  "tier": "easy",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["shrimp","skewer","skewer"]},
+      {"slots":["pepper","pepper","shrimp"]},
+      {"slots":["pepper","shrimp","skewer"]},
+      {"slots":[null,null,null]}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": [],
+  "hint": "Skewers stay whole: match three of them like any food.",
+  "solver": {
+    "minMoves": 5,
+    "difficulty": 15,
+    "rating": "easy",
+    "states": 114,
+    "solution": "m0.0-3.0 m1.2-3.1 m2.0-1.2 m2.1-3.2 m2.2-0.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-006",
+  "name": "Picnic Spread",
+  "theme": "beach_grill",
+  "tier": "normal",
+  "moves": 10,
+  "board": {
+    "grills": [
+      {"slots":["corn","skewer","sausage"]},
+      {"slots":["skewer","corn","sausage"]},
+      {"slots":[null,"skewer",null]},
+      {"slots":["corn","sausage","corn"]},
+      {"slots":["corn","corn"],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "Park a food on the tray to free a grill.",
+  "solver": {
+    "minMoves": 7,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1024,
+    "solution": "m0.1-2.0 m1.0-2.2 m0.0-1.0 m1.2-0.0 m3.1-0.1 m4.0-1.2 m4.1-3.1"
+  }
+}

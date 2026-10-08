@@ -1,0 +1,21 @@
+{
+  "id": "beach_grill",
+  "name": "Beach Grill",
+  "description": "A sunny afternoon grill on the sand: bleached driftwood planks, sea-blue light, white grills.",
+  "foods": ["shrimp", "salmon", "corn", "pepper", "skewer", "sausage"],
+  "mechanics": ["prep_tray", "stacked_tray", "locked_grill"],
+  "palette": { "background": "#7cc4dc", "vignette": "#3a6a78" },
+  "lights": { "sky": "#fff4dc", "ground": "#b89a6a", "key": "#fff8ea", "rim": "#9fdcff", "skyIntensity": 1.45, "keyIntensity": 2.2, "rimIntensity": 0.8, "exposure": 1.0 },
+  "grill": {
+    "body": "#d9dde0",
+    "grate": "#2a2c30",
+    "handle": "#2f8fa8",
+    "layerPlate": "#5d7c88",
+    "tray": "#4fa3b5",
+    "trayRim": "#2f6f80"
+  },
+  "table": { "color": "#e8d6b8", "hue": 36, "saturation": 30, "lightness": 62, "planks": 7, "seed": 23 },
+  "backdrop": { "preset": "bokeh", "colors": ["#ffffff", "#d8f6ff", "#fff3c4"], "count": 18, "opacity": 0.3, "size": 0.7, "height": 1.4 },
+  "ambience": { "hiss": 0.1, "rumble": 1.4, "crackle": 4, "seed": 33 },
+  "unlock": { "stars": 75 }
+}

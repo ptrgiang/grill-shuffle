@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "id": "beach-005",
+  "name": "Cooler Box",
+  "theme": "beach_grill",
+  "tier": "normal",
+  "moves": 9,
+  "board": {
+    "grills": [
+      {"slots":["corn","pepper",null]},
+      {"slots":["shrimp","corn","shrimp"]},
+      {"slots":["pepper","shrimp","shrimp"]},
+      {"slots":["shrimp","corn","shrimp"]},
+      {"slots":["pepper",null],"type":"tray"}
+    ]
+  },
+  "goals": [{"type":"clear_all"}],
+  "modifiers": ["prep_tray"],
+  "hint": "The blue board is a prep tray: it holds food but never matches.",
+  "solver": {
+    "minMoves": 6,
+    "difficulty": 29,
+    "rating": "normal",
+    "states": 1024,
+    "solution": "m1.1-0.2 m2.1-1.1 m0.1-2.1 m3.1-0.1 m2.2-3.1 m4.0-2.2"
+  }
+}
