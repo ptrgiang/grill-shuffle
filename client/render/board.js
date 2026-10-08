@@ -477,7 +477,7 @@ export class BoardView {
       this.timeline.sort((a, b) => a.at - b.at);
       while (this.timeline.length && this.timeline[0].at <= now) this.timeline.shift().fn();
     }
-    for (const g of this.grills) g.update(dt);
+    for (const g of this.grills) g.update(dt, { frozen: this.stage.frozen });
     const tmp = new THREE.Vector3();
     for (const v of this.items.values()) this.#updateItem(v, now, dt, tmp);
     for (let i = this.clearing.length - 1; i >= 0; i--) {
@@ -493,7 +493,7 @@ export class BoardView {
     if (sel && this.items.has(sel.id)) {
       this.selRing.position.set(sel.holder.position.x, 0.02, sel.holder.position.z);
       ringMat.opacity += (0.85 - ringMat.opacity) * Math.min(1, dt * 18);
-      this.selRing.scale.setScalar(1 + 0.06 * Math.sin(now * 8));
+      this.selRing.scale.setScalar(1 + 0.06 * Math.sin(this.#osc(now) * 8));
     } else ringMat.opacity *= Math.pow(0.001, dt);
     // hint pulse
     if (this.hint && now > this.hint.until) this.hint = null;
@@ -545,7 +545,7 @@ export class BoardView {
     } else {
       h.visible = true;
       const sel = this.selected?.view === v;
-      lift = sel ? LIFT * 0.6 + Math.sin(now * 5) * 0.03 : 0;
+      lift = sel ? LIFT * 0.6 + Math.sin(this.#osc(now) * 5) * 0.03 : 0;
       tmp.copy(this.slotPos(v.grill, v.slot));
       h.position.x += (tmp.x - h.position.x) * Math.min(1, dt * 20);
       h.position.z += (tmp.z - h.position.z) * Math.min(1, dt * 20);
@@ -558,7 +558,7 @@ export class BoardView {
       if (this.hint) {
         const hm = this.hint.move;
         if (hm.from.grill === v.grill && hm.from.slot === v.slot) {
-          h.position.y = 0.15 + Math.abs(Math.sin(now * 6)) * 0.3;
+          h.position.y = 0.15 + Math.abs(Math.sin(this.#osc(now) * 6 + 1)) * 0.3;
         }
       }
     }
@@ -568,7 +568,7 @@ export class BoardView {
       const s = Math.sin(v.squash * Math.PI) * 0.12;
       h.scale.set(scale * (1 + s), scale * (1 - s * 1.4), scale * (1 + s));
     } else {
-      const wob = 1 + Math.sin(now * 9 + v.phase) * 0.006;
+      const wob = 1 + Math.sin(this.#osc(now) * 9 + v.phase) * 0.006;
       h.scale.set(scale, scale * wob, scale);
     }
     if (v.shake > 0) {
@@ -576,6 +576,11 @@ export class BoardView {
       h.position.x += Math.sin(now * 70) * v.shake * 0.12;
     }
     if (this.blobs) v.blob.position.y = (0.004 - h.position.y) / Math.max(0.01, h.scale.y); // stays on the grate
+  }
+
+  /** Time for idle oscillations (bob, wobble, pulses): pinned at 0 on a frozen stage, so stills are repeatable. */
+  #osc(now) {
+    return this.stage.frozen ? 0 : now;
   }
 
   /** Match animation for one item. Returns true when it is finished. */

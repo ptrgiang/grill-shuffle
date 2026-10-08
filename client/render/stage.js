@@ -12,8 +12,9 @@ export class Stage {
   /**
    * @param canvas  the <canvas>
    * @param opts    { theme, shadows, pixelRatioMax, frozen }
-   *                frozen: time stands still (dt 0 every frame: no ember drift, no bulb flicker, no ambient
-   *                particles), for pixel-compared screenshots. Default: the page URL has ?freeze=1.
+   *                frozen: stills for pixel-compared screenshots. The stage clock stands still (no ember drift, no
+   *                bulb flicker) and the board pins its idle oscillations, but the view still gets real dt so fades
+   *                and moves settle into their end state. Default: the page URL has ?freeze=1.
    */
   constructor(canvas, { theme = {}, shadows = true, pixelRatioMax = 2, preserveDrawingBuffer = false, frozen = urlFlag('freeze') } = {}) {
     this.canvas = canvas;
@@ -235,12 +236,12 @@ export class Stage {
     const loop = (now) => {
       const raw = (now - last) / 1000;
       last = now;
-      const step = this.frozen ? 1 : gate ? gate(raw) : raw;
+      const step = this.frozen ? raw : gate ? gate(raw) : raw;
       if (step > 0) {
-        const dt = this.frozen ? 0 : Math.min(0.05, step);
+        const dt = Math.min(0.05, step);
         const t0 = performance.now();
         onFrame?.(dt);
-        this.render(dt);
+        this.render(this.frozen ? 0 : dt);
         const info = this.renderer.info.render;
         onRendered?.({ dt: step, cpuMs: performance.now() - t0, calls: info.calls, triangles: info.triangles, pixelRatio: this.renderer.getPixelRatio() });
       }

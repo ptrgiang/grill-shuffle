@@ -121,7 +121,7 @@ export class GrillView {
     this.flash = 0; // invalid-action red flash, 1 -> 0
     this.shake = 0; // invalid-action shake, seconds left
     this.homeX = 0; // layout position; the shake wobbles around it
-    this.time = Math.random() * 10;
+    this.time = 0; // pulse clock: grills pulse in step (and frozen stills repeat)
     this.pulse = 0;
   }
 
@@ -235,8 +235,9 @@ export class GrillView {
     this.group.add(g);
   }
 
-  update(dt) {
-    this.time += dt;
+  /** `frozen`: fades still settle, but the pulse clock stands still (repeatable screenshots, Stage.frozen). */
+  update(dt, { frozen = false } = {}) {
+    if (!frozen) this.time += dt;
     const k = 1 - Math.pow(0.0005, dt);
     this.glowLevel += (this.glowTarget - this.glowLevel) * k;
     this.dim += (this.dimTarget - this.dim) * k;
