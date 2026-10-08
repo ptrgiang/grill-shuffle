@@ -80,7 +80,7 @@ npm run generate:levels -- --theme street_bbq --count 100 --difficulty 20:40 --o
 npm run bench:solver
 ```
 
-## Performance (Node 24, this machine)
+## Performance (Node 24, the dev machine)
 
 ~20–35k states/s through the full simulation (events included). All 10 story levels solve in < 0.5 s each;
 Hard generated boards 10–45k states (0.5–2 s). Band C (81+) has no v1 preset: such boards are too large to
