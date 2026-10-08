@@ -4,8 +4,9 @@
 //        |
 //        +-- release without moving -> the item stays selected; tap a grill to send it there
 //
-// Both paths end in the same call: onMove(move, { dropped }). The input layer only asks the session what is legal;
-// it never changes game state itself.
+// Both paths end in the same call: onMove(action, { dropped }). The input layer only asks the session what is legal;
+// it never changes game state itself. With a targeted booster armed (Session.arm('tongs')) the same pick + drop
+// becomes that booster: the session widens what can be picked and builds the booster action.
 //
 // Touch differs from mouse in three ways (POINTER_TUNING): a thumb jitters more, so a tap needs a larger drag
 // threshold; it is fat, so grills get a wider hit margin; and it covers what it carries, so a dragged item is drawn
@@ -105,7 +106,8 @@ export class Input {
       this.#haptic(tune, [14, 50, 14]);
       return false;
     }
-    this.hooks.onMove({ type: 'move', from: { grill: from.grill, slot: from.slot }, to: { grill: hit.grill, slot } }, { dropped });
+    // a plain move, or the armed targeted booster (tongs): the session knows which
+    this.hooks.onMove(s.actionFor({ grill: from.grill, slot: from.slot }, { grill: hit.grill, slot }), { dropped });
     return true;
   }
 

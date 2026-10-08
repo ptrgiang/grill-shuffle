@@ -16,10 +16,11 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"tongs":1,"fan":1},
   "hint": "Two plates and a lock. Count what is hidden.",
   "solver": {
     "minMoves": 10,
-    "difficulty": 70,
+    "difficulty": 69,
     "rating": "very_hard",
     "states": 9528,
     "solution": "m3.0-2.0 m4.0-3.0 m4.2-1.0 m1.1-4.0 m4.1-1.1 m1.2-4.1 m2.2-0.1 m1.1-2.2 m3.1-0.2 m1.0-3.1"

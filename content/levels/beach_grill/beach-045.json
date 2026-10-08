@@ -16,6 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
+  "boosters": {"tongs":1,"fan":1},
   "hint": "Pineapple, peppers and a lock. Keep calm.",
   "solver": {
     "minMoves": 12,

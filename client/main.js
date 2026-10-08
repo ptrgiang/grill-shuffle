@@ -25,6 +25,7 @@ import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { Coach, coachMove } from './ui/coach.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
 import { FOODS } from '../shared/foods.js';
+import { BOOSTERS } from '../shared/boosters.js';
 import { starThresholds } from '../shared/progression.js';
 import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
@@ -63,13 +64,14 @@ const app = {
   settings: { ...DEFAULT_SETTINGS },
   hud: null,
   coach: null, // first-level onboarding hand (touch)
+  seenBoosters: {}, // boosters the player has tried at least once (the HUD marks the others "new")
   busy: false,
 };
 
 // ---------------------------------------------------------------- board + input (one each, for the app's life)
 
 const view = new BoardView(stage, { onFx: (ev, at) => onFx(ev, at) });
-new Input(canvas, () => app.session, view, {
+const input = new Input(canvas, () => app.session, view, {
   enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal,
   onGesture: () => audio.unlock(),
   haptics: () => app.settings.haptics !== false,
@@ -116,8 +118,52 @@ function doAction(action, opts = {}) {
   view.showHint(null);
   view.play(r.state, r.events, opts);
   app.hud?.update(r.state, { immediate: true });
+  // no plain move left but a booster still works (else the simulation would have called it 'stuck')
+  if (r.state.status === 'playing' && !app.session.legalMoves().length && app.session.boosterIds().some((id) => app.session.canUseBooster(id))) {
+    app.hud?.tip('No moves left. A booster can still save it!');
+  }
   return true;
 }
+
+/**
+ * A booster button. Fan (no target) asks for a second tap to confirm, then fires. Tongs (pick + drop) arms the
+ * input: the next pick (any grill, locked ones too) and drop is the booster; a second tap disarms.
+ */
+function tapBooster(id) {
+  const s = app.session;
+  if (app.route !== 'game' || app.modal || s.status !== 'playing') return;
+  audio.onEvent({ type: 'button' });
+  if (!app.seenBoosters[id]) {
+    app.seenBoosters = { ...app.seenBoosters, [id]: true };
+    db.set('seenBoosters', app.seenBoosters);
+  }
+  if (!s.canUseBooster(id) && s.armed !== id) {
+    app.hud.tip(s.charges(id) > 0 ? `Nothing for the ${BOOSTERS[id].name.toLowerCase()} to do right now.` : `No ${BOOSTERS[id].name} left.`);
+    return app.hud.update(s.state);
+  }
+  input.deselect();
+  if (BOOSTERS[id].needs === 'none') {
+    if (app.hud.confirming === id) {
+      app.hud.confirm(null);
+      app.hud.tipEl.classList.remove('show');
+      doAction({ type: 'booster', booster: id });
+    } else {
+      s.arm(null);
+      app.hud.confirm(id);
+      app.hud.tip(BOOSTER_TIPS[id]);
+    }
+  } else {
+    app.hud.confirm(null);
+    if (s.armed === id) s.arm(null);
+    else if (s.arm(id)) app.hud.tip(BOOSTER_TIPS[id]);
+  }
+  app.hud.update(s.state);
+}
+
+const BOOSTER_TIPS = {
+  tongs: 'Tongs: pick any food, even off a locked grill, and drop it on an open one. Free, no move used.',
+  fan: 'Fan: tap again to blow the food on the open grills into new spots. Free, no move used.',
+};
 
 /** Presentation events, on the animation's beat. Never feeds back into the simulation. */
 function onFx(ev, at) {
@@ -443,14 +489,24 @@ function dismissCoach() {
 }
 
 function restart() {
+  app.hud?.confirm(null);
   app.session.restart();
   view.setState(app.session.state);
   app.hud.update(app.session.state, { immediate: true });
   closeModal();
 }
 
+/** Put a booster down without using it (armed tongs, a fan waiting for its confirm tap). */
+function disarm() {
+  input.deselect();
+  app.session.arm(null);
+  app.hud?.confirm(null);
+  app.hud?.update(app.session.state);
+}
+
 function undo() {
   if (!app.session.canUndo()) return;
+  app.hud?.confirm(null);
   view.skip();
   app.session.undo();
   view.setState(app.session.state);
@@ -460,6 +516,7 @@ function undo() {
 
 async function hint() {
   if (app.session.status !== 'playing' || app.busy) return;
+  if (app.session.armed || app.hud?.confirming) disarm();
   app.busy = true;
   const r = await hintFor(app.session.state);
   app.busy = false;
@@ -484,6 +541,14 @@ class Hud {
     this.comboEl = h('div.combo');
     this.tipEl = h('div.tip');
     this.undoBtn = h('button.tool', { 'aria-label': 'Undo', on: { click: () => (audio.onEvent({ type: 'button' }), undo()) } }, iconEl('undo'), h('span', 'Undo'));
+    // one button per booster the level grants (generic over BOOSTERS: new ones only need an icon and a tip)
+    this.confirming = null;
+    this.boosters = app.session.boosterIds().map((id) => {
+      const count = h('span.charge');
+      const label = h('span.tool-label', BOOSTERS[id].name);
+      const el = h('button.tool.booster', { 'data-booster': id, 'aria-label': BOOSTERS[id].name, on: { click: () => tapBooster(id) } }, iconEl(id), label, count, app.seenBoosters[id] ? null : h('span.new-tag', 'New'));
+      return { id, el, count, label };
+    });
     this.el = h('div.hud',
       h('header.hud-top',
         h('button.icon-btn', { 'aria-label': 'Pause', on: { click: () => pauseMenu() } }, iconEl('pause')),
@@ -497,8 +562,11 @@ class Hud {
         this.undoBtn,
         h('button.tool', { 'aria-label': 'Hint', on: { click: () => (audio.onEvent({ type: 'button' }), hint()) } }, iconEl('hint'), h('span', 'Hint')),
         h('button.tool', { 'aria-label': 'Restart', on: { click: () => (audio.onEvent({ type: 'button' }), restart()) } }, iconEl('restart'), h('span', 'Restart')),
+        this.boosters.length ? h('span.tool-sep', { 'aria-hidden': 'true' }) : null,
+        ...this.boosters.map((b) => b.el),
       ),
     );
+    if (this.boosters.length) this.el.querySelector('.hud-bottom').classList.add('has-boosters');
     this.goalEls = [];
   }
 
@@ -516,6 +584,18 @@ class Hud {
     this.movesEl.textContent = String(s.movesLeft);
     this.movesEl.parentElement.classList.toggle('low', s.movesLeft <= 3 && s.status === 'playing');
     this.undoBtn.disabled = !app.session.canUndo();
+    const ses = app.session;
+    for (const b of this.boosters) {
+      const n = ses.charges(b.id);
+      const armed = ses.armed === b.id || this.confirming === b.id;
+      b.count.textContent = String(n);
+      b.el.disabled = !armed && !ses.canUseBooster(b.id);
+      b.el.classList.toggle('armed', armed);
+      b.el.setAttribute('aria-pressed', String(armed));
+      b.label.textContent = this.confirming === b.id ? 'Blow!' : ses.armed === b.id ? 'Cancel' : BOOSTERS[b.id].name;
+      if (app.seenBoosters[b.id]) b.el.querySelector('.new-tag')?.remove();
+    }
+    view.setReach(ses.armed === 'tongs');
     if (!this.goalEls.length) {
       this.goalEls = s.goals.map((g) => {
         const icon = g.food ? h('img.goal-icon', { src: foodIcon(stage.renderer, g.food), alt: FOODS[g.food].name }) : h('span.goal-icon.all', '🔥');
@@ -532,6 +612,13 @@ class Hud {
       ge.count.textContent = left > 0 ? (g.type === 'clear_all' ? `${left} left` : `×${left}`) : '✓';
       ge.el.classList.toggle('done', left <= 0);
     });
+  }
+
+  /** A no-target booster waiting for its confirming second tap (null: none). Times out by itself. */
+  confirm(id) {
+    this.confirming = id;
+    clearTimeout(this.confirmTimer);
+    if (id) this.confirmTimer = setTimeout(() => (this.confirm(null), this.update(app.session.state)), 4000);
   }
 
   bumpGoal(i) {
@@ -633,6 +720,7 @@ async function showResult(won, reason) {
   const idx = storyIndex(level.id);
   const nextId = app.mode === 'story' && idx >= 0 ? nextLevelAfter(PACKS, level.id, app.progress, THEMES) : null;
   const moreLocked = app.mode === 'story' && !nextId && idx >= 0 && idx < STORY.length - 1; // next pack not open yet
+  const used = Object.entries(app.session.boostersUsed()).map(([id, n]) => (n > 1 ? `${BOOSTERS[id].name} ×${n}` : BOOSTERS[id].name));
   const beat = app.target ? (s.movesUsed < app.target ? `You beat your friend's ${app.target} moves!` : s.movesUsed === app.target ? `Tied with your friend's ${app.target} moves.` : `Your friend did it in ${app.target}. Rematch?`) : null;
   openModal(
     h('h2.win', stars === 3 ? 'Chef’s kiss!' : 'Order up!'),
@@ -643,6 +731,7 @@ async function showResult(won, reason) {
       h('div', h('b', `x${s.maxCombo}`), h('span', 'best combo')),
     ),
     min ? h('p.muted', stars === 3 ? `Solved in ${s.movesUsed}. The best possible is ${min}.` : `3 stars at ${t.three} moves or fewer (best possible: ${min}).`) : null,
+    used.length ? h('p.muted.boosters-used', `Boosters used: ${used.join(', ')}`) : null,
     beat ? h('p.beat', beat) : null,
     daily,
     improved && app.mode === 'story' ? h('p.muted', 'New best saved.') : null,
@@ -722,7 +811,7 @@ async function share(moves) {
 
 window.addEventListener('keydown', (e) => {
   if (app.route !== 'game') return;
-  if (e.key === 'Escape') app.modal ? closeModal() : pauseMenu();
+  if (e.key === 'Escape') app.modal ? closeModal() : app.session?.armed || app.hud?.confirming ? disarm() : pauseMenu();
   else if ((e.key === 'z' || e.key === 'Z') && !app.modal) undo();
   else if ((e.key === 'r' || e.key === 'R') && !app.modal) restart();
   else if ((e.key === 'h' || e.key === 'H') && !app.modal) hint();
@@ -752,6 +841,7 @@ async function boot() {
   audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });
   app.progress = await db.get('progress', {});
   app.streak = await db.get('dailyStreak', null);
+  app.seenBoosters = await db.get('seenBoosters', {});
   render();
   applyQuality();
   stage.start((dt) => view.update(dt), { gate: (dt) => idle.tick(dt, view.busy), onRendered });

@@ -90,7 +90,15 @@ Deterministic actions `{ type: 'booster', booster, from?, to? }`; cost no move; 
 - **Fan** — redistribute every item on the open grills over the same occupied slots (seeded from the state hash).
 
 `canUseBooster(state, action)`, `applyAction(state, action)`. Levels grant charges via `"boosters": { "tongs": 1 }`.
-The UI for boosters is not in the vertical slice yet.
+
+**In the game** (#9): one HUD button per booster the level grants, after Undo / Hint / Restart, with its charges.
+Tongs arm the input (`Session.arm('tongs')`): the next pick, from any grill including a locked one, and drop is the
+booster action; tapping the button again disarms. Fan asks for a second tap within 4 s, then blows. The client is
+generic over `BOOSTERS` (`needs: 'none'` fires on confirm, `needs: 'from+to'` arms), so new boosters only need an
+icon (`client/ui/dom.js`) and a tip line (`client/main.js` `BOOSTER_TIPS`).
+**Stars are unaffected** by boosters (charges are scarce, granted per level); the result screen lists the boosters
+used. Charges come only from the level for now; a persistent inventory is a separate issue.
+Granted today: Street BBQ 41–50 one Tongs each; Beach Grill 37–50 one Tongs + one Fan each.
 
 ## Stars and budgets
 

@@ -199,6 +199,30 @@ export function buttonSound(sr) {
   return normalize(note(sr, 660, 0.07, { bright: 0.15, decay: 0.02 }), 0.4);
 }
 
+/** Fan booster: a soft swell of low air noise that rises and falls (no hiss crackle). */
+export function gustSound(sr, seed = 9) {
+  const dur = 0.75;
+  const rng = mulberry32(seed);
+  const a = buf(sr, dur);
+  for (let i = 0; i < a.length; i++) a[i] = rng() * 2 - 1;
+  lowpass(a, sr, 1400);
+  highpass(a, sr, 180);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    a[i] *= Math.sin((Math.PI * t) / dur) ** 2 * (0.8 + 0.2 * Math.sin(t * 23));
+  }
+  return normalize(a, 0.6);
+}
+
+/** Tongs booster: two light metal clicks (the tongs closing), then the item lifts. */
+export function tongsSound(sr) {
+  const a = buf(sr, 0.2);
+  mix(a, note(sr, 1760, 0.06, { bright: 0.5, decay: 0.012 }), sr, 0, 0.5);
+  mix(a, note(sr, 2093, 0.06, { bright: 0.5, decay: 0.012 }), sr, 0.06, 0.45);
+  mix(a, thud(sr, 380, 180, 0.07), sr, 0.06, 0.3);
+  return normalize(a, 0.5);
+}
+
 /**
  * Seamless grill ambience: steady high hiss, slow crackle, warm rumble. Params come from the theme's `ambience`
  * (hiss level, rumble level, crackle pops per second, noise seed); the defaults are Street BBQ.
@@ -247,5 +271,7 @@ export const SOUNDS = {
   complete: (sr) => completeSound(sr),
   fail: (sr) => failSound(sr),
   button: (sr) => buttonSound(sr),
+  gust: (sr) => gustSound(sr),
+  tongs: (sr) => tongsSound(sr),
   ambience: (sr, params) => ambienceLoop(sr, params ?? undefined),
 };

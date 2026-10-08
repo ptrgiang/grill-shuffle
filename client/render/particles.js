@@ -166,6 +166,17 @@ export class Particles {
     this.add.spawn({ x: at.x, y: at.y, z: at.z, vx: (Math.random() - 0.5) * 0.3, vy: 0.6 + Math.random() * 0.8, vz: (Math.random() - 0.5) * 0.1, drag: 0.01, life: 1 + Math.random(), s0: 0.06, s1: 0.02, c0: '#ffcc66', c1: '#ff4a10', a: 0.9 });
   }
 
+  /** Fan booster: streaks of air sweeping across the board from the left, a little smoke carried along. */
+  gust(width, depth) {
+    this.burstFor = Math.max(this.burstFor, 1.1);
+    const x0 = -width / 2 - 0.6;
+    for (let i = 0, k = this.#n(40); i < k; i++) {
+      const z = (Math.random() - 0.5) * (depth + 0.6), sp = 5 + Math.random() * 4;
+      this.soft.spawn({ x: x0 - Math.random() * 1.2, y: 0.25 + Math.random() * 0.7, z, vx: sp, vy: (Math.random() - 0.3) * 0.4, vz: (Math.random() - 0.5) * 0.4, drag: 0.012, life: (width + 1.8) / sp, s0: 0.18, s1: 0.5, c0: '#ffffff', c1: '#e8f2ff', a: 0.4 });
+    }
+    for (let i = 0, k = this.#n(10); i < k; i++) this.soft.spawn({ x: (Math.random() - 0.5) * width, y: 0.3, z: (Math.random() - 0.5) * depth, vx: 2.4 + Math.random(), vy: 0.5, drag: 0.03, life: 0.9, s0: 0.4, s1: 1.1, c0: '#8a7a78', c1: '#3a3036', a: 0.22 });
+  }
+
   /** Reveal / unlock poof. */
   poof(at, color = '#d7ecff') {
     this.burstFor = Math.max(this.burstFor, 0.7);

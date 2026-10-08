@@ -56,7 +56,7 @@ client/        browser game (Vite root)
   ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), coach.js (first-level
                  onboarding hand), stats.js (?stats=1 overlay), install.js, update.js
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
-  game/          session.js (state + undo + action log), input.js (pointer state machine), content.js (packs),
+  game/          session.js (state + undo + action log + the armed booster), input.js (pointer state machine), content.js (packs),
                  unlock.js (pure: pack / level unlocks, continue, next level),
                  routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /street-bbq/12, n = position
                  inside the pack; slug = pack.json `slug` or the id with dashes; old /level/<n> means Street BBQ),
