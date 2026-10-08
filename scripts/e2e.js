@@ -329,8 +329,12 @@ async function runPacks(name, { w, h }) {
 
     await page.evaluate(() => window.__gs.go('/mint/1'));
     await page.waitForFunction(() => location.pathname === '/levels', { timeout: 10000 });
-    const toast = await page.evaluate(() => document.querySelector('.toast.show')?.textContent ?? '');
-    check(/Test Mint is locked/.test(toast), `${name}: a deep link into the locked pack lands on the level select with a toast (${toast})`);
+    const landed = await page.evaluate(() => {
+      const r = document.querySelector('section.pack[data-pack="test_mint"]').getBoundingClientRect();
+      return { toast: document.querySelector('.toast.show')?.textContent ?? '', hash: location.hash, top: Math.round(r.top), inView: r.top >= 0 && r.bottom <= innerHeight };
+    });
+    check(/Test Mint is locked/.test(landed.toast), `${name}: a deep link into the locked pack lands on the level select with a toast (${landed.toast})`);
+    check(landed.hash === '#pack-test_mint' && landed.inView, `${name}: ...scrolled to that pack (${landed.hash}, top ${landed.top})`);
 
     await page.evaluate(() => {
       const gs = window.__gs;

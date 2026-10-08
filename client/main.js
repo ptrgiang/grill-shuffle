@@ -185,7 +185,7 @@ async function render() {
     const status = k > 0 ? packStatus(PACKS, k, app.progress, THEMES) : null;
     if (status && !status.open) {
       toast(`${PACKS[k].name} is locked. ${lockReason(status)}.`);
-      return go('/levels', { replace: true });
+      return go(`/levels#pack-${PACKS[k].id}`, { replace: true });
     }
     const canonical = levelPath(lvl.id);
     if (canonical && location.pathname !== canonical) history.replaceState(null, '', canonical + location.search);
@@ -347,7 +347,7 @@ function showLevels() {
         const t = resolveTheme(THEMES[pack.theme] ?? {});
         const swatch = h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
         return [
-          one ? null : h(`section.pack${status.open ? '' : '.locked'}`, { 'data-pack': pack.id },
+          one ? null : h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
             h('h3.pack-head', swatch, h('span', pack.name), status.open ? null : iconEl('lock')),
             status.open ? null : h('p.pack-lock', lockReason(status)),
           ),
@@ -356,6 +356,9 @@ function showLevels() {
       }),
     ),
   );
+  // /levels#pack-<id>: open at that pack (deep links into a locked pack land here)
+  const at = location.hash && document.getElementById(location.hash.slice(1));
+  if (at) at.scrollIntoView({ block: 'start' });
 }
 
 // ---------------------------------------------------------------- playing
