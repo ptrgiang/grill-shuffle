@@ -33,6 +33,25 @@ Grill fields: `type` (`grill` | `tray`), `slots`, optional `layers` (each exactl
 
 `content/levels/<pack>/pack.json` lists level ids in play order; the client bundles every pack at build time.
 
+### Content rules (#62, decided 2026-10-08: the game's content direction)
+
+1. **Append only.** New levels only go at the **end** of a pack. Shipped levels are never inserted between,
+   reordered or removed: a player who passed level N must never find an unplayed, easier level before N.
+2. **Never easier.** Inside a pack, each new level's stored solver `difficulty` is **≥ the highest difficulty of every
+   level before it** (ties allowed; no easier "breather" levels).
+3. **Street BBQ 1–50 keep their shipped order** (they predate the rule: `"curveFrom": 51` in its `pack.json`). From
+   level 51 on the rule applies, so #51 needs difficulty ≥ 58.
+4. **One curve per pack.** A new pack (theme) starts easy and rises; it unlocks after the previous pack.
+5. **New foods and mechanics only arrive in new levels** (appended, or a new pack), never retrofitted into shipped ones.
+6. **URLs** `/<pack-slug>/<n>` (#63).
+
+`validate:levels` enforces 1–3 against the base revision (`scripts/lib/content-rules.js`): the base's `pack.json`
+list and `share-index.json` must be exact prefixes of the new ones, and from `curveFrom` (default 1) each level's
+difficulty must reach the running max. `curveFrom` can only exempt levels the base already shipped. The base is
+`--base <ref>`, else `$GS_CONTENT_BASE` (CI: the PR's target branch, or the previous `main` tip on a push), else
+`origin/main`. If a recalibration (#15) or rule change shifts stored difficulties so that a pack breaks rule 2, the
+check fails and a person decides: shipped levels are never reordered to fix it.
+
 ## Validation (`npm run validate:levels`, CI gate)
 
 Structure, food/goal/modifier/booster references, totals divisible by the match size, no starting match, a legal
@@ -42,9 +61,14 @@ stored difficulty is current.
 
 `tests/solver/levels.test.js` repeats the core of it inside `npm test`: for every shipped level the stored solution
 replays legally to a win inside the move budget, the solver re-proves the board winnable from scratch with the same
-minimum, and its own line wins too. It also pins Street BBQ at 50 levels, each with a name, tier and hint.
+minimum, and its own line wins too. It also checks that Street BBQ still starts with its legacy levels (at least 50),
+each with a name, tier and hint. `tests/content/rules.test.js` covers the content-rule checks.
 
-## Street BBQ — curve (50 levels)
+## Street BBQ — curve (50 legacy levels)
+
+Levels 1–50 are in their shipped order, which predates the content rules: it has easier breathers and levels that
+were inserted mid-curve (#54). It stays as is (rule 3). Levels from 51 on are appended in order of difficulty, at 58
+or more.
 
 | # | Name | Teaches | min | moves | difficulty |
 |---|---|---|---|---|---|
@@ -104,22 +128,22 @@ of the same board without counters chars something, so the counter changes the p
 (v2: six counters of 1, everything charred on move 1 and play went on); Off the Heat was rebuilt so the tray is required (9 moves vs 8 without counters).
 
 Ids are stable (`street-001`…`010` keep their ids); play order is `pack.json`. Story share codes (`S…`) encode a
-position in the append-only `content/levels/share-index.json`, not the play order, so levels can be inserted
-anywhere in a pack without breaking shared links: append every new story level there, never reorder or remove
-(`validate:levels` and `tests/solver/share-index.test.js` enforce it). The original ten were hand-designed,
+position in the append-only `content/levels/share-index.json`, not the play order: append every new story level
+there, never reorder or remove (`validate:levels` and `tests/solver/share-index.test.js` enforce it). Packs are
+append-only too since #62. The original ten were hand-designed,
 then solver-checked; level 12's lock was reduced from 2 to 1 after the solver proved the 2-lock version impossible,
 and Padlocked / Stack Attack were swapped after the difficulty evaluator ranked "Stack Attack" well above
 "Padlocked". The three food-teaching levels came from `npm run generate:levels` (food-restricted runs: salmon with
 the first three foods; carrot with the other oranges; bread with the other slabs plus a lock), were picked by hand,
-renamed, given a tier and hint, and solved with `solve --write`. Inserting a level never locks progress: a won
-level stays open (`isUnlocked`).
+renamed, given a tier and hint, and solved with `solve --write`. (They were inserted mid-pack; since #62 new
+levels are only appended.)
 
 `street-017`…`050` (issue #10) came from six `generate:levels` runs, one per stage: plain easy boards (difficulty
 12–24), tray only, stack only, lock only (20–38 each), combinations (38–55: 1–2 stacks, 0–1 lock, 0–1 tray) and late
 boards (52–75 at generation: 5 grills, 1–2 stacks, a lock). Picks were made per slot with food bans, so no level uses
 a food before its teaching level (no carrot or bread before Orange Trio, no bread before Toast or Steak), and every
 mechanic gets solo levels before the first combination (Stack Attack, 24). Breathers (easy boards at 11, 19, 28; lighter
-hard boards at 40 and 44) break up the climb. Late levels use the `hard` tier (min + 20 %), not `expert` (min + 1):
+hard boards at 40 and 44) break up the climb: legacy only, new levels never dip (#62). Late levels use the `hard` tier (min + 20 %), not `expert` (min + 1):
 with hidden stacks an `expert` budget punishes a first look at the board. Burn-counter levels are not generated (the
 generator has no counters yet), so the three hand-made ones stay.
 
@@ -138,6 +162,11 @@ their explicit food lists.
 npm run generate:levels -- --theme night_market --foods shrimp,beef,chicken,corn --count 100 \
   --difficulty 35:55 --grills 4:5 --locks 0:1 --layers 1:2 --candidates 4000 --out content/generated/night-1
 ```
-Output goes to a staging folder (gitignored). A person plays a sample (`/sandbox/board?level=…` after copying into
+To grow an existing pack, generate with `--append <pack>`: the difficulty range starts at the pack's current max
+(`--difficulty` then only sets the top) and candidates come out in ascending difficulty, ready to append in order:
+```
+npm run generate:levels -- --append street_bbq --count 20 --difficulty 75 --grills 5:5 --layers 1:2 --locks 0:1   --candidates 4000 --out content/generated/street-51
+```
+A new pack starts at level 1 with its own easy start and must rise from there. Output goes to a staging folder (gitignored). A person plays a sample (`/sandbox/board?level=…` after copying into
 a pack), keeps the good ones in `content/levels/<pack>/`, then `npm run solve -- --all --write` and
 `npm run validate:levels`. Do not hand-write levels in bulk; do not commit unsolved levels.

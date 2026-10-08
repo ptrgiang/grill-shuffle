@@ -5,8 +5,13 @@
 // arbitrary), the stored solution replays to a win within the budget, the stored difficulty is current.
 // Per pack: no duplicate ids, no structurally duplicated boards (food relabelling and grill order ignored).
 // Share index (content/levels/share-index.json): every story level listed exactly once, every entry a story level.
-//   --fast   skip the solver (structure only)
-import { basename, join } from 'node:path';
+// Content rules (#62, scripts/lib/content-rules.js), against the base revision: packs and the share index are only
+// appended to, and from pack.json `curveFrom` on no level is easier (stored solver difficulty) than one before it.
+//   --fast         skip the solver (structure only; the content rules still run)
+//   --base <ref>   git revision to compare with (default: $GS_CONTENT_BASE, else origin/main when it exists).
+//                  With --base / GS_CONTENT_BASE set (CI), an unreadable base is an error; locally it is skipped.
+import { basename, join, relative } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
 import { isFood } from '../shared/foods.js';
@@ -16,6 +21,8 @@ import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
 import { replay } from '../shared/replay.js';
 import { THEMES } from '../shared/levels.js';
+import { checkAppendOnly, checkCurve, checkCurveFrom } from './lib/content-rules.js';
+import { ROOT } from './lib/content.js';
 
 const args = parseArgs();
 const errors = [];
@@ -23,6 +30,35 @@ const ids = new Map();
 const sigs = new Map();
 let count = 0;
 const themes = loadThemes();
+
+// the base revision's copy of a content file (null: the file does not exist there, e.g. a new pack)
+const baseRef = args.base ?? (process.env.GS_CONTENT_BASE || null);
+const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+let base = baseRef;
+if (!base) {
+  try {
+    git('rev-parse', '--verify', '--quiet', 'origin/main');
+    base = 'origin/main';
+  } catch {}
+}
+if (base) {
+  try {
+    git('rev-parse', '--verify', '--quiet', `${base}^{commit}`);
+  } catch {
+    if (baseRef) errors.push(`content rules: base revision ${base} not found (fetch it: git fetch origin main)`);
+    else console.log(`note: ${base} not found, content rules not checked against a base`);
+    base = null;
+  }
+}
+if (!base) console.log('note: no base revision, append-only not checked (pass --base <ref>)');
+const atBase = (file) => {
+  if (!base) return null;
+  try {
+    return JSON.parse(git('show', `${base}:${relative(ROOT, file).split('\\').join('/')}`));
+  } catch {
+    return null;
+  }
+};
 
 for (const t of Object.values(themes)) {
   if (!THEMES.includes(t.id)) errors.push(`${t.file}: unknown theme id ${t.id}`);
@@ -36,6 +72,10 @@ const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.sl
 for (const { pack, packFile, levels } of loadPacks()) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
+  const basePack = atBase(packFile);
+  errors.push(...checkAppendOnly(pack.id, basePack?.levels ?? null, pack.levels));
+  errors.push(...checkCurveFrom(pack.id, pack, basePack));
+  errors.push(...checkCurve(pack.id, levels.map(({ id, level }) => ({ id, difficulty: level?.solver?.difficulty })), pack.curveFrom ?? 1));
   for (const { file, level, id } of levels) {
     const at = `${pack.id}/${id}`;
     const err = (m) => errors.push(`${at}: ${m}`);
@@ -77,6 +117,7 @@ for (const { pack, packFile, levels } of loadPacks()) {
 }
 
 const share = JSON.parse(readFileSync(join(LEVELS_DIR, 'share-index.json'), 'utf8')).levels;
+errors.push(...checkAppendOnly('share-index.json', atBase(join(LEVELS_DIR, 'share-index.json'))?.levels ?? null, share));
 const shareSeen = new Set();
 for (const id of share) {
   if (shareSeen.has(id)) errors.push(`share-index.json: ${id} listed twice`);

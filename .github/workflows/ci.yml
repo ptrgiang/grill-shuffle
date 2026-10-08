@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # validate:levels compares packs with the base revision (content rules, #62)
       - uses: actions/setup-node@v5
         with:
           node-version: 24
@@ -24,8 +26,11 @@ jobs:
         run: npm run check
       - name: Simulation, solver, fuzz, worker API, client tests
         run: npm test
-      - name: Level packs (schema + solver verification)
+      - name: Level packs (schema + solver verification + content rules)
         run: npm run validate:levels
+        env:
+          # PR: the target branch; push: the previous tip (append-only, never-easier against what shipped)
+          GS_CONTENT_BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
       - name: Long fuzz
         run: node scripts/fuzz.js 5000
       - name: Build

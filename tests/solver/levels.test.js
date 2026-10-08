@@ -35,11 +35,12 @@ for (const { pack, levels } of packs) {
   }
 }
 
-test('street_bbq ships 50 levels, each once, all with a name, tier and hint', () => {
+test('street_bbq ships its 50 legacy levels (and any appended after them), each once, all with a name, tier and hint', () => {
   const street = packs.find((p) => p.pack.id === 'street_bbq');
   assert.ok(street);
-  assert.equal(street.pack.levels.length, 50);
-  assert.equal(new Set(street.pack.levels).size, 50);
+  assert.ok(street.pack.levels.length >= 50); // levels are only appended (#62)
+  assert.equal(street.pack.levels[0], 'street-001');
+  assert.equal(new Set(street.pack.levels).size, street.pack.levels.length);
   for (const { id, level } of street.levels) {
     assert.ok(level?.name, `${id}: name`);
     assert.ok(level.tier, `${id}: tier`);
