@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Grill Shuffle: Food Sort & Match Puzzle. Deterministic puzzle engine, solver, level generator and Three.js renderer on Cloudflare Workers.",
+  "description": "Bà Năm’s Grill: a food-sorting puzzle from a Saigon alley. Deterministic puzzle engine, solver, level generator and Three.js renderer on Cloudflare Workers.",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=22"

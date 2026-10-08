@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Grill Shuffle",
-  "short_name": "Grill Shuffle",
-  "description": "Sort tasty food, match three, clear the grill and solve satisfying food puzzles.",
+  "name": "Bà Năm’s Grill",
+  "short_name": "Bà Năm’s",
+  "description": "A food-sorting puzzle from a Saigon alley: follow Bà Năm’s trail, one grill at a time.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,7 +10,10 @@
   "theme_color": "#1b1420",
   "lang": "en",
   "dir": "ltr",
-  "categories": ["games", "entertainment"],
+  "categories": [
+    "games",
+    "entertainment"
+  ],
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
@@ -18,7 +21,25 @@
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "shortcuts": [
-    { "name": "Daily Grill", "url": "/daily", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Levels", "url": "/levels", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Daily Grill",
+      "url": "/daily",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Levels",
+      "url": "/levels",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

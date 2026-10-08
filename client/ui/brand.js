@@ -1,11 +1,10 @@
-// The Bà Năm's Grill badge (#93): Bà Năm behind her grill cart. Pure SVG strings (no DOM), so the menu, the favicon
-// and scripts/make-icons.js draw the same picture. `badgeSvg(style, { text })`: `text` false drops lettering (icons:
-// rasterisers have no web font).
+// The Bà Năm's Grill badge (#93, owner's pick: style 4, the cart redrawn without lettering): Bà Năm behind her
+// charcoal grill cart, in a bottle-cap stamp with a khăn rằn rim. Pure SVG strings (no DOM, no text), so the menu, the
+// favicon and the app icons (scripts/make-icons.js) all draw the same picture.
 
 const P = {
   skin: '#f2c6a0', skinShade: '#d99e78', hair: '#e9e4dc', hairShade: '#b9b1a6', ink: '#3a2a26',
-  shirt: '#3e4c7c', shirtDark: '#2b365c', red: '#c8372d', redLight: '#e85c43', redDark: '#7e1f1a',
-  cream: '#f7ead2', gold: '#ffd23f', ember: '#ff8a3a',
+  shirt: '#3e4c7c', shirtDark: '#2b365c', rim: '#7e1f1a', field: '#f3b25e', glow: '#ffd27a',
 };
 
 /** Bà Năm, head and shoulders, centred on x 100; her shoulders end around y 180. */
@@ -23,7 +22,7 @@ function grandma(id) {
   <path d="M100 65 C95 70 89 75 81 80 M100 65 C105 70 111 75 119 80" fill="none" stroke="${P.hairShade}" stroke-width="1.6" stroke-linecap="round"/>
   <circle cx="100" cy="57" r="13" fill="${P.hair}"/>
   <path d="M90 55 q10 -9 20 0 M92 61 q8 -5 16 0" fill="none" stroke="${P.hairShade}" stroke-width="1.6" stroke-linecap="round"/>
-  <path d="M91 51 L116 60" stroke="#8a5a2b" stroke-width="2.8" stroke-linecap="round"/><circle cx="117" cy="60.4" r="2.6" fill="${P.red}"/>
+  <path d="M91 51 L116 60" stroke="#8a5a2b" stroke-width="2.8" stroke-linecap="round"/><circle cx="117" cy="60.4" r="2.6" fill="#c8372d"/>
   <path d="M82 86 q6 -4 12 -1 M106 85 q6 -3 12 1" fill="none" stroke="#a89e95" stroke-width="2.6" stroke-linecap="round"/>
   <circle cx="89" cy="97" r="9.5" fill="#ffffff" fill-opacity=".22" stroke="${P.ink}" stroke-width="2.6"/>
   <circle cx="111" cy="97" r="9.5" fill="#ffffff" fill-opacity=".22" stroke="${P.ink}" stroke-width="2.6"/>
@@ -34,80 +33,77 @@ function grandma(id) {
   <path d="M91 113 q9 8 18 0" fill="none" stroke="#8a3a2a" stroke-width="2.6" stroke-linecap="round"/>`;
 }
 
-/** The cart in front of her: grill with food and embers, red body, wheels. `text`: "BÀ NĂM" on the cart. */
-function cart(text) {
+/** A spoked cart wheel at (cx, cy). */
+function wheel(cx, cy) {
+  const spokes = Array.from({ length: 8 }, (_, i) => {
+    const a = (Math.PI * i) / 8;
+    const dx = (Math.cos(a) * 10).toFixed(1), dy = (Math.sin(a) * 10).toFixed(1);
+    return `M${cx - dx} ${cy - dy} L${cx + +dx} ${cy + +dy}`;
+  }).join(' ');
+  return `<circle cx="${cx}" cy="${cy}" r="13" fill="#1f1612"/><circle cx="${cx}" cy="${cy}" r="10.4" fill="#3a2e28" stroke="#b9bec3" stroke-width="1.8"/>
+  <path d="${spokes}" stroke="#c9ced2" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="2.8" fill="#d9dde0" stroke="#6d6a66" stroke-width="1"/>`;
+}
+
+/** The charcoal grill cart in front of her: grate with skewers, corn and shrimp over embers, red body, spoked wheels. */
+function cart(id) {
+  const vents = [0, 1, 2, 3, 4, 5, 6].map((i) => `<rect x="${52 + i * 14}" y="152.6" width="8" height="2.8" rx="1.4" fill="url(#${id}-vent)"/>`).join('');
+  const grate = Array.from({ length: 15 }, (_, i) => `M${46 + i * 7.6} 141.5 L${44 + i * 7.9} 148.5`).join(' ');
   return `
-  <path d="M50 132 c-6 -9 5 -14 0 -24 M150 132 c-6 -9 5 -14 0 -24" fill="none" stroke="#fff6e8" stroke-width="3" stroke-linecap="round" opacity=".45"/>
-  <rect x="58" y="140" width="22" height="10" rx="5" fill="#f5c518"/><path d="M62 142v6M67 142v6M72 142v6M77 142v6" stroke="#d9a400" stroke-width="1.2"/>
-  <path d="M89 150 c2 -14 18 -14 18 -3" fill="none" stroke="#ff7b54" stroke-width="7" stroke-linecap="round"/>
-  <path d="M112 148 l30 -9" stroke="#8a5a2b" stroke-width="2.2" stroke-linecap="round"/>
-  <rect x="116" y="138" width="9" height="9" rx="3" transform="rotate(-17 120 142)" fill="#a8402c"/><rect x="128" y="134.5" width="9" height="9" rx="3" transform="rotate(-17 132 139)" fill="#3c9a3a"/>
-  <rect x="40" y="149" width="120" height="11" rx="4" fill="#2a1c18"/>
-  <path d="M46 154.5h108" stroke="${P.ember}" stroke-width="2.6" stroke-dasharray="8 4" stroke-linecap="round"/>
-  <rect x="34" y="160" width="132" height="28" rx="7" fill="${P.red}"/>
-  <rect x="34" y="160" width="132" height="8" rx="4" fill="${P.redLight}"/>
-  <path d="M166 168 h14" stroke="#7a4a2a" stroke-width="5" stroke-linecap="round"/>
-  ${text ? `<text x="100" y="183" text-anchor="middle" font-family="'Baloo 2', system-ui, sans-serif" font-weight="800" font-size="15" letter-spacing="1" fill="${P.gold}">BÀ NĂM</text>` : `<rect x="78" y="174" width="44" height="6" rx="3" fill="${P.gold}" opacity=".85"/>`}
-  <circle cx="62" cy="190" r="11" fill="#2a1c18"/><circle cx="62" cy="190" r="4" fill="#c9b08e"/>
-  <circle cx="138" cy="190" r="11" fill="#2a1c18"/><circle cx="138" cy="190" r="4" fill="#c9b08e"/>`;
+  <ellipse cx="100" cy="205" rx="66" ry="4.5" fill="#000" opacity=".22"/>
+  <path d="M50 134 c-7 -8 5 -14 -1 -24 c-4 -7 3 -11 0 -16 M150 134 c-7 -8 5 -14 -1 -24 c-4 -7 3 -11 0 -16" fill="none" stroke="url(#${id}-smoke)" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M38 150 L46 140 L154 140 L162 150 Z" fill="#2b2522"/>
+  <path d="M46 141.5 L154 141.5 L159 148.5 L41 148.5 Z" fill="url(#${id}-coal)"/>
+  <path d="${grate}" stroke="#4a403a" stroke-width="1"/>
+  <path d="M43 145 H157" stroke="#4a403a" stroke-width="1"/>
+  <path d="M52 149 L86 135" stroke="#c9a46a" stroke-width="1.8" stroke-linecap="round"/>
+  <g fill="#9c3b22"><rect x="57" y="139.5" width="9" height="8.5" rx="2.6" transform="rotate(-22 61.5 143.7)"/><rect x="66" y="136" width="9" height="8.5" rx="2.6" transform="rotate(-22 70.5 140.2)"/><rect x="75" y="132.5" width="9" height="8.5" rx="2.6" transform="rotate(-22 79.5 136.7)"/></g>
+  <path d="M59 143 l5 -2 M68 139.5 l5 -2 M77 136 l5 -2" stroke="#3a1a10" stroke-width="1.3"/>
+  <path d="M88 147 c-2 -9 9 -12 12 -4 M101 142 c-2 -9 9 -12 12 -4" fill="none" stroke="#ff7b54" stroke-width="7" stroke-linecap="round"/>
+  <path d="M88 147 c-2 -9 9 -12 12 -4 M101 142 c-2 -9 9 -12 12 -4" fill="none" stroke="#ffd1b8" stroke-width="1.4" stroke-dasharray="2 3" stroke-linecap="round"/>
+  <rect x="119" y="129" width="32" height="13" rx="6.5" transform="rotate(-8 135 135.5)" fill="#f2bf2a"/>
+  <path d="M125 129.6 l1.4 12 M132 128.6 l1.4 12 M139 127.6 l1.4 12 M146 126.6 l1.4 12" stroke="#8a5a1a" stroke-width="1.8" opacity=".75" transform="rotate(-8 135 135.5)"/>
+  <path d="M151 132 l8 -2.5" stroke="#7cb342" stroke-width="3.4" stroke-linecap="round"/>
+  <rect x="38" y="150" width="124" height="8" fill="#3a332f"/>${vents}
+  <rect x="36" y="157.5" width="128" height="3.2" rx="1.6" fill="#c9ced2"/>
+  <rect x="38" y="160" width="124" height="26" fill="url(#${id}-body)"/>
+  <rect x="44" y="164" width="54" height="17" rx="2" fill="none" stroke="#7e1f1a" stroke-width="1.4" opacity=".7"/>
+  <rect x="102" y="164" width="54" height="17" rx="2" fill="none" stroke="#7e1f1a" stroke-width="1.4" opacity=".7"/>
+  <g fill="#e9c4a0" opacity=".9"><circle cx="41" cy="163" r="1.2"/><circle cx="159" cy="163" r="1.2"/><circle cx="41" cy="183" r="1.2"/><circle cx="159" cy="183" r="1.2"/></g>
+  <rect x="36" y="185.5" width="128" height="3.2" rx="1.6" fill="#9ea4a8"/>
+  <path d="M162 165 L178 158 L184 158" fill="none" stroke="#9ea4a8" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M180 158 h7" stroke="#2a1c18" stroke-width="5" stroke-linecap="round"/>
+  <path d="M60 188 v4 M140 188 v4" stroke="#6d6a66" stroke-width="3"/>
+  ${wheel(60, 192)}${wheel(140, 192)}
+  <g transform="rotate(-16 27 170)"><path d="M27 182 v14" stroke="#8a5a2b" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="27" cy="170" r="13" fill="#ddbf84" stroke="#9a763e" stroke-width="2"/>
+  <circle cx="27" cy="170" r="8.6" fill="none" stroke="#b8945a" stroke-width="1"/><circle cx="27" cy="170" r="4.4" fill="none" stroke="#b8945a" stroke-width="1"/>
+  <path d="M14.5 170 H39.5 M27 157.5 V182.5 M18.2 161.2 L35.8 178.8 M35.8 161.2 L18.2 178.8" stroke="#b8945a" stroke-width=".8"/></g>`;
 }
 
-/** A string of bulbs on an arc from (x0, y) to (x1, y), sagging by `sag`. */
-function bulbs(x0, x1, y, sag, n = 9) {
-  const pts = Array.from({ length: n }, (_, i) => {
-    const t = (i + 0.5) / n;
-    return [x0 + (x1 - x0) * t, y + 4 * sag * t * (1 - t) + 4];
-  });
-  const cols = ['#ffd27a', '#ff9a5a', '#fff1c9'];
-  return `<path d="M${x0} ${y} Q${(x0 + x1) / 2} ${y + 2 * sag} ${x1} ${y}" fill="none" stroke="#2a1a14" stroke-width="1.6"/>` +
-    pts.map(([x, yy], i) => `<circle cx="${x.toFixed(1)}" cy="${yy.toFixed(1)}" r="3.6" fill="${cols[i % 3]}"/>`).join('');
-}
-
-const defs = (id, extra = '') => `<defs>
+const defs = (id) => `<defs>
   <pattern id="${id}-check" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#f4efe6"/><rect width="3" height="3" fill="#2a2a2a"/><rect x="3" y="3" width="3" height="3" fill="#2a2a2a"/></pattern>
-  <clipPath id="${id}-in"><circle cx="100" cy="100" r="84"/></clipPath>${extra}</defs>`;
+  <clipPath id="${id}-in"><circle cx="100" cy="100" r="80"/></clipPath>
+  <linearGradient id="${id}-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9452f"/><stop offset=".55" stop-color="#bb3326"/><stop offset="1" stop-color="#8e251c"/></linearGradient>
+  <linearGradient id="${id}-coal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".5" stop-color="#ff6a1f"/><stop offset="1" stop-color="#7a1c08"/></linearGradient>
+  <radialGradient id="${id}-vent" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#ffcf6a"/><stop offset="1" stop-color="#d9480f"/></radialGradient>
+  <linearGradient id="${id}-smoke" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff6e8" stop-opacity=".7"/><stop offset="1" stop-color="#fff6e8" stop-opacity="0"/></linearGradient>
+</defs>`;
 
-const scallop = (r, n, depth) => {
+/** A bottle-cap edge of `n` teeth around (100, 100). */
+function scallop(r, n, depth) {
   let d = '';
   for (let i = 0; i <= n * 2; i++) {
     const a = (Math.PI * i) / n - Math.PI / 2;
     const rr = i % 2 ? r - depth : r;
     d += `${i ? 'L' : 'M'}${(100 + rr * Math.cos(a)).toFixed(1)} ${(100 + rr * Math.sin(a)).toFixed(1)} `;
   }
-  return d + 'Z';
-};
+  return `${d}Z`;
+}
 
-/** Styles 1..5 (the #93 variants). */
-export function badgeSvg(style = 1, { text = true } = {}) {
-  const id = `bn${style}`;
-  const figure = grandma(id);
-  const front = cart(text);
-  let body;
-  switch (style) {
-    case 2: // dusk in the alley: sunset sky, string lights behind her, dark red ring
-      body = defs(id, `<linearGradient id="${id}-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a1d3c"/><stop offset=".6" stop-color="#a8473a"/><stop offset="1" stop-color="#f08a4a"/></linearGradient>`) +
-        `<circle cx="100" cy="100" r="94" fill="${P.redDark}"/><circle cx="100" cy="100" r="88" fill="none" stroke="${P.gold}" stroke-width="1.6"/>` +
-        `<g clip-path="url(#${id}-in)"><rect width="200" height="200" fill="url(#${id}-sky)"/><path d="M16 120 h30 v-34 h22 v34 M132 120 v-44 h26 v18 h26 v26" fill="#2a1626" opacity=".55"/>${bulbs(14, 186, 40, 22)}${figure}</g>` + front;
-      break;
-    case 3: // a ring of lettering around her
-      body = defs(id, `<path id="${id}-top" d="M24 100 a76 76 0 0 1 152 0"/><path id="${id}-bot" d="M14 100 a86 86 0 0 0 172 0"/>`) +
-        `<circle cx="100" cy="100" r="96" fill="${P.redDark}"/><circle cx="100" cy="100" r="70" fill="${P.cream}"/>` +
-        (text ? `<text font-family="'Baloo 2', system-ui, sans-serif" font-weight="800" font-size="15" letter-spacing="2.6" fill="${P.cream}"><textPath href="#${id}-top" startOffset="50%" text-anchor="middle">BÀ NĂM’S GRILL</textPath></text>` +
-          `<text font-family="'Baloo 2', system-ui, sans-serif" font-weight="700" font-size="13" letter-spacing="2" fill="${P.gold}"><textPath href="#${id}-bot" startOffset="50%" text-anchor="middle">★ HẺM SÀI GÒN ★</textPath></text>` : '') +
-        `<g transform="translate(100 100) scale(.7) translate(-100 -112)"><g clip-path="url(#${id}-in)">${figure}</g>${front}</g>`;
-      break;
-    case 4: // a bottle-cap stamp, khăn rằn checks in the rim
-      body = defs(id) + `<path d="${scallop(96, 28, 5)}" fill="${P.redDark}"/><circle cx="100" cy="100" r="86" fill="url(#${id}-check)" opacity=".9"/>` +
-        `<circle cx="100" cy="100" r="80" fill="#f3b25e"/><g clip-path="url(#${id}-in)"><circle cx="100" cy="64" r="56" fill="#ffd27a" opacity=".55"/>${figure}</g>` + front;
-      break;
-    case 5: // flat two-tone: reads at 32 px
-      body = defs(id) + `<circle cx="100" cy="100" r="94" fill="${P.redDark}"/><circle cx="100" cy="100" r="84" fill="${P.cream}"/>` +
-        `<g clip-path="url(#${id}-in)">${figure.replace(/fill="url\([^)]*check\)"/g, `fill="${P.red}"`)}</g>` + front.replace(/<path d="M50 132[^>]*\/>/, '');
-      break;
-    default: // 1: cream stamp, double ring, the cart breaks out of the frame
-      body = defs(id, `<radialGradient id="${id}-bg" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#fff6e3"/><stop offset="1" stop-color="#ecd3a8"/></radialGradient>`) +
-        `<circle cx="100" cy="100" r="94" fill="${P.redDark}"/><circle cx="100" cy="100" r="86" fill="url(#${id}-bg)"/><circle cx="100" cy="100" r="80" fill="none" stroke="${P.redDark}" stroke-width="1.4" stroke-dasharray="4 3"/>` +
-        `<g clip-path="url(#${id}-in)">${bulbs(18, 182, 46, 16)}${figure}</g>` + front;
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 208 212" role="img" aria-hidden="true">${body}</svg>`;
+/** The badge as an SVG string. `id` keeps gradient ids unique when several badges share a page. */
+export function badgeSvg({ id = 'bn' } = {}) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 208 216" role="img" aria-hidden="true">${defs(id)}
+  <path d="${scallop(96, 28, 5)}" fill="${P.rim}"/><circle cx="100" cy="100" r="86" fill="url(#${id}-check)" opacity=".9"/>
+  <circle cx="100" cy="100" r="80" fill="${P.field}"/>
+  <g clip-path="url(#${id}-in)"><circle cx="100" cy="64" r="56" fill="${P.glow}" opacity=".55"/>${grandma(id)}</g>${cart(id)}</svg>`;
 }

@@ -1,4 +1,4 @@
-# Grill Shuffle — agent notes
+# Bà Năm’s Grill (repo: grill-shuffle) — agent notes
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first, and [docs/STORY.md](docs/STORY.md) for anything the player sees. Process: [CONTRIBUTING.md](CONTRIBUTING.md).
 
