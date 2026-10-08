@@ -21,7 +21,7 @@ export default defineConfig({
   appType: 'spa',
   plugins: [sandboxRoutes],
   server: {
-    port: 5188, // 5173, 5180 and 8787 are taken by other local projects on the dev machine
+    port: 5188, // away from the common 5173 / 8787 that other local projects tend to use
     host: true,
     fs: { allow: ['..'] },
     // the Worker API (npm run preview / wrangler dev on 8797, GS_API_PORT overrides) when it is running; the game

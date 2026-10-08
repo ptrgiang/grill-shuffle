@@ -128,7 +128,7 @@ voice-led storytime animation:
 9. Characters are **drawn in code** in the game (small, offline, consistent with the procedural foods). AI-generated
    frames only for key art and trailers, never needed at runtime.
 
-huashu-art-motion's `render.py` launches Playwright directly: never run it on this machine (see `CLAUDE.md`, browser
+huashu-art-motion's `render.py` launches Playwright directly: never run it on the dev machine (see `CLAUDE.md`, browser
 rule). We take its ideas and parameters, not its pipeline.
 
 ## Cultural detail

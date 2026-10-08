@@ -31,8 +31,8 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
   directly: on Windows a fresh Chromium profile signs in with an empty password ~40 s after start, and repeated
   failures lock the user's account. The launcher prevents that and checks the failed sign-in counter.
   `GS_NO_BROWSER=1` disables all browsers. If `gs-chrome.blocked` appears, read it: it lists the browsers that were up
-  as OURS / FOREIGN. Other automation on this machine (facebook-studio's Playwright, threads-topic) fails the
-  blank-password check several times a day; a FOREIGN-only block is not ours (issue #55), tell the user before deleting it.
+  as OURS / FOREIGN. Other automation on the same machine can fail the blank-password check too; a FOREIGN-only block
+  is not ours (issue #55): tell the user before deleting it.
 - Workflow per task: inspect → find the owning subsystem → smallest coherent change → tests → sim/solver tests →
   validate levels → look at the change (`/sandbox/*`, `npm run shot`) → mobile input if touched → docs.
 
@@ -43,10 +43,10 @@ merging deploys to https://grillshuffle.thebuilder.work through CI.
   Do not run huashu-art-motion's `render.py` here (it launches Playwright directly).
 - UI changes: **5 variants in the issue first** (label `design/variants`), owner picks, then the PR (`CONTRIBUTING.md` step 0).
 
-## This machine (Windows)
+## Windows dev machine
 
 - Git Bash rewrites arguments that start with `/` into Windows paths: prefix such commands with `MSYS_NO_PATHCONV=1`
   (e.g. `npm run shot -- /play/street-001`).
-- Ports 5173 and 5180 (pianory) and 8787 (facebook-studio's shopee proxy, restarts itself) belong to other local
-  projects. This repo defaults to Vite on 5188 and wrangler dev on 8797 (`GS_API_PORT` overrides the Vite `/api` target).
+- This repo defaults to Vite on 5188 and wrangler dev on 8797, away from the common 5173 / 8787 that other local
+  projects use (`GS_API_PORT` overrides the Vite `/api` target).
 - Deploys normally go through CI. A manual `npx wrangler deploy` works too (wrangler is logged in).

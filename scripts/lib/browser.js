@@ -13,8 +13,8 @@
 //   - runs a sentinel while the browser is up (Windows): the counter is machine-wide, so when it rises the sentinel
 //     snapshots every Chrome / Edge started since launch, marks ours (by profile dir) and names the parent of the
 //     others. BLOCK_FILE carries that snapshot, so a person can tell our browser from another program's automation.
-//     (Issue #55: on this machine other scheduled automation fails the blank-password check several times a day; a
-//     pair of those landed during an e2e run and the launcher blamed itself. The seed was verified to work: Chrome 153
+//     (Issue #55: other automation on the same machine can fail the blank-password check too; a pair of those
+//     landed during an e2e run and the launcher blamed itself. The seed was verified to work: Chrome 153
 //     reads it ~15 s after start, skips LogonUser, and rewrites os_password_last_changed with the real value.)
 //   - touches no credentials (fresh empty profile, password manager / sync / NTLM all off);
 //   - is always headless, muted, software-rendered (SwiftShader), one browser per machine (lock file), killed by a
