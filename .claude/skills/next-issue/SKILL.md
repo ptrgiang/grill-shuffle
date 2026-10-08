@@ -34,6 +34,15 @@ Read the whole issue (scope + acceptance), the docs it names, and the code it li
 PR, split it: comment the split on the issue, create the follow-up issue(s), add them to the roadmap #35, and do the
 first part only. If something in the issue is ambiguous enough to change the design, ask the user before building.
 
+## 3b. UI changes: 5 variants in the issue first
+
+If the issue is labelled `design/variants` or will change what the player sees (screens, HUD, story beats, map,
+theme look): before the real implementation, build **5 variants** behind `?variant=1..5` (one switch,
+`client/ui/variant.js` once #79 ships), capture them through the safe launcher (`npm run variant-shots -- --issue <n>
+--pages ...`, or `npm run shot` + images pushed to the `pr-shots` branch until #79 ships), post them as one issue
+comment, and STOP: report the link and wait for the owner's number. After the pick, remove the other variants and the
+switch, then continue with step 4. Story work: read `docs/STORY.md` first.
+
 ## 4. Implement + verify
 
 - Smallest coherent change; tests next to it (sim/solver/worker/client as relevant).

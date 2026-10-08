@@ -64,7 +64,11 @@ link, the unlock and its theme. `?fixtures=1` on the dev server adds a third tes
    mean raising the levels after it.
 5. **Street BBQ 1–50 are legacy** (`"curveFrom": 51` in its `pack.json`: they predate rule 4 and keep their
    shipped order; the pack is full).
-6. **Packs unlock in order** (see Unlocks); the level select shows one tab per pack (`/levels/<slug>`).
+6. **Packs unlock in order** (see Unlocks). The level select shows one tab per pack (`/levels/<slug>`) **until the
+   journey map (#84) ships**: owner, 2026-10-08, the tabs may be replaced by one continuous road through all packs
+   (the story, `docs/STORY.md`), chosen from 5 variants. `/levels/<slug>` and `/<pack-slug>/<n>` keep working.
+7. **Story beats never change levels.** Beats (`content/story/`, #80) attach to existing level ids; they never add,
+   reorder or edit a level and never count for difficulty.
 
 Editing a level keeps players' stars (progress is per level id). A challenge link to it opens the edited board, so
 its stored best moves / player counts may mix the old and new board.

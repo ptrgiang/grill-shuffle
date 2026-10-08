@@ -1,5 +1,11 @@
 # Contributing: issue → branch → PR → review → merge → deploy
 
+0. **Design (UI changes).** Anything that changes what the player sees starts with **5 visual variants in its
+   issue** (label `design/variants`, owner decision 2026-10-08): prototypes behind `?variant=1..5`, captured through
+   the safe launcher (`npm run variant-shots`, #79; until then `npm run shot` + images on the `pr-shots` branch), posted
+   as one issue comment. The owner replies with a number; only then the PR is built, with the pick only (the other
+   variants and the `?variant` switch are removed) and the usual before / after pr-shots. Variants live in the issue,
+   not the PR: the decision is recorded where the work is planned and the PR stays one change.
 1. **Issue.** Pick with `npm run next-issue` (roadmap #35 order, skips claimed/blocked issues), then claim it
    (`status/in-progress` + assignee). Every change starts from an issue (templates: feature, bug). It states the problem, scope and
    acceptance criteria, and names its branch. Labels: `area/*`, `priority/*`; milestone = the plan step.
