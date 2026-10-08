@@ -41,7 +41,7 @@ the story star total reaches its theme's `unlock.stars`; once one of its levels 
 levels or a raised requirement never lock a player out). Inside a pack levels open one by one (previous level won).
 Only story stars count, not dailies or challenges. The level select groups by pack: a locked pack shows its theme
 swatch and what it needs ("Finish Street BBQ and earn ★ 75"), its levels are not links. The level select has one
-**tab per pack** (`/levels/<slug>`, swatch, name, stars or the requirement); plain `/levels` opens the tab of the
+**tab per pack** (`/levels/<slug>`, the theme's icon, name, stars or the requirement); plain `/levels` opens the tab of the
 pack "Continue" is in. A deep link into a locked pack lands on that pack's tab with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
 (the result screen offers "Levels" instead). The menu wears the theme of the level "Continue" opens.
 
@@ -222,6 +222,7 @@ the reference.
 | `backdrop` | `preset` (`bokeh` sprites at the far edge, or `none`), `colors`, `count`, `opacity`, `size`, `height` | `Stage.setTheme` |
 | `ambience` | `preset` (`grill`), `hiss`, `rumble`, `crackle` (pops / s), `seed` | `synth.ambienceLoop`, `Audio.setAmbience` |
 | `unlock` | `{ "stars": N }`: story stars needed to open the pack (after the previous pack, see Unlocks) | `game/unlock.js` |
+| icon (`<id>.svg`) | separate file next to the theme: the theme's own picture (Street BBQ: grill under string lights; Beach Grill: beach umbrella, sun and waves). One `<svg>`, `viewBox="0 0 48 48"`, drawn on its own tile, readable at 30 px; no scripts, handlers, links or images; ≤ 8 KB (`validateThemeIcon`). Required for every theme a pack uses | level select tab |
 
 The game applies the theme of the level being played (and of the menu's demo board): `Stage.setTheme` recolours the
 lights, background, table, the shared grill materials and the backdrop in place, and the ambience loop is rebuilt for

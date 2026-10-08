@@ -13,7 +13,7 @@ import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, packSlug } from './game/routes.js';
-import { PACKS, STORY, SHARE, THEMES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
@@ -343,6 +343,7 @@ function showLevels(slug) {
       : h('div.level-card.locked', h('span.num', String(n)), iconEl('lock'));
   };
   const swatch = (p) => {
+    if (THEME_ICONS[p.theme]) return h('span.pack-swatch.pack-icon', { 'aria-hidden': 'true', html: THEME_ICONS[p.theme] });
     const t = resolveTheme(THEMES[p.theme] ?? {});
     return h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
   };

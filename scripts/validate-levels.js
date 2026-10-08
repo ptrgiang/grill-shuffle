@@ -12,10 +12,10 @@
 //                  With --base / GS_CONTENT_BASE set (CI), an unreadable base is an error; locally it is skipped.
 import { basename, join, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
 import { validateLevel, cellFood, usedModifiers } from '../shared/levels.js';
-import { validateTheme } from '../shared/themes.js';
+import { validateTheme, validateThemeIcon } from '../shared/themes.js';
 import { solveLevel } from '../solver/solver.js';
 import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
@@ -65,6 +65,8 @@ for (const t of Object.values(themes)) {
   const { file, ...theme } = t;
   if (!THEMES.includes(t.id)) errors.push(`${file}: unknown theme id ${t.id}`);
   for (const e of validateTheme(theme)) errors.push(`${file}: ${e}`);
+  const icon = file.replace(/\.json$/, '.svg');
+  if (existsSync(icon)) for (const e of validateThemeIcon(readFileSync(icon, 'utf8'))) errors.push(`${icon}: ${e}`);
 }
 
 /** Every food a level can show: slots and stacked layers. */
@@ -81,6 +83,7 @@ for (const { pack, packFile, levels } of loadPacks()) {
   slugs.set(slug, pack.id);
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
   else if (pack.theme && !themes[pack.theme]) errors.push(`${packFile}: theme ${pack.theme} has no content/themes/${pack.theme}.json`);
+  else if (pack.theme && !existsSync(themes[pack.theme].file.replace(/\.json$/, '.svg'))) errors.push(`${packFile}: theme ${pack.theme} needs an icon, content/themes/${pack.theme}.svg (level select tab)`);
   const basePack = atBase(packFile);
   errors.push(...checkPackSize(pack.id, pack.levels));
   errors.push(...checkAppendOnly(pack.id, basePack?.levels ?? null, pack.levels));
