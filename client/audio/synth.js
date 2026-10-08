@@ -199,21 +199,24 @@ export function buttonSound(sr) {
   return normalize(note(sr, 660, 0.07, { bright: 0.15, decay: 0.02 }), 0.4);
 }
 
-/** Seamless grill ambience: steady low hiss, slow crackle, warm rumble. */
-export function ambienceLoop(sr, dur = 6, seed = 21) {
+/**
+ * Seamless grill ambience: steady high hiss, slow crackle, warm rumble. Params come from the theme's `ambience`
+ * (hiss level, rumble level, crackle pops per second, noise seed); the defaults are Street BBQ.
+ */
+export function ambienceLoop(sr, { hiss = 0.14, rumble: rumbleLevel = 2.2, crackle = 7, seed = 21 } = {}, dur = 6) {
   const rng = mulberry32(seed);
   const n = Math.floor(sr * dur);
   const a = new Float32Array(n);
   for (let i = 0; i < n; i++) a[i] = rng() * 2 - 1;
   highpass(a, sr, 3000);
   lowpass(a, sr, 8000);
-  for (let i = 0; i < n; i++) a[i] *= 0.14 * (0.8 + 0.2 * Math.sin((TAU * i) / n * 3));
+  for (let i = 0; i < n; i++) a[i] *= hiss * (0.8 + 0.2 * Math.sin((TAU * i) / n * 3));
   const rumble = new Float32Array(n);
   for (let i = 0; i < n; i++) rumble[i] = rng() * 2 - 1;
   lowpass(rumble, sr, 120);
   lowpass(rumble, sr, 120);
-  for (let i = 0; i < n; i++) a[i] += rumble[i] * 2.2;
-  const pops = Math.floor(dur * 7);
+  for (let i = 0; i < n; i++) a[i] += rumble[i] * rumbleLevel;
+  const pops = Math.floor(dur * crackle);
   for (let k = 0; k < pops; k++) {
     const at = Math.floor(rng() * n);
     const amp = 0.15 + rng() * 0.45;
@@ -244,5 +247,5 @@ export const SOUNDS = {
   complete: (sr) => completeSound(sr),
   fail: (sr) => failSound(sr),
   button: (sr) => buttonSound(sr),
-  ambience: (sr) => ambienceLoop(sr),
+  ambience: (sr, params) => ambienceLoop(sr, params ?? undefined),
 };

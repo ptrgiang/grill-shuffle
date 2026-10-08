@@ -137,3 +137,18 @@ test('audio: no Web Audio support is a silent no-op', () => {
   audio.onEvent({ type: 'select' });
   assert.equal(audio.ctx, null);
 });
+
+test('audio: a theme ambience swaps the running loop (built in an idle slice), same params keep it', () => {
+  const { audio, drain } = setup();
+  audio.unlock();
+  drain();
+  const first = audio.ambSrc;
+  audio.setAmbience({ hiss: 0.08, rumble: 1.2, crackle: 2, seed: 7 });
+  assert.equal(audio.ambSrc, null, 'old loop stopped');
+  drain();
+  assert.ok(audio.ambSrc && audio.ambSrc !== first, 'new loop running');
+  assert.equal(audio.ambSrc.buffer, audio.buffers.get('ambience:{"hiss":0.08,"rumble":1.2,"crackle":2,"seed":7}'));
+  const second = audio.ambSrc;
+  audio.setAmbience({ hiss: 0.08, rumble: 1.2, crackle: 2, seed: 7 });
+  assert.equal(audio.ambSrc, second, 'unchanged params: no swap');
+});

@@ -29,6 +29,7 @@ shared/        pure, deterministic puzzle engine (no DOM, no three.js, no Math.r
   foods.js       food catalog (id, one-char code, name, colour hint, category)
   rules.js       data-driven rules: matchers (same_food, category), matchSize, grill types (grill, tray)
   levels.js      level format + structural validator
+  themes.js      theme format: defaults (Street BBQ's look), resolveTheme (partial file -> full), validateTheme
   state.js       createState / cloneState / serializeState / deserializeState
   moves.js       move model, legality, getLegalMoves (full and solver-unique), compact action strings
   match.js       findMatches (pure)
@@ -59,7 +60,7 @@ client/        browser game (Vite root)
                  routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /street-bbq/12, n = position
                  inside the pack; slug = pack.json `slug` or the id with dashes; old /level/<n> means Street BBQ),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
-  render/        stage.js (renderer, camera, lights, backdrop, quality tier, rAF loop), quality.js (pure: tiers,
+  render/        stage.js (renderer, camera, lights, backdrop, theme, quality tier, rAF loop), quality.js (pure: tiers,
                  frame monitor, idle gate), layout.js (pure board layout + hit test),
                  board.js (BoardView: state + events -> animation), grill.js, foods.js, materials.js,
                  particles.js, textures.js, icons.js
@@ -70,8 +71,8 @@ client/        browser game (Vite root)
                  update.js (registers the service worker in production builds, "new version" bar)
   public/        fonts/ (self-hosted Fredoka, OFL), favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
                  "Grill Shuffle"; regenerate the PNGs with node scripts/make-icons.js after a logo change)
-  sandbox/       /sandbox/food, /sandbox/board
-content/       levels/<pack>/*.json + pack.json, themes/*.json
+  sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes)
+content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md)
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema
 scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, visual (+ visual-accept), build-content, build-sw, make-icons, lib/browser.js

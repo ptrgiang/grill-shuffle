@@ -1,11 +1,13 @@
 // /sandbox/board - any level on the real renderer with real input, plus the solver's view of it.
 //   ?level=street-004   ?code=G1N...   ?anim=0 (snap, for deterministic screenshots)   ?auto=1 (play the solution)
+//   ?theme=test_mint (any content theme or test fixture instead of the level's own)
 import { Stage } from '../render/stage.js';
 import { BoardView } from '../render/board.js';
 import { Input } from '../game/input.js';
 import { Session } from '../game/session.js';
 import { Audio } from '../audio/audio.js';
 import { STORY, getLevel, themeFor } from '../game/content.js';
+import { themeFromUrl } from './themes.js';
 import { solveLevel } from '../../solver/solver.js';
 import { puzzleForCode } from '../../solver/presets.js';
 import { encodeGenerated } from '../../shared/challenge.js';
@@ -17,7 +19,8 @@ const $ = (id) => document.getElementById(id);
 let animations = params.get('anim') !== '0';
 
 const audio = new Audio();
-const stage = new Stage($('stage'), { theme: themeFor(null), preserveDrawingBuffer: true });
+const forcedTheme = themeFromUrl(params);
+const stage = new Stage($('stage'), { theme: forcedTheme ?? themeFor(null), preserveDrawingBuffer: true });
 const view = new BoardView(stage, { animations, onFx: (ev, at) => fx(ev, at) });
 let session = null;
 let level = null;
@@ -48,6 +51,7 @@ function doMove(move, dropped = false) {
 
 function load(lvl) {
   level = lvl;
+  stage.setTheme(forcedTheme ?? themeFor(lvl));
   session = new Session(level);
   view.setState(session.state);
   solutionStep = 0;

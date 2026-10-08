@@ -39,6 +39,13 @@ const canvas = document.getElementById('stage');
 const audio = new Audio();
 audio.attach(document, window); // unlock on any gesture; fade + suspend while the page is hidden
 const stage = new Stage(canvas, { theme: themeFor(null) });
+
+/** Look and sound of a theme (content/themes/*.json): the stage re-skins itself, the ambience loop follows. */
+function useTheme(theme) {
+  stage.setTheme(theme);
+  audio.setAmbience(stage.theme.ambience);
+}
+useTheme(themeFor(null));
 const fxLayer = h('div.fx-layer');
 document.getElementById('app').append(fxLayer);
 
@@ -195,6 +202,7 @@ function showMenu() {
   app.hud = null;
   // an idle board behind the menu, as a live preview
   const demo = getLevel(STORY[2] ?? STORY[0]);
+  useTheme(themeFor(demo));
   const stars = totalStars(app.progress);
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
@@ -371,6 +379,7 @@ function startLevel(level, { mode, code = null }) {
   const m = Number(new URLSearchParams(location.search).get('m'));
   app.target = Number.isFinite(m) && m > 0 ? m : null;
   app.session = new Session(level);
+  useTheme(themeFor(level));
   if (mode === 'story') db.set('current', level.id);
   app.hud = new Hud(level);
   screen(app.hud.el);

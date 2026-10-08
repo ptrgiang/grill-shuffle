@@ -121,6 +121,30 @@ export function materials() {
   return shared;
 }
 
+/**
+ * Re-skin the shared materials for a theme (shared/themes.js resolveTheme shape): grill / tray / table colours and
+ * the wood and ember textures. Grill views share these materials, so a theme switch needs no rebuild.
+ */
+export function applyMaterialTheme({ grill, table }) {
+  const m = materials();
+  m.grillBody.color.set(grill.body);
+  m.grate.color.set(grill.grate);
+  m.grate.emissive.set(grill.grateGlow);
+  m.handle.color.set(grill.handle);
+  m.lid.color.set(grill.lid);
+  m.chain.color.set(grill.chain);
+  m.layerPlate.color.set(grill.layerPlate);
+  m.tray.color.set(grill.tray);
+  m.trayRim.color.set(grill.trayRim);
+  m.table.color.set(table.color);
+  const wood = woodPlanks(table);
+  wood.repeat.set(5, 5); // the table plane is big; trays share the texture (and its repeat)
+  m.table.map = m.tray.map = wood;
+  const coals = embers(grill.ember);
+  m.emberHot.uniforms.uMap.value = m.emberCold.uniforms.uMap.value = coals;
+  return m;
+}
+
 /** Ember shader detail (quality tier): 1 = two drifting layers + flicker, 0 = one still layer. */
 export function setEmberDetail(level) {
   const m = materials();

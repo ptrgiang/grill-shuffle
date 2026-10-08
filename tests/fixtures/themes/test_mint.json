@@ -1,0 +1,20 @@
+{
+  "id": "test_mint",
+  "name": "Test Mint",
+  "description": "Dummy theme for tests and sandboxes (?theme=test_mint): proves a theme is data only. Never shipped in a pack.",
+  "foods": ["shrimp", "corn", "pepper", "mushroom"],
+  "mechanics": ["prep_tray"],
+  "palette": { "background": "#0f2a2e", "vignette": "#031012" },
+  "lights": { "sky": "#d8fff4", "ground": "#1a3a40", "key": "#f0fffb", "rim": "#7ad7ff", "exposure": 1.1 },
+  "grill": {
+    "body": "#2f6f6a",
+    "handle": "#e0e6e8",
+    "tray": "#d9e4e6",
+    "trayRim": "#7a9aa0",
+    "ember": { "bed": "#05121a", "hot": "#9ff7ff", "warm": "#2fb8ff", "glow": "#0a4a8a", "fade": "#020a12", "coal": "#0a1418" }
+  },
+  "table": { "color": "#c8d6d8", "hue": 190, "saturation": 18, "lightness": 52, "planks": 9, "seed": 4 },
+  "backdrop": { "colors": ["#7af5ff", "#b9fffa", "#5ad1ff"], "count": 12, "opacity": 0.45, "size": 0.9, "height": 1.6 },
+  "ambience": { "hiss": 0.08, "rumble": 1.2, "crackle": 2, "seed": 7 },
+  "unlock": { "stars": 40 }
+}

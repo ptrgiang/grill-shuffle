@@ -38,16 +38,19 @@ export const softDot = () =>
     return tex(c, { srgb: false });
   });
 
-/** Warm wooden table planks. */
-export const woodPlanks = () =>
-  once('wood', () => {
+/** 'r,g,b' of a #rrggbb colour, for canvas rgba() strings. */
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(',');
+
+/** Wooden table planks (theme `table`: base hue / saturation / lightness, plank count, seed). */
+export const woodPlanks = ({ hue = 28, saturation = 22, lightness = 34, planks = 6, seed = 11 } = {}) =>
+  once(`wood:${hue}:${saturation}:${lightness}:${planks}:${seed}`, () => {
     const W = 512, c = canvas(W);
     const g = c.getContext('2d');
-    const rng = mulberry32(11);
-    const planks = 6, ph = W / planks;
+    const rng = mulberry32(seed);
+    const ph = W / planks;
     for (let p = 0; p < planks; p++) {
-      const l = 34 + rng() * 8;
-      g.fillStyle = `hsl(${28 + rng() * 6}, ${22 + rng() * 8}%, ${l}%)`;
+      const l = lightness + rng() * 8;
+      g.fillStyle = `hsl(${hue + rng() * 6}, ${saturation + rng() * 8}%, ${l}%)`;
       g.fillRect(0, p * ph, W, ph);
       // grain
       for (let i = 0; i < 70; i++) {
@@ -75,21 +78,21 @@ export const woodPlanks = () =>
     return tex(c, { repeat: 1 });
   });
 
-/** Glowing coals seen through the grate (luminance + colour in one map). */
-export const embers = () =>
-  once('embers', () => {
+/** Glowing coals seen through the grate (luminance + colour in one map). Colours: theme `grill.ember`. */
+export const embers = ({ bed = '#2a0d05', hot = '#ffbe5a', warm = '#ff5a14', glow = '#a01e05', fade = '#280802', coal = '#140c0a' } = {}) =>
+  once(`embers:${bed}:${hot}:${warm}:${glow}:${fade}:${coal}`, () => {
     const W = 256, c = canvas(W, W / 2);
     const g = c.getContext('2d');
     const rng = mulberry32(5);
-    g.fillStyle = '#2a0d05';
+    g.fillStyle = bed;
     g.fillRect(0, 0, W, W / 2);
     for (let i = 0; i < 160; i++) {
       const x = rng() * W, y = rng() * (W / 2), r = 5 + rng() * 14;
-      const hot = rng();
+      const heat = rng();
       const grad = g.createRadialGradient(x, y, 0, x, y, r);
-      grad.addColorStop(0, hot > 0.6 ? 'rgba(255,190,90,0.95)' : 'rgba(255,90,20,0.85)');
-      grad.addColorStop(0.6, 'rgba(160,30,5,0.5)');
-      grad.addColorStop(1, 'rgba(40,8,2,0)');
+      grad.addColorStop(0, heat > 0.6 ? `rgba(${rgb(hot)},0.95)` : `rgba(${rgb(warm)},0.85)`);
+      grad.addColorStop(0.6, `rgba(${rgb(glow)},0.5)`);
+      grad.addColorStop(1, `rgba(${rgb(fade)},0)`);
       g.fillStyle = grad;
       g.beginPath();
       g.arc(x, y, r, 0, Math.PI * 2);
@@ -97,7 +100,7 @@ export const embers = () =>
     }
     // dark coal lumps on top
     for (let i = 0; i < 70; i++) {
-      g.fillStyle = `rgba(20,12,10,${0.35 + rng() * 0.4})`;
+      g.fillStyle = `rgba(${rgb(coal)},${0.35 + rng() * 0.4})`;
       g.beginPath();
       g.ellipse(rng() * W, rng() * (W / 2), 4 + rng() * 9, 3 + rng() * 6, rng() * 3, 0, Math.PI * 2);
       g.fill();

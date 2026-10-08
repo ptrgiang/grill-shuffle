@@ -16,6 +16,14 @@ so the board keeps the full height. The level hint sits over the goal chips, nev
 checks at 360×640, 390×844, 430×932, 844×390 and 1280×800 that no HUD or menu element covers the board and every
 control is at least 44 × 44 px.
 
+## Themes
+
+Everything that is not food or rules is coloured by the theme (`docs/LEVELS.md` "Theme format"):
+`Stage.setTheme(theme)` sets background, exposure, the three lights, the vignette and the backdrop sprites, and calls
+`applyMaterialTheme`, which recolours the shared grill / tray / table materials and swaps their wood and ember
+textures (cached per parameter set). Grill views share those materials, so switching theme rebuilds nothing.
+Street BBQ is the default look; the `board-desktop` and game visual captures guard it.
+
 ## Food
 
 `render/foods.js`: `createShrimp/Beef/Chicken/Corn/Carrot/Salmon/Bread/Sausage/Mushroom/Pepper/Skewer({ seed, cook,

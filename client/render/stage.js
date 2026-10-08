@@ -1,7 +1,8 @@
-// The Three.js stage: renderer, orthographic camera framed on the board, fixed light rig, Street BBQ backdrop.
-// Knows nothing about rules. The board view (board.js) puts things on it.
+// The Three.js stage: renderer, orthographic camera framed on the board, light rig and backdrop, all coloured by the
+// theme (content/themes/*.json, shared/themes.js). Knows nothing about rules. The board view (board.js) puts things on it.
 import * as THREE from 'three';
-import { materials, tickMaterials, setEmberDetail } from './materials.js';
+import { materials, tickMaterials, setEmberDetail, applyMaterialTheme } from './materials.js';
+import { resolveTheme } from '../../shared/themes.js';
 import { TIERS } from './quality.js';
 import { CAMERA_ELEVATION } from './layout.js';
 import { softDot } from './textures.js';
@@ -12,6 +13,7 @@ export class Stage {
   /**
    * @param canvas  the <canvas>
    * @param opts    { theme, shadows, pixelRatioMax, frozen }
+   *                theme: a theme file (partial is fine: shared/themes.js fills in the defaults)
    *                frozen: stills for pixel-compared screenshots. The stage clock stands still (no ember drift, no
    *                bulb flicker) and the board pins its idle oscillations, but the view still gets real dt so fades
    *                and moves settle into their end state. Default: the page URL has ?freeze=1.
@@ -19,17 +21,15 @@ export class Stage {
   constructor(canvas, { theme = {}, shadows = true, pixelRatioMax = 2, preserveDrawingBuffer = false, frozen = urlFlag('freeze') } = {}) {
     this.canvas = canvas;
     this.frozen = frozen;
-    this.theme = theme;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = shadows;
     this.renderer.shadowMap.type = THREE.PCFShadowMap; // PCFSoftShadowMap is gone from three r18x
     this.pixelRatioMax = pixelRatioMax;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(theme.background ?? '#1b1420');
+    this.scene.background = new THREE.Color();
     this.camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 100);
     this.cameraDistance = 30;
     this.focus = new THREE.Vector3();
@@ -38,6 +38,7 @@ export class Stage {
 
     this.#lights();
     this.#backdrop();
+    this.setTheme(theme);
     this.time = 0;
     this.updaters = new Set();
     this.tier = null;
@@ -72,12 +73,34 @@ export class Stage {
     this.onTier?.(name, t);
   }
 
+  /**
+   * Colour the whole stage for a theme: background, lights, exposure, table, grills (shared materials), vignette and
+   * backdrop. Cheap when the theme id has not changed.
+   */
+  setTheme(theme = {}) {
+    if (this.theme && theme.id && this.theme.id === theme.id) return;
+    const t = resolveTheme(theme);
+    this.theme = t;
+    this.scene.background.set(t.palette.background);
+    this.renderer.toneMappingExposure = t.lights.exposure;
+    this.hemi.color.set(t.lights.sky);
+    this.hemi.groundColor.set(t.lights.ground);
+    this.hemi.intensity = t.lights.skyIntensity;
+    this.key.color.set(t.lights.key);
+    this.key.intensity = t.lights.keyIntensity;
+    this.rim.color.set(t.lights.rim);
+    this.rim.intensity = t.lights.rimIntensity;
+    applyMaterialTheme(t);
+    this.#vignetteTexture(t.palette.vignette);
+    this.#bulbs(t.backdrop);
+    if (this.size) this.#fit();
+  }
+
   #lights() {
-    const t = this.theme;
-    // fixed rig: hemisphere fill + one warm key that casts shadows + a low ember bounce from below the grills
-    this.hemi = new THREE.HemisphereLight(t.skyLight ?? '#ffd6b0', t.groundLight ?? '#3a2030', 1.25);
+    // fixed rig: hemisphere fill + one key that casts shadows + a low rim light from behind (colours: setTheme)
+    this.hemi = new THREE.HemisphereLight();
     this.scene.add(this.hemi);
-    this.key = new THREE.DirectionalLight(t.keyLight ?? '#ffe3c4', 2.1);
+    this.key = new THREE.DirectionalLight();
     this.key.position.set(-6, 14, 8);
     this.key.castShadow = true;
     this.key.shadow.mapSize.set(1024, 1024);
@@ -92,7 +115,7 @@ export class Stage {
     sc.near = 1;
     sc.far = 40;
     this.scene.add(this.key, this.key.target);
-    this.rim = new THREE.DirectionalLight(t.rimLight ?? '#ff9a5a', 0.7);
+    this.rim = new THREE.DirectionalLight();
     this.rim.position.set(6, 4, -8);
     this.scene.add(this.rim);
   }
@@ -104,37 +127,49 @@ export class Stage {
     table.rotation.x = -Math.PI / 2;
     table.position.y = -0.36;
     table.receiveShadow = true;
-    m.table.map.repeat.set(5, 5);
     this.scene.add(table);
     this.table = table;
-    // warm string-light bokeh drifting at the far edge of the table (cheap sprites, additive)
-    const bulbs = new THREE.Group();
-    const dot = softDot();
-    const colors = ['#ffcf7a', '#ffb35c', '#ffe9a8', '#ff8f5c'];
-    for (let i = 0; i < 26; i++) {
-      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dot, color: colors[i % 4], transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
-      s.userData.phase = i * 1.7;
-      s.userData.base = 0.35 + (i % 3) * 0.12;
-      bulbs.add(s);
-    }
-    this.bulbs = bulbs;
-    this.scene.add(bulbs);
-    // vignette-ish darkening ring on the table edges
-    const vg = document.createElement('canvas');
-    vg.width = vg.height = 256;
-    const g = vg.getContext('2d');
-    const grad = g.createRadialGradient(128, 128, 40, 128, 128, 128);
-    grad.addColorStop(0, 'rgba(0,0,0,0)');
-    grad.addColorStop(0.7, 'rgba(10,4,12,0.35)');
-    grad.addColorStop(1, 'rgba(10,4,12,0.9)');
-    g.fillStyle = grad;
-    g.fillRect(0, 0, 256, 256);
-    const vt = new THREE.CanvasTexture(vg);
-    this.vignette = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: vt, transparent: true, depthWrite: false, toneMapped: false }));
+    // backdrop sprites (bokeh: string lights / lanterns) drifting at the far edge of the table, built by setTheme
+    this.bulbs = new THREE.Group();
+    this.scene.add(this.bulbs);
+    // vignette-ish darkening ring on the table edges (texture: setTheme)
+    this.vignette = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false }));
     this.vignette.rotation.x = -Math.PI / 2;
     this.vignette.position.y = -0.34;
     this.vignette.renderOrder = -1;
     this.scene.add(this.vignette);
+  }
+
+  #vignetteTexture(color) {
+    const vg = document.createElement('canvas');
+    vg.width = vg.height = 256;
+    const g = vg.getContext('2d');
+    const c = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16)).join(',');
+    const grad = g.createRadialGradient(128, 128, 40, 128, 128, 128);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(0.7, `rgba(${c},0.35)`);
+    grad.addColorStop(1, `rgba(${c},0.9)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 256, 256);
+    const mat = this.vignette.material;
+    mat.map?.dispose();
+    mat.map = new THREE.CanvasTexture(vg);
+    mat.needsUpdate = true;
+  }
+
+  /** Backdrop preset `bokeh`: soft additive sprites; `none`: nothing. */
+  #bulbs({ preset, colors, count, opacity, size, height }) {
+    for (const b of this.bulbs.children) b.material.dispose();
+    this.bulbs.clear();
+    this.bulbStyle = { size, height };
+    if (preset !== 'bokeh') return;
+    const dot = softDot();
+    for (let i = 0; i < count; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dot, color: colors[i % colors.length], transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+      s.userData.phase = i * 1.7;
+      s.userData.base = opacity + (i % 3) * 0.12;
+      this.bulbs.add(s);
+    }
   }
 
   /** Frame a board of this size (world units) inside the screen area left free by the HUD (pixels).
@@ -168,12 +203,13 @@ export class Stage {
     const span = Math.max(W, H) * wpp * 1.6;
     this.vignette.scale.set(span, span * 1.2, 1);
     const farZ = -depth / 2 - 1.6 - (marginTop * wpp) / s;
+    const { size, height: bulbY } = this.bulbStyle;
     this.bulbs.children.forEach((b, i) => {
-      const u = i / (this.bulbs.children.length - 1);
+      const u = i / Math.max(1, this.bulbs.children.length - 1);
       const x = (u - 0.5) * span * 0.9;
-      b.userData.pos = new THREE.Vector3(x, 1.2 - Math.sin(u * Math.PI) * 0.25 + (i % 2) * 0.12, farZ - 1.2 + Math.sin(u * 9) * 0.4);
+      b.userData.pos = new THREE.Vector3(x, bulbY - Math.sin(u * Math.PI) * 0.25 + (i % 2) * 0.12, farZ - 1.2 + Math.sin(u * 9) * 0.4);
       b.position.copy(b.userData.pos);
-      b.scale.setScalar(0.55 + (i % 3) * 0.2);
+      b.scale.setScalar(size + (i % 3) * 0.2);
     });
   }
 

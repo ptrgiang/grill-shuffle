@@ -14,8 +14,8 @@ import { basename, join, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
-import { isFood } from '../shared/foods.js';
-import { validateLevel, cellFood } from '../shared/levels.js';
+import { validateLevel, cellFood, usedModifiers } from '../shared/levels.js';
+import { validateTheme } from '../shared/themes.js';
 import { solveLevel } from '../solver/solver.js';
 import { boardSignature } from '../solver/canonical.js';
 import { moveBudget } from '../shared/progression.js';
@@ -62,9 +62,9 @@ const atBase = (file) => {
 };
 
 for (const t of Object.values(themes)) {
-  if (!THEMES.includes(t.id)) errors.push(`${t.file}: unknown theme id ${t.id}`);
-  if (!Array.isArray(t.foods) || !t.foods.length) errors.push(`${t.file}: theme needs a foods[] catalog`);
-  else for (const f of t.foods) if (!isFood(f)) errors.push(`${t.file}: unknown food ${f}`);
+  const { file, ...theme } = t;
+  if (!THEMES.includes(t.id)) errors.push(`${file}: unknown theme id ${t.id}`);
+  for (const e of validateTheme(theme)) errors.push(`${file}: ${e}`);
 }
 
 /** Every food a level can show: slots and stacked layers. */
@@ -80,6 +80,7 @@ for (const { pack, packFile, levels } of loadPacks()) {
   if (slugs.has(slug)) errors.push(`${packFile}: URL slug "${slug}" is also used by ${slugs.get(slug)}`);
   slugs.set(slug, pack.id);
   if (pack.theme && !THEMES.includes(pack.theme)) errors.push(`${packFile}: unknown theme ${pack.theme}`);
+  else if (pack.theme && !themes[pack.theme]) errors.push(`${packFile}: theme ${pack.theme} has no content/themes/${pack.theme}.json`);
   const basePack = atBase(packFile);
   errors.push(...checkAppendOnly(pack.id, basePack?.levels ?? null, pack.levels));
   errors.push(...checkCurveFrom(pack.id, pack, basePack));
@@ -98,8 +99,9 @@ for (const { pack, packFile, levels } of loadPacks()) {
     const v = validateLevel(level);
     for (const e of v.errors) err(e);
     if (!v.ok) continue;
-    const catalog = themes[level.theme ?? pack.theme]?.foods;
-    if (catalog) for (const f of levelFoods(level)) if (!catalog.includes(f)) err(`food ${f} is not in the ${level.theme ?? pack.theme} catalog`);
+    const theme = themes[level.theme ?? pack.theme];
+    if (theme?.foods) for (const f of levelFoods(level)) if (!theme.foods.includes(f)) err(`food ${f} is not in the ${theme.id} catalog`);
+    if (theme?.mechanics) for (const m of usedModifiers(level)) if (!theme.mechanics.includes(m)) err(`mechanic ${m} is not allowed by the ${theme.id} theme`);
     const sig = boardSignature(level);
     if (sigs.has(sig)) err(`structural duplicate of ${sigs.get(sig)}`);
     sigs.set(sig, at);

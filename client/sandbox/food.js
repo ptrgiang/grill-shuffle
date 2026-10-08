@@ -1,18 +1,19 @@
 // /sandbox/food - every procedural food, three seeded variants each, with live cook / char / grill-mark controls.
 // ?seed=N picks the seeds, ?spin=0 freezes the turntable (deterministic screenshots), ?grills=1 puts them on grills,
-// ?ui=0 hides the control panel (clean lineup shots, e.g. the 390 px readability check).
+// ?ui=0 hides the control panel (clean lineup shots, e.g. the 390 px readability check), ?theme=<id> lights it with a theme.
 import * as THREE from 'three';
 import { Stage } from '../render/stage.js';
 import { createFood, foodMaterial, FOOD_MODELS } from '../render/foods.js';
 import { GrillView } from '../render/grill.js';
 import { FOOD_IDS } from '../../shared/foods.js';
+import { themeFromUrl } from './themes.js';
 
 const params = new URLSearchParams(location.search);
 let seedBase = Number(params.get('seed') ?? 1);
 let spinning = params.get('spin') !== '0';
 let onGrills = params.get('grills') === '1';
 
-const stage = new Stage(document.getElementById('stage'), { preserveDrawingBuffer: true });
+const stage = new Stage(document.getElementById('stage'), { theme: themeFromUrl(params) ?? {}, preserveDrawingBuffer: true });
 const root = new THREE.Group();
 stage.scene.add(root);
 const items = [];
