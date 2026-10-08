@@ -2,7 +2,7 @@
 
 0. **Design (UI changes).** Anything that changes what the player sees starts with **5 visual variants in its
    issue** (label `design/variants`, owner decision 2026-10-08): prototypes behind `?variant=1..5`, captured through
-   the safe launcher (`npm run variant-shots`, #79; until then `npm run shot` + images on the `pr-shots` branch), posted
+   the safe launcher (`npm run variant-shots`, see step 3), posted
    as one issue comment. The owner replies with a number; only then the PR is built, with the pick only (the other
    variants and the `?variant` switch are removed) and the usual before / after pr-shots. Variants live in the issue,
    not the PR: the decision is recorded where the work is planned and the PR stays one change.
@@ -19,6 +19,10 @@
    ```
    After opening the PR, for any UI change: `npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,..."` puts
    before / after pairs (main vs the branch) into the PR body, so the reviewer sees the change without a checkout.
+   Design variants (a UI change the owner picks from, before the PR): prototypes read `?variant=<n>` through
+   `client/ui/variant.js` (`variant()`; `<html data-variant>` for CSS), then
+   `npm run variant-shots -- --issue <n> --pages "/levels@390x844m,..." --labels "1:Road,2:Scroll,..."` posts one
+   numbered sheet per page as a single issue comment (updated in place on re-runs; `--no-publish` = local only).
 4. **Pull request** into `main`, using the template, with `Closes #<issue>`. CI (`checks` job) must be green; on
    PRs touching `client/`, `content/` or `shared/` the `visual` workflow pixel-compares frozen captures against
    `tests/visual/` (see `docs/RENDERING.md`, "Visual regression"). An intended look change: `npm run visual:accept`,
