@@ -17,6 +17,7 @@ import { decodeActions, getLegalMoves } from '../shared/moves.js';
 import { createState } from '../shared/state.js';
 import { applyAction } from '../shared/resolve.js';
 import { boosterActions } from '../shared/boosters.js';
+import { replay } from '../shared/replay.js';
 import { POINTER_TUNING } from '../client/game/input.js';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -194,6 +195,8 @@ async function run(name, { w, h, mobile, levelId, mode }) {
     await sleep(1200);
     const modal = await page.evaluate(() => ({ title: document.querySelector('.modal h2')?.textContent, stars: document.querySelectorAll('.stars.big .star.on').length }));
     check(modal.stars === 3, `${name}: results screen shows ${modal.stars} stars ("${modal.title}")`);
+    const links = await page.evaluate(() => [...document.querySelectorAll('.result-links .link')].map((a) => a.textContent.trim()));
+    check(links.includes('Watch the best solution') && links.includes('Share my replay'), `${name}: results offer the best solution and a replay link (${links.join(' / ')})`);
     const saved = await page.evaluate((id) => new Promise((res) => {
       const r = indexedDB.open('grill-shuffle');
       r.onsuccess = () => {
@@ -380,6 +383,55 @@ async function runBoosters(name, { w, h }) {
   }
 }
 
+// #30: the replay viewer. The best solution skipped to its end, a shared run played at 2x against its claimed hash,
+// a broken link refused. Nothing is recorded and the board takes no input.
+async function runReplay(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  const lvl = level('street-003');
+  const want = replay(lvl, lvl.solver.solution).hash;
+  const open = async (query) => {
+    await page.evaluate(() => (window.__gameReady = false));
+    await page.goto(`${vite.url}/street-bbq/3?${query}`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    await settle(page, 500);
+  };
+  const info = () => page.evaluate(() => {
+    const gs = window.__gs, p = gs.app.replay;
+    return { valid: p?.valid, index: p?.index, total: p?.actions.length, status: gs.state.status, hash: p?.finalHash, modal: document.querySelector('.modal h2')?.textContent ?? null, code: document.querySelector('.replay-hash code')?.textContent ?? null, match: !!document.querySelector('.replay-hash .verified.ok'), stored: gs.app.progress['street-003'] ?? null };
+  });
+  try {
+    await open('r=best');
+    let s = await info();
+    check(s.valid && s.total === lvl.solver.minMoves, `${name}: ?r=best loads the stored solution (${s.total} moves)`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-playing.png`) });
+    // the board takes no input while watching
+    const a = await slotXY(page, 0, 0, 0.4);
+    await page.touchscreen.tap(a.x, a.y);
+    check(await page.evaluate(() => window.__gs.view.selected === null), `${name}: tapping the board selects nothing`);
+    await page.tap('button.tool[aria-label="End"]');
+    await page.waitForSelector('.replay-hash code', { timeout: 15000 });
+    s = await info();
+    check(s.status === 'won' && s.index === s.total && s.code === want, `${name}: End jumps to the solved board; the end card shows its hash ${s.code}`);
+    check(s.stored === null, `${name}: watching records no result`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-end.png`) });
+
+    await open(`r=${lvl.solver.solution.split(' ').join(',')}&h=${want}`);
+    await page.tap('button.tool[aria-label="Speed"]');
+    await page.waitForSelector('.replay-hash code', { timeout: 60000 });
+    s = await info();
+    check(s.status === 'won' && s.match, `${name}: a shared run plays through at 2x and matches its claimed hash`);
+
+    await open('r=m9.9-0.0');
+    s = await info();
+    check(s.valid === false && /Can.t show this replay/.test(s.modal ?? ''), `${name}: a broken replay link is refused (${s.modal})`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 // #67 / #17: the second pack (Beach Grill) is locked behind Street BBQ + its theme's stars, deep links to it land on
 // the level select at that pack, and finishing the requirement opens it in its own theme.
 async function runPacks(name, { w, h }) {
@@ -439,20 +491,28 @@ async function runPacks(name, { w, h }) {
 }
 
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
+// `npm run test:e2e -- --only replay,boosters`: just the groups whose name starts with one of those
+const onlyAt = process.argv.indexOf('--only');
+const ONLY = onlyAt > 0 ? process.argv[onlyAt + 1].split(',') : null;
+const want = (name) => !ONLY || ONLY.some((p) => name.startsWith(p));
 const vite = await startVite(ROOT);
 try {
-  await run('desktop', { w: 1280, h: 800, mobile: false, levelId: 'street-003', mode: 'drag' });
-  await run('mobile', { w: 390, h: 844, mobile: true, levelId: 'street-006', mode: 'tap' });
-  await run('mobile-drag', { w: 390, h: 844, mobile: true, levelId: 'street-003', mode: 'touch-drag' });
-  await run('burn-two', { w: 1280, h: 800, mobile: false, levelId: 'street-012', mode: 'drag' });
-  await run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' });
-  await runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' });
-  await run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' });
-  await run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' });
-  for (const [w, h] of [[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]]) await runLayout(w, h);
-  await runQuality('quality', { w: 390, h: 844 });
-  await runPacks('packs-390', { w: 390, h: 844 });
-  await runBoosters('boosters-390', { w: 390, h: 844 });
+  const groups = [
+    ['desktop', () => run('desktop', { w: 1280, h: 800, mobile: false, levelId: 'street-003', mode: 'drag' })],
+    ['mobile', () => run('mobile', { w: 390, h: 844, mobile: true, levelId: 'street-006', mode: 'tap' })],
+    ['mobile-drag', () => run('mobile-drag', { w: 390, h: 844, mobile: true, levelId: 'street-003', mode: 'touch-drag' })],
+    ['burn-two', () => run('burn-two', { w: 1280, h: 800, mobile: false, levelId: 'street-012', mode: 'drag' })],
+    ['burn-tray', () => run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' })],
+    ['burn-char', () => runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' })],
+    ['mobile-360', () => run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' })],
+    ['landscape', () => run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' })],
+    ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].map(([w, h]) => [`layout-${w}x${h}`, () => runLayout(w, h)]),
+    ['quality', () => runQuality('quality', { w: 390, h: 844 })],
+    ['packs-390', () => runPacks('packs-390', { w: 390, h: 844 })],
+    ['boosters-390', () => runBoosters('boosters-390', { w: 390, h: 844 })],
+    ['replay-390', () => runReplay('replay-390', { w: 390, h: 844 })],
+  ];
+  for (const [name, fn] of groups) if (want(name)) await fn();
 } finally {
   vite.stop();
 }

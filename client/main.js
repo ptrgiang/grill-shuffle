@@ -7,11 +7,13 @@
 //   /levels           level select
 //   /daily            today's puzzle (same board for everyone, UTC day)
 //   /p/<code>         a shared challenge (generated, story or daily code), optional ?m=<moves to beat>
+//   any game URL + ?r=<actions>&h=<hash> (or ?r=best): the replay viewer (game/replay-player.js)
 import { Stage } from './render/stage.js';
 import { BoardView } from './render/board.js';
 import { foodIcon } from './render/icons.js';
 import { Input } from './game/input.js';
 import { Session } from './game/session.js';
+import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-player.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, packSlug } from './game/routes.js';
 import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
@@ -65,6 +67,7 @@ const app = {
   hud: null,
   coach: null, // first-level onboarding hand (touch)
   seenBoosters: {}, // boosters the player has tried at least once (the HUD marks the others "new")
+  replay: null, // ReplayPlayer while the replay viewer is open (input off, nothing recorded)
   busy: false,
 };
 
@@ -72,7 +75,7 @@ const app = {
 
 const view = new BoardView(stage, { onFx: (ev, at) => onFx(ev, at) });
 const input = new Input(canvas, () => app.session, view, {
-  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal,
+  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal && !app.replay,
   onGesture: () => audio.unlock(),
   haptics: () => app.settings.haptics !== false,
   onSelect: () => (audio.onEvent({ type: 'select' }), app.coach?.phase('drop')),
@@ -195,9 +198,11 @@ function onFx(ev, at) {
       if (ev.combo >= 2) app.hud.combo(ev.combo);
       break;
     case 'level_complete':
+      if (app.replay) break; // the viewer has its own end card
       setTimeout(() => showResult(true), 250);
       break;
     case 'level_failed':
+      if (app.replay) break;
       setTimeout(() => showResult(false, ev.reason), 300);
       break;
   }
@@ -233,6 +238,7 @@ document.addEventListener('click', (e) => {
 
 async function render() {
   const r = parseRoute();
+  stopReplay();
   closeModal();
   dismissCoach();
   document.body.classList.toggle('in-game', r.name !== 'menu');
@@ -472,8 +478,10 @@ function startLevel(level, { mode, code = null }) {
   app.code = code ?? (mode === 'story' ? encodeStory(shareIndex(level.id)) : null);
   const m = Number(new URLSearchParams(location.search).get('m'));
   app.target = Number.isFinite(m) && m > 0 ? m : null;
-  app.session = new Session(level);
   useTheme(themeFor(level));
+  const request = parseReplayParam(location.search);
+  if (request) return startReplay(level, request);
+  app.session = new Session(level);
   if (mode === 'story') db.set('current', level.id);
   app.hud = new Hud(level);
   screen(app.hud.el);
@@ -486,6 +494,71 @@ function startLevel(level, { mode, code = null }) {
   if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
   if (app.target) app.hud.tip(`A friend finished this in ${app.target} moves. Can you beat it?`);
   window.__gameReady = true;
+}
+
+// ---------------------------------------------------------------- replay viewer
+
+/**
+ * Watch a run (?r=<actions>&h=<hash>) or the stored best solution (?r=best) on the normal board: the same session,
+ * simulation and BoardView.play as a live game. The whole run is checked first; an invalid one is never shown. Input
+ * is off and nothing is recorded (no stars, no results).
+ */
+function startReplay(level, request) {
+  dismissCoach();
+  const player = new ReplayPlayer(level, request, {
+    onStep: (r) => {
+      view.play(r.state, r.events);
+      app.hud?.update(r.state);
+    },
+    onReset: (s) => {
+      view.skip();
+      view.setState(s);
+      app.hud?.update(s, { immediate: true });
+    },
+    onEnd: () => {
+      app.hud?.update(player.state);
+      setTimeout(() => app.replay === player && player.done && replayEndCard(player), 1100 / player.speed);
+    },
+  });
+  app.replay = player;
+  app.session = player.session;
+  app.hud = new Hud(level, { replay: player });
+  screen(app.hud.el);
+  app.hud.update(player.state, { immediate: true });
+  app.fit = () => app.hud.margins();
+  view.setMargins(app.hud.margins());
+  view.setState(player.state);
+  if (!player.valid) {
+    openModal(
+      h('h2', 'Can’t show this replay'),
+      h('p.muted', `The moves in this link don’t play out on this board (${player.error}). It may come from an older version of the game, or the link got cut.`),
+      h('div.modal-buttons', h('a.btn.primary', { href: location.pathname, 'data-nav': true }, 'Play the level'), h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu')),
+    );
+  } else {
+    app.hud.tip(player.source === 'best' ? `The best solution: ${player.actions.length} moves.` : `A replay: ${player.actions.length} actions.`);
+    player.play();
+    app.hud.update(player.state);
+  }
+  window.__gameReady = true;
+}
+
+function stopReplay() {
+  app.replay?.dispose();
+  app.replay = null;
+}
+
+function replayEndCard(p) {
+  const s = p.state;
+  openModal(
+    h('h2.win', p.source === 'best' ? 'That’s the best line' : 'Replay finished'),
+    h('p.muted', s.status === 'won' ? `Cleared in ${s.movesUsed} moves.` : s.status === 'lost' ? 'This run lost the level.' : `Stopped after ${s.movesUsed} moves.`),
+    h('p.replay-hash', 'Final board ', h('code', p.finalHash), p.matches ? h('span.verified.ok', '✓ same as the shared run') : null),
+    h('div.modal-buttons',
+      h('a.btn.primary', { href: location.pathname, 'data-nav': true }, 'Play it yourself'),
+      h('button.btn', { on: { click: () => (closeModal(), p.restart(), p.play(), app.hud.update(p.state)) } }, 'Watch again'),
+      h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
+    ),
+  );
 }
 
 /** Onboarding hand: first story level, not yet won, on a touch screen (`?coach=1` / `?coach=0` force it). */
@@ -547,9 +620,14 @@ async function hint() {
 }
 
 class Hud {
-  constructor(level) {
+  /** `replay`: a ReplayPlayer; the bottom bar becomes its controls and the moves box its progress. */
+  constructor(level, { replay = null } = {}) {
     this.level = level;
-    const title = app.mode === 'daily' ? `Daily · ${level.id.slice(6)}` : app.mode === 'challenge' && !STORY.includes(level.id) ? `Challenge ${app.code}` : levelLabel(level.id);
+    this.replay = replay;
+    const name = app.mode === 'daily' ? `Daily · ${level.id.slice(6)}` : app.mode === 'challenge' && !STORY.includes(level.id) ? `Challenge ${app.code}` : levelLabel(level.id);
+    // replay: what is playing on top, the level underneath (its name would not fit as well)
+    const title = replay ? (replay.source === 'best' ? 'Best solution' : 'Replay') : name;
+    const sub = replay ? name : level.name ?? '';
     this.movesEl = h('span.moves-num', '0');
     this.goalsEl = h('div.goals');
     this.comboEl = h('div.combo');
@@ -563,24 +641,39 @@ class Hud {
       const el = h('button.tool.booster', { 'data-booster': id, 'aria-label': BOOSTERS[id].name, on: { click: () => tapBooster(id) } }, iconEl(id), label, count, app.seenBoosters[id] ? null : h('span.new-tag', 'New'));
       return { id, el, count, label };
     });
-    this.el = h('div.hud',
+    const tool = (label, icon, fn) => h('button.tool', { 'aria-label': label, on: { click: () => (audio.onEvent({ type: 'button' }), fn(), this.update(app.session.state)) } }, iconEl(icon), h('span.tool-label', label));
+    if (replay) {
+      // the viewer's controls instead of undo / hint / boosters
+      this.undoBtn = null;
+      this.boosters = [];
+      this.playBtn = tool('Pause', 'pause', () => replay.toggle());
+      this.speedBtn = h('button.tool.replay-speed', { 'aria-label': 'Speed', on: { click: () => (audio.onEvent({ type: 'button' }), replay.cycleSpeed(), this.update(replay.state)) } }, h('span.speed-num', '1×'), h('span.tool-label', 'Speed'));
+      this.stepBtn = tool('Step', 'step', () => (replay.pause(), replay.step()));
+      this.skipBtn = tool('End', 'skip', () => replay.skip());
+    }
+    const footer = replay
+      ? h('footer.hud-bottom.compact', tool('Restart', 'restart', () => replay.restart()), this.playBtn, this.stepBtn, this.speedBtn, this.skipBtn)
+      : h('footer.hud-bottom',
+          this.undoBtn,
+          h('button.tool', { 'aria-label': 'Hint', on: { click: () => (audio.onEvent({ type: 'button' }), hint()) } }, iconEl('hint'), h('span', 'Hint')),
+          h('button.tool', { 'aria-label': 'Restart', on: { click: () => (audio.onEvent({ type: 'button' }), restart()) } }, iconEl('restart'), h('span', 'Restart')),
+          this.boosters.length ? h('span.tool-sep', { 'aria-hidden': 'true' }) : null,
+          ...this.boosters.map((b) => b.el),
+        );
+    this.el = h(`div.hud${replay ? '.replaying' : ''}`,
       h('header.hud-top',
-        h('button.icon-btn', { 'aria-label': 'Pause', on: { click: () => pauseMenu() } }, iconEl('pause')),
-        h('div.hud-title', h('div.lvl', title), h('div.lvl-name', level.name ?? '')),
-        h('div.moves', h('span.moves-label', 'Moves'), this.movesEl),
+        replay
+          ? h('a.icon-btn', { href: location.pathname, 'data-nav': true, 'aria-label': 'Close replay' }, iconEl('close'))
+          : h('button.icon-btn', { 'aria-label': 'Pause', on: { click: () => pauseMenu() } }, iconEl('pause')),
+        h('div.hud-title', h('div.lvl', title), h('div.lvl-name', sub)),
+        h('div.moves', h('span.moves-label', replay ? 'Step' : 'Moves'), this.movesEl),
       ),
       this.goalsEl,
       this.comboEl,
       this.tipEl,
-      h('footer.hud-bottom',
-        this.undoBtn,
-        h('button.tool', { 'aria-label': 'Hint', on: { click: () => (audio.onEvent({ type: 'button' }), hint()) } }, iconEl('hint'), h('span', 'Hint')),
-        h('button.tool', { 'aria-label': 'Restart', on: { click: () => (audio.onEvent({ type: 'button' }), restart()) } }, iconEl('restart'), h('span', 'Restart')),
-        this.boosters.length ? h('span.tool-sep', { 'aria-hidden': 'true' }) : null,
-        ...this.boosters.map((b) => b.el),
-      ),
+      footer,
     );
-    if (this.boosters.length) this.el.querySelector('.hud-bottom').classList.add('has-boosters');
+    if (this.boosters.length) footer.classList.add('has-boosters');
     this.goalEls = [];
   }
 
@@ -595,9 +688,17 @@ class Hud {
   }
 
   update(s, { immediate = false } = {}) {
-    this.movesEl.textContent = String(s.movesLeft);
-    this.movesEl.parentElement.classList.toggle('low', s.movesLeft <= 3 && s.status === 'playing');
-    this.undoBtn.disabled = !app.session.canUndo();
+    const rp = this.replay;
+    this.movesEl.textContent = rp ? `${rp.index}/${rp.actions.length}` : String(s.movesLeft);
+    this.movesEl.parentElement.classList.toggle('low', !rp && s.movesLeft <= 3 && s.status === 'playing');
+    if (rp) {
+      this.playBtn.replaceChildren(iconEl(rp.playing ? 'pause' : 'play'), h('span.tool-label', rp.playing ? 'Pause' : rp.done ? 'Again' : 'Play'));
+      this.playBtn.setAttribute('aria-label', rp.playing ? 'Pause' : 'Play');
+      this.speedBtn.querySelector('.speed-num').textContent = `${rp.speed}×`;
+      for (const b of [this.playBtn, this.stepBtn, this.skipBtn]) b.disabled = !rp.valid;
+      if (rp.done) this.stepBtn.disabled = this.skipBtn.disabled = true;
+    }
+    if (this.undoBtn) this.undoBtn.disabled = !app.session.canUndo();
     const ses = app.session;
     for (const b of this.boosters) {
       const n = ses.charges(b.id);
@@ -756,9 +857,32 @@ async function showResult(won, reason) {
           ? h('a.btn.primary', { href: '/levels', 'data-nav': true }, 'Levels')
           : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
       h('button.btn', { on: { click: () => share(s.movesUsed) } }, iconEl('share'), ' Challenge a friend'),
-      h('button.btn.ghost', { on: { click: restart } }, 'Replay'),
+      h('button.btn.ghost', { on: { click: restart } }, 'Play again'),
+    ),
+    h('div.result-links',
+      level.solver?.solution ? h('a.link', { href: `${location.pathname}?r=best`, 'data-nav': true }, iconEl('play'), 'Watch the best solution') : null,
+      h('button.link', { on: { click: () => shareReplay() } }, iconEl('share'), 'Share my replay'),
     ),
   );
+}
+
+/** A link that replays this exact run for anyone (checked against its final hash when it opens). */
+async function shareReplay() {
+  const code = app.code ?? encodeStory(shareIndex(app.level.id));
+  const url = `${location.origin}/p/${code}?${replayQuery(app.session.replayString(), app.session.finalHash())}`;
+  const text = `Watch how I cleared this Grill Shuffle board in ${app.session.state.movesUsed} moves.`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Grill Shuffle replay', text, url });
+      return;
+    }
+  } catch {}
+  try {
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    toast('Replay link copied!');
+  } catch {
+    toast(url, 6000);
+  }
 }
 
 /**
@@ -825,6 +949,18 @@ async function share(moves) {
 
 window.addEventListener('keydown', (e) => {
   if (app.route !== 'game') return;
+  if (app.replay) {
+    // viewer: space plays / pauses, right arrow steps, Esc closes the end card or leaves the viewer
+    if (e.key === ' ') {
+      e.preventDefault();
+      app.replay.toggle();
+    } else if (e.key === 'ArrowRight') {
+      app.replay.pause();
+      app.replay.step();
+    } else if (e.key === 'Escape') return app.modal ? closeModal() : go(location.pathname);
+    app.hud?.update(app.replay.state);
+    return;
+  }
   if (e.key === 'Escape') app.modal ? closeModal() : app.session?.armed || app.hud?.confirming ? disarm() : pauseMenu();
   else if ((e.key === 'z' || e.key === 'Z') && !app.modal) undo();
   else if ((e.key === 'r' || e.key === 'R') && !app.modal) restart();
@@ -858,7 +994,7 @@ async function boot() {
   app.seenBoosters = await db.get('seenBoosters', {});
   render();
   applyQuality();
-  stage.start((dt) => view.update(dt), { gate: (dt) => idle.tick(dt, view.busy), onRendered });
+  stage.start((dt) => view.update(dt * (app.replay?.speed ?? 1)), { gate: (dt) => idle.tick(dt, view.busy), onRendered });
   syncNow();
   registerServiceWorker();
 }
