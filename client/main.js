@@ -26,19 +26,20 @@ import { advanceStreak, currentStreak, msUntilNextDaily, formatCountdown, server
 import { h, iconEl, toast, floatText, starsEl } from './ui/dom.js';
 import { Coach, coachMove } from './ui/coach.js';
 import { isInstalled, installedThisVisit, canPrompt, promptInstall, onInstallChange, installGuide } from './ui/install.js';
-import { FOODS } from '../shared/foods.js';
 import { BOOSTERS } from '../shared/boosters.js';
 import { starThresholds } from '../shared/progression.js';
-import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC, BANDS } from '../shared/challenge.js';
+import { decodeCode, encodeStory, encodeDaily, encodeGenerated, todayUTC } from '../shared/challenge.js';
 import { VERSIONS, PUZZLE_RULE_VERSION } from '../shared/version.js';
 import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
 import { initVariant } from './ui/variant.js';
+import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
+import { applyStatic } from './i18n/dom.js';
 
 // quality: 'auto' | 'high' | 'medium' | 'low'; autoTier: where auto mode settled on this device
-const DEFAULT_SETTINGS = { muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null };
+const DEFAULT_SETTINGS = { lang: null, muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null };
 
 const ui = document.getElementById('ui');
 const canvas = document.getElementById('stage');
@@ -92,6 +93,7 @@ const input = new Input(canvas, () => app.session, view, {
 const idle = new IdleGate();
 const frames = new FrameMonitor();
 const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
+const urlLang = new URLSearchParams(location.search).get('lang'); // ?lang=vi: this visit only (screenshots, tests)
 const stats = new URLSearchParams(location.search).get('stats') === '1' ? new StatsOverlay(document.getElementById('app')) : null;
 for (const ev of ['pointerdown', 'pointermove', 'wheel']) canvas.addEventListener(ev, () => idle.wake(), { passive: true });
 
@@ -124,7 +126,7 @@ function doAction(action, opts = {}) {
   app.hud?.update(r.state, { immediate: true });
   // no plain move left but a booster still works (else the simulation would have called it 'stuck')
   if (r.state.status === 'playing' && !app.session.legalMoves().length && app.session.boosterIds().some((id) => app.session.canUseBooster(id))) {
-    app.hud?.tip('No moves left. A booster can still save it!');
+    app.hud?.tip(t('tip.noMoves'));
   }
   return true;
 }
@@ -142,7 +144,7 @@ function tapBooster(id) {
     db.set('seenBoosters', app.seenBoosters);
   }
   if (!s.canUseBooster(id) && s.armed !== id) {
-    app.hud.tip(s.charges(id) > 0 ? BOOSTER_IDLE[id] ?? `Nothing for the ${BOOSTERS[id].name.toLowerCase()} to do right now.` : `No ${BOOSTERS[id].name} left.`);
+    app.hud.tip(s.charges(id) > 0 ? (BOOSTER_IDLE.has(id) ? t(`booster.idle.${id}`) : t('booster.idle', { name: boosterName(id) })) : t('booster.none', { name: boosterName(id) }));
     return app.hud.update(s.state);
   }
   input.deselect();
@@ -154,13 +156,13 @@ function tapBooster(id) {
     } else {
       s.arm(null);
       app.hud.confirm(id);
-      app.hud.tip(BOOSTER_TIPS[id]);
+      app.hud.tip(t(`booster.tip.${id}`));
     }
   } else {
     app.hud.confirm(null);
     if (s.armed === id) s.arm(null);
     else if (s.arm(id)) {
-      app.hud.tip(BOOSTER_TIPS[id]);
+      app.hud.tip(t(`booster.tip.${id}`));
       const grills = s.boosterGrills(); // torch / cooler / tray swap: the grills it can act on light up
       if (grills.length) view.setTargets(grills, -1, { slots: false });
     }
@@ -168,20 +170,10 @@ function tapBooster(id) {
   app.hud.update(s.state);
 }
 
-// tapped while it has a charge but nothing to act on: why not (yet)
-const BOOSTER_IDLE = {
-  torch: 'The torch needs three of one food on open grills. Make some room first.',
-  tray_swap: 'Tray Swap needs two open grills of the same size.',
-  cooler: 'Nothing is burning on an open grill.',
-};
-
-const BOOSTER_TIPS = {
-  tongs: 'Tongs: pick any food, even off a locked grill, and drop it on an open one. Free, no move used.',
-  fan: 'Fan: tap again to blow the food on the open grills into new spots. Free, no move used.',
-  torch: 'Torch: tap a food. It and two more of the same are served at once. Free, no move used.',
-  tray_swap: 'Tray Swap: tap two grills of the same size to swap everything on them. Free, no move used.',
-  cooler: 'Cooler: tap a grill. Nothing on it burns any more. Free, no move used.',
-};
+// tapped while it has a charge but nothing to act on: why not (yet); the others get the generic line
+const BOOSTER_IDLE = new Set(['torch', 'tray_swap', 'cooler']);
+const boosterName = (id) => t(`booster.${id}`);
+const foodName = (id) => t(`food.${id}`);
 
 /** Presentation events, on the animation's beat. Never feeds back into the simulation. */
 function onFx(ev, at) {
@@ -218,7 +210,7 @@ const levelPath = (id) => pathOf(PACKS, id);
 function levelLabel(id) {
   const at = levelPosition(PACKS, id);
   if (!at) return null;
-  return PACKS.length > 1 ? `${at.pack.name} · Level ${at.n}` : `Level ${at.n}`;
+  return PACKS.length > 1 ? t('level.labelPack', { pack: pick(at.pack.name), n: at.n }) : t('level.label', { n: at.n });
 }
 
 export function go(path, { replace = false } = {}) {
@@ -251,7 +243,7 @@ async function render() {
     const k = packIndexOf(PACKS, lvl.id);
     const status = k > 0 ? packStatus(PACKS, k, app.progress, THEMES) : null;
     if (status && !status.open) {
-      toast(`${PACKS[k].name} is locked. ${lockReason(status)}.`);
+      toast(t('pack.locked', { pack: pick(PACKS[k].name), reason: lockReason(status) }));
       return go(`/levels/${packSlug(PACKS[k])}`, { replace: true });
     }
     const canonical = levelPath(lvl.id);
@@ -283,19 +275,20 @@ function showMenu() {
   useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
   screen(
     h('div.menu',
-      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', 'Grill Shuffle'), h('p.subtitle', 'Food Sort & Match Puzzle')),
+      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle'))),
       h('div.menu-spacer'),
       h('div.menu-buttons',
-        h('a.btn.big.primary', { href: levelPath(next) ?? '/play', 'data-nav': true }, stars ? `Continue · ${levelLabel(next)}` : 'Play'),
+        h('a.btn.big.primary', { href: levelPath(next) ?? '/play', 'data-nav': true }, stars ? t('menu.continue', { label: levelLabel(next) }) : t('menu.play')),
         h('div.row',
-          h('a.btn', { href: '/daily', 'data-nav': true }, h('span', 'Daily Grill'), streak ? h('span.badge', `🔥 ${streak}`) : null),
-          h('a.btn', { href: '/levels', 'data-nav': true }, h('span', 'Levels'), stars ? h('span.badge', `★ ${stars}`) : null),
+          h('a.btn', { href: '/daily', 'data-nav': true }, h('span', t('menu.daily')), streak ? h('span.badge', `🔥 ${streak}`) : null),
+          h('a.btn', { href: '/levels', 'data-nav': true }, h('span', t('menu.levels')), stars ? h('span.badge', `★ ${stars}`) : null),
         ),
-        h('button.btn.ghost', { on: { click: () => challengePicker() } }, "Chef's Challenge"),
+        h('button.btn.ghost', { on: { click: () => challengePicker() } }, t('menu.challenge')),
       ),
-      h('div.menu-foot', soundToggle(), installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, 'About the game ↓')),
+      h('div.menu-foot', soundToggle(), langSwitch(), installButton(), h('a.link', { href: '#about', on: { click: (e) => { e.preventDefault(); document.getElementById('landing').scrollIntoView({ behavior: 'smooth' }); } } }, t('menu.about'))),
     ),
   );
+  if (!app.settings.lang && !LANGS.includes(urlLang)) langPicker(); // first launch: ask once (#89); ?lang= skips it
   app.fit = demo ? menuMargins : null;
   if (demo) {
     app.session = new Session(demo);
@@ -327,9 +320,9 @@ function installButton() {
     audio.unlock();
     audio.onEvent({ type: 'button' });
     if (canPrompt()) {
-      if (await promptInstall()) toast('Grill Shuffle installed!');
-    } else openModal(...installGuide(), h('button.btn.ghost', { on: { click: closeModal } }, 'Close'));
-  } } }, 'Install app');
+      if (await promptInstall()) toast(t('menu.installed'));
+    } else openModal(...installGuide(), h('button.btn.ghost', { on: { click: closeModal } }, t('common.close')));
+  } } }, t('menu.install'));
   const off = onInstallChange(() => {
     if (!b.isConnected) return off();
     if (installedThisVisit()) b.remove();
@@ -338,9 +331,50 @@ function installButton() {
 }
 
 function soundToggle() {
-  const b = h('button.icon-btn', { 'aria-label': 'Sound on/off', on: { click: () => setMuted(!app.settings.muted, b) } });
+  const b = h('button.icon-btn', { 'aria-label': t('sound.toggle'), on: { click: () => setMuted(!app.settings.muted, b) } });
   b.replaceChildren(iconEl(app.settings.muted ? 'mute' : 'sound'));
   return b;
+}
+
+// ---------------------------------------------------------------- language (vi / en: client/i18n)
+
+/** Use a language: dictionaries, <html lang>, the landing text; listeners redraw what is on screen. */
+function useLang(l, { save = false } = {}) {
+  if (save) {
+    app.settings.lang = l; // before the redraw: the menu must not ask again
+    db.set('settings', app.settings);
+  }
+  setLang(l);
+  applyStatic(document);
+}
+
+/** Redraw the current screen in the new language. A level keeps its session; an open pause menu reopens. */
+function relabel() {
+  if (app.route === 'menu' || app.route === 'levels') return render();
+  if (app.route !== 'game' || !app.hud) return;
+  const pause = app.modal?.dataset.kind === 'pause';
+  closeModal();
+  app.hud = new Hud(app.level, { replay: app.replay });
+  screen(app.hud.el);
+  app.hud.update(app.session.state, { immediate: true });
+  view.setMargins(app.hud.margins());
+  if (pause) pauseMenu();
+}
+onLangChange(() => relabel());
+
+/** VI | EN segmented switch; a tap saves the player's choice. */
+function langSwitch() {
+  const buttons = LANGS.map((l) => h('button.seg-btn', { lang: l, 'aria-pressed': String(lang() === l), on: { click: () => (audio.onEvent({ type: 'button' }), useLang(l, { save: true })) } }, t(`lang.short.${l}`)));
+  return h('div.seg.lang-seg', { role: 'group', 'aria-label': t('lang.label') }, ...buttons);
+}
+
+/** The language picker: title in both languages, one big button each. */
+function langPicker() {
+  audio.unlock();
+  openModal(
+    h('h2.lang-pick-title', DICTS.vi['lang.pickTitle'], h('br'), h('span.muted', DICTS.en['lang.pickTitle'])),
+    h('div.modal-buttons.lang-pick', ...LANGS.map((l) => h(`button.btn${lang() === l ? '.primary' : ''}`, { lang: l, on: { click: () => (closeModal(), useLang(l, { save: true })) } }, DICTS[l][`lang.${l}`]))),
+  );
 }
 
 async function setMuted(m, btn) {
@@ -359,13 +393,12 @@ function volumeSlider(label, key) {
     clearTimeout(saveSettingsTimer);
     saveSettingsTimer = setTimeout(() => db.set('settings', app.settings), 250);
   };
-  const input = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(app.settings[key] * 100), 'aria-label': `${label} volume`, on: { input: (e) => apply(e.target.value / 100) } });
+  const input = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(app.settings[key] * 100), 'aria-label': t('settings.volume', { label }), on: { input: (e) => apply(e.target.value / 100) } });
   return h('label.volume', h('span', label), input);
 }
 
 /** Graphics: Auto (steps down by itself when frames are slow) or a fixed tier. */
 function qualityPicker() {
-  const label = { auto: 'Auto', high: 'High', medium: 'Med', low: 'Low' };
   const buttons = QUALITY_SETTINGS.map((q) =>
     h('button.seg-btn', { 'aria-pressed': String(app.settings.quality === q), on: { click: () => {
       audio.onEvent({ type: 'button' });
@@ -374,20 +407,20 @@ function qualityPicker() {
       for (const b of buttons) b.setAttribute('aria-pressed', String(b === buttons[QUALITY_SETTINGS.indexOf(q)]));
       applyQuality();
       db.set('settings', app.settings);
-    } } }, label[q]),
+    } } }, t(`quality.${q}`)),
   );
-  return h('div.volume', h('span', 'Graphics'), h('div.seg', { role: 'group', 'aria-label': 'Graphics quality' }, ...buttons));
+  return h('div.volume', h('span', t('settings.graphics')), h('div.seg', { role: 'group', 'aria-label': t('settings.graphicsQuality') }, ...buttons));
 }
 
 function challengePicker() {
   audio.unlock();
   openModal(
-    h('h2', "Chef's Challenge"),
-    h('p.muted', 'A fresh, computer-verified puzzle. Pick the heat:'),
+    h('h2', t('menu.challenge')),
+    h('p.muted', t('challenge.pick')),
     h('div.band-grid', ...['E', 'N', 'H', 'V'].map((b) =>
-      h('button.btn', { on: { click: () => go(`/p/${encodeGenerated(b, Math.floor(Math.random() * 32 ** 5))}`) } }, BANDS[b].name),
+      h('button.btn', { on: { click: () => go(`/p/${encodeGenerated(b, Math.floor(Math.random() * 32 ** 5))}`) } }, t(`band.${b}`)),
     )),
-    h('button.btn.ghost', { on: { click: closeModal } }, 'Back'),
+    h('button.btn.ghost', { on: { click: closeModal } }, t('common.back')),
   );
 }
 
@@ -406,7 +439,7 @@ function showLevels(slug) {
     const open = levelOpen(PACKS, id, app.progress, THEMES);
     const stars = app.progress[id]?.stars ?? 0;
     return open
-      ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', lvl.name ?? id), starsEl(stars, 3, 'stars.small'))
+      ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', pick(lvl.name) || id), starsEl(stars, 3, 'stars.small'))
       : h('div.level-card.locked', h('span.num', String(n)), iconEl('lock'));
   };
   const swatch = (p) => {
@@ -418,20 +451,20 @@ function showLevels(slug) {
   const status = packStatus(PACKS, sel, app.progress, THEMES);
   const tabs = one
     ? null
-    : h('nav.pack-tabs', { 'aria-label': 'Themes' },
+    : h('nav.pack-tabs', { 'aria-label': t('levels.themes') },
         ...PACKS.map((p, k) => {
           const st = packStatus(PACKS, k, app.progress, THEMES);
           const cls = `a.pack-tab${st.open ? '' : '.locked'}`;
           return h(cls, { href: `/levels/${packSlug(p)}`, 'data-nav': true, 'data-pack': p.id, 'aria-current': k === sel ? 'page' : null },
             swatch(p),
-            h('span.pack-tab-text', h('span.pack-tab-name', p.name), h('span.pack-tab-sub', st.open ? `★ ${storyStars([p], app.progress)}/${p.levels.length * 3}` : `★ ${st.need}`)),
+            h('span.pack-tab-text', h('span.pack-tab-name', pick(p.name)), h('span.pack-tab-sub', st.open ? `★ ${storyStars([p], app.progress)}/${p.levels.length * 3}` : `★ ${st.need}`)),
             st.open ? null : iconEl('lock'),
           );
         }),
       );
   screen(
     h('div.levels',
-      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, '← Menu'), h('h2', one ? pack.name : 'Levels'), h('span.badge', `★ ${storyStars(PACKS, app.progress)}/${STORY.length * 3}`)),
+      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.backToMenu')), h('h2', one ? pick(pack.name) : t('levels.title')), h('span.badge', `★ ${storyStars(PACKS, app.progress)}/${STORY.length * 3}`)),
       tabs,
       h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
         status.open ? null : h('p.pack-lock', iconEl('lock'), h('span', lockReason(status))),
@@ -448,14 +481,14 @@ function showLevels(slug) {
 async function startCode(code, { mode }) {
   const d = decodeCode(code);
   if (!d) {
-    toast('That challenge link looks broken.');
+    toast(t('code.broken'));
     return go('/', { replace: true });
   }
   if (d.kind === 'story') {
     const id = SHARE[d.index];
     return id && getLevel(id) ? startLevel(getLevel(id), { mode: 'challenge', code: d.code }) : go('/', { replace: true });
   }
-  screen(h('div.loading', h('div.spinner'), h('p', d.kind === 'daily' ? "Lighting today's grill…" : 'Prepping your challenge…')));
+  screen(h('div.loading', h('div.spinner'), h('p', t(d.kind === 'daily' ? 'code.loadingDaily' : 'code.loadingChallenge'))));
   app.route = 'loading';
   app.fit = null;
   // the daily: the copy saved on this device, else the server's pre-built one (Cron), else build it here (same code,
@@ -466,7 +499,7 @@ async function startCode(code, { mode }) {
   if (d.kind === 'daily' && !saved && res?.ok) db.set(`dailyLevel:${d.date}`, { code: d.code, rulesVersion: PUZZLE_RULE_VERSION, level: res.level });
   if (parseRoute().name !== (mode === 'daily' ? 'daily' : 'code')) return; // navigated away meanwhile
   if (!res?.ok) {
-    toast('Could not build that puzzle.');
+    toast(t('code.failed'));
     return go('/', { replace: true });
   }
   startLevel(res.level, { mode: d.kind === 'daily' ? 'daily' : 'challenge', code: d.code });
@@ -490,10 +523,10 @@ function startLevel(level, { mode, code = null }) {
   app.fit = () => app.hud.margins();
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
-  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(level.hint);
+  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(pick(level.hint));
   dismissCoach();
   if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
-  if (app.target) app.hud.tip(`A friend finished this in ${app.target} moves. Can you beat it?`);
+  if (app.target) app.hud.tip(t('tip.friend', { moves: app.target }));
   window.__gameReady = true;
 }
 
@@ -531,12 +564,12 @@ function startReplay(level, request) {
   view.setState(player.state);
   if (!player.valid) {
     openModal(
-      h('h2', 'Can’t show this replay'),
-      h('p.muted', `The moves in this link don’t play out on this board (${player.error}). It may come from an older version of the game, or the link got cut.`),
-      h('div.modal-buttons', h('a.btn.primary', { href: location.pathname, 'data-nav': true }, 'Play the level'), h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu')),
+      h('h2', t('replay.invalidTitle')),
+      h('p.muted', t('replay.invalidBody', { error: player.error })),
+      h('div.modal-buttons', h('a.btn.primary', { href: location.pathname, 'data-nav': true }, t('replay.playLevel')), h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.menu'))),
     );
   } else {
-    app.hud.tip(player.source === 'best' ? `The best solution: ${player.actions.length} moves.` : `A replay: ${player.actions.length} actions.`);
+    app.hud.tip(t(player.source === 'best' ? 'replay.tipBest' : 'replay.tip', { n: player.actions.length }));
     player.play();
     app.hud.update(player.state);
   }
@@ -551,13 +584,13 @@ function stopReplay() {
 function replayEndCard(p) {
   const s = p.state;
   openModal(
-    h('h2.win', p.source === 'best' ? 'That’s the best line' : 'Replay finished'),
-    h('p.muted', s.status === 'won' ? `Cleared in ${s.movesUsed} moves.` : s.status === 'lost' ? 'This run lost the level.' : `Stopped after ${s.movesUsed} moves.`),
-    h('p.replay-hash', 'Final board ', h('code', p.finalHash), p.matches ? h('span.verified.ok', '✓ same as the shared run') : null),
+    h('h2.win', t(p.source === 'best' ? 'replay.endBest' : 'replay.end')),
+    h('p.muted', s.status === 'won' ? t('replay.cleared', { n: s.movesUsed }) : s.status === 'lost' ? t('replay.lost') : t('replay.stopped', { n: s.movesUsed })),
+    h('p.replay-hash', t('replay.finalBoard'), h('code', p.finalHash), p.matches ? h('span.verified.ok', t('replay.same')) : null),
     h('div.modal-buttons',
-      h('a.btn.primary', { href: location.pathname, 'data-nav': true }, 'Play it yourself'),
-      h('button.btn', { on: { click: () => (closeModal(), p.restart(), p.play(), app.hud.update(p.state)) } }, 'Watch again'),
-      h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
+      h('a.btn.primary', { href: location.pathname, 'data-nav': true }, t('replay.playYourself')),
+      h('button.btn', { on: { click: () => (closeModal(), p.restart(), p.play(), app.hud.update(p.state)) } }, t('replay.again')),
+      h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.menu')),
     ),
   );
 }
@@ -617,7 +650,7 @@ async function hint() {
       view.select(null);
       view.setTargets(null);
     }, 1600);
-  } else toast(r?.solvable === false ? 'No win from here: undo or restart.' : 'The chef is thinking too hard. Try again.');
+  } else toast(t(r?.solvable === false ? 'hint.noWin' : 'hint.busy'));
 }
 
 class Hud {
@@ -625,21 +658,21 @@ class Hud {
   constructor(level, { replay = null } = {}) {
     this.level = level;
     this.replay = replay;
-    const name = app.mode === 'daily' ? `Daily · ${level.id.slice(6)}` : app.mode === 'challenge' && !STORY.includes(level.id) ? `Challenge ${app.code}` : levelLabel(level.id);
+    const name = app.mode === 'daily' ? t('hud.daily', { date: level.id.slice(6) }) : app.mode === 'challenge' && !STORY.includes(level.id) ? t('hud.challenge', { code: app.code }) : levelLabel(level.id);
     // replay: what is playing on top, the level underneath (its name would not fit as well)
-    const title = replay ? (replay.source === 'best' ? 'Best solution' : 'Replay') : name;
-    const sub = replay ? name : level.name ?? '';
+    const title = replay ? t(replay.source === 'best' ? 'hud.bestSolution' : 'hud.replay') : name;
+    const sub = replay ? name : pick(level.name);
     this.movesEl = h('span.moves-num', '0');
     this.goalsEl = h('div.goals');
     this.comboEl = h('div.combo');
     this.tipEl = h('div.tip');
-    this.undoBtn = h('button.tool', { 'aria-label': 'Undo', on: { click: () => (audio.onEvent({ type: 'button' }), undo()) } }, iconEl('undo'), h('span', 'Undo'));
+    this.undoBtn = h('button.tool', { 'aria-label': t('hud.undo'), on: { click: () => (audio.onEvent({ type: 'button' }), undo()) } }, iconEl('undo'), h('span', t('hud.undo')));
     // one button per booster the level grants (generic over BOOSTERS: new ones only need an icon and a tip)
     this.confirming = null;
     this.boosters = app.session.boosterIds().map((id) => {
       const count = h('span.charge');
-      const label = h('span.tool-label', BOOSTERS[id].name);
-      const el = h('button.tool.booster', { 'data-booster': id, 'aria-label': BOOSTERS[id].name, on: { click: () => tapBooster(id) } }, iconEl(id), label, count, app.seenBoosters[id] ? null : h('span.new-tag', 'New'));
+      const label = h('span.tool-label', boosterName(id));
+      const el = h('button.tool.booster', { 'data-booster': id, 'aria-label': boosterName(id), on: { click: () => tapBooster(id) } }, iconEl(id), label, count, app.seenBoosters[id] ? null : h('span.new-tag', t('booster.new')));
       return { id, el, count, label };
     });
     const tool = (label, icon, fn) => h('button.tool', { 'aria-label': label, on: { click: () => (audio.onEvent({ type: 'button' }), fn(), this.update(app.session.state)) } }, iconEl(icon), h('span.tool-label', label));
@@ -647,27 +680,27 @@ class Hud {
       // the viewer's controls instead of undo / hint / boosters
       this.undoBtn = null;
       this.boosters = [];
-      this.playBtn = tool('Pause', 'pause', () => replay.toggle());
-      this.speedBtn = h('button.tool.replay-speed', { 'aria-label': 'Speed', on: { click: () => (audio.onEvent({ type: 'button' }), replay.cycleSpeed(), this.update(replay.state)) } }, h('span.speed-num', '1×'), h('span.tool-label', 'Speed'));
-      this.stepBtn = tool('Step', 'step', () => (replay.pause(), replay.step()));
-      this.skipBtn = tool('End', 'skip', () => replay.skip());
+      this.playBtn = tool(t('hud.pause'), 'pause', () => replay.toggle());
+      this.speedBtn = h('button.tool.replay-speed', { 'aria-label': t('hud.speed'), on: { click: () => (audio.onEvent({ type: 'button' }), replay.cycleSpeed(), this.update(replay.state)) } }, h('span.speed-num', '1×'), h('span.tool-label', t('hud.speed')));
+      this.stepBtn = tool(t('hud.step'), 'step', () => (replay.pause(), replay.step()));
+      this.skipBtn = tool(t('hud.end'), 'skip', () => replay.skip());
     }
     const footer = replay
-      ? h('footer.hud-bottom.compact', tool('Restart', 'restart', () => replay.restart()), this.playBtn, this.stepBtn, this.speedBtn, this.skipBtn)
+      ? h('footer.hud-bottom.compact', tool(t('hud.restart'), 'restart', () => replay.restart()), this.playBtn, this.stepBtn, this.speedBtn, this.skipBtn)
       : h('footer.hud-bottom',
           this.undoBtn,
-          h('button.tool', { 'aria-label': 'Hint', on: { click: () => (audio.onEvent({ type: 'button' }), hint()) } }, iconEl('hint'), h('span', 'Hint')),
-          h('button.tool', { 'aria-label': 'Restart', on: { click: () => (audio.onEvent({ type: 'button' }), restart()) } }, iconEl('restart'), h('span', 'Restart')),
+          h('button.tool', { 'aria-label': t('hud.hint'), on: { click: () => (audio.onEvent({ type: 'button' }), hint()) } }, iconEl('hint'), h('span', t('hud.hint'))),
+          h('button.tool', { 'aria-label': t('hud.restart'), on: { click: () => (audio.onEvent({ type: 'button' }), restart()) } }, iconEl('restart'), h('span', t('hud.restart'))),
           this.boosters.length ? h('span.tool-sep', { 'aria-hidden': 'true' }) : null,
           ...this.boosters.map((b) => b.el),
         );
     this.el = h(`div.hud${replay ? '.replaying' : ''}`,
       h('header.hud-top',
         replay
-          ? h('a.icon-btn', { href: location.pathname, 'data-nav': true, 'aria-label': 'Close replay' }, iconEl('close'))
-          : h('button.icon-btn', { 'aria-label': 'Pause', on: { click: () => pauseMenu() } }, iconEl('pause')),
+          ? h('a.icon-btn', { href: location.pathname, 'data-nav': true, 'aria-label': t('hud.closeReplay') }, iconEl('close'))
+          : h('button.icon-btn', { 'aria-label': t('hud.pause'), on: { click: () => pauseMenu() } }, iconEl('pause')),
         h('div.hud-title', h('div.lvl', title), h('div.lvl-name', sub)),
-        h('div.moves', h('span.moves-label', replay ? 'Step' : 'Moves'), this.movesEl),
+        h('div.moves', h('span.moves-label', t(replay ? 'hud.step' : 'hud.moves')), this.movesEl),
       ),
       this.goalsEl,
       this.comboEl,
@@ -693,8 +726,8 @@ class Hud {
     this.movesEl.textContent = rp ? `${rp.index}/${rp.actions.length}` : String(s.movesLeft);
     this.movesEl.parentElement.classList.toggle('low', !rp && s.movesLeft <= 3 && s.status === 'playing');
     if (rp) {
-      this.playBtn.replaceChildren(iconEl(rp.playing ? 'pause' : 'play'), h('span.tool-label', rp.playing ? 'Pause' : rp.done ? 'Again' : 'Play'));
-      this.playBtn.setAttribute('aria-label', rp.playing ? 'Pause' : 'Play');
+      this.playBtn.replaceChildren(iconEl(rp.playing ? 'pause' : 'play'), h('span.tool-label', t(rp.playing ? 'hud.pause' : rp.done ? 'hud.again' : 'hud.play')));
+      this.playBtn.setAttribute('aria-label', t(rp.playing ? 'hud.pause' : 'hud.play'));
       this.speedBtn.querySelector('.speed-num').textContent = `${rp.speed}×`;
       for (const b of [this.playBtn, this.stepBtn, this.skipBtn]) b.disabled = !rp.valid;
       if (rp.done) this.stepBtn.disabled = this.skipBtn.disabled = true;
@@ -708,13 +741,13 @@ class Hud {
       b.el.disabled = !armed && !ses.canUseBooster(b.id);
       b.el.classList.toggle('armed', armed);
       b.el.setAttribute('aria-pressed', String(armed));
-      b.label.textContent = this.confirming === b.id ? 'Blow!' : ses.armed === b.id ? 'Cancel' : BOOSTERS[b.id].name;
+      b.label.textContent = this.confirming === b.id ? t('booster.blow') : ses.armed === b.id ? t('booster.cancel') : boosterName(b.id);
       if (app.seenBoosters[b.id]) b.el.querySelector('.new-tag')?.remove();
     }
     view.setReach(ses.armed === 'tongs');
     if (!this.goalEls.length) {
       this.goalEls = s.goals.map((g) => {
-        const icon = g.food ? h('img.goal-icon', { src: foodIcon(stage.renderer, g.food), alt: FOODS[g.food].name }) : h('span.goal-icon.all', '🔥');
+        const icon = g.food ? h('img.goal-icon', { src: foodIcon(stage.renderer, g.food), alt: foodName(g.food) }) : h('span.goal-icon.all', '🔥');
         const count = h('span.goal-count');
         const el = h('div.goal', icon, count);
         el.title = goalLabel(g);
@@ -725,7 +758,7 @@ class Hud {
     s.goals.forEach((g, i) => {
       const left = g.target - g.progress;
       const ge = this.goalEls[i];
-      ge.count.textContent = left > 0 ? (g.type === 'clear_all' ? `${left} left` : `×${left}`) : '✓';
+      ge.count.textContent = left > 0 ? (g.type === 'clear_all' ? t('goal.left', { n: left }) : `×${left}`) : '✓';
       ge.el.classList.toggle('done', left <= 0);
     });
   }
@@ -746,7 +779,7 @@ class Hud {
   }
 
   combo(n) {
-    this.comboEl.textContent = n >= 4 ? `Sizzling! x${n}` : n === 3 ? `Hot streak x3` : `Combo x${n}`;
+    this.comboEl.textContent = n >= 4 ? t('combo.sizzling', { n }) : n === 3 ? t('combo.hot') : t('combo.n', { n });
     this.comboEl.classList.remove('show');
     void this.comboEl.offsetWidth;
     this.comboEl.classList.add('show');
@@ -763,18 +796,18 @@ class Hud {
 function goalLabel(g) {
   switch (g.type) {
     case 'clear_all':
-      return 'Clear every item';
+      return t('goal.clear_all');
     case 'clear_food':
     case 'serve_food':
-      return `Serve ${g.target} ${FOODS[g.food].name}`;
+      return t('goal.serve', { n: g.target, food: foodName(g.food) });
     case 'complete_matches':
-      return `Make ${g.target} matches`;
+      return t('goal.matches', { n: g.target });
     case 'reach_score':
-      return `Score ${g.target}`;
+      return t('goal.score', { n: g.target });
     case 'clear_blocker':
-      return 'Open every locked grill';
+      return t('goal.blocker');
     case 'reveal_hidden':
-      return 'Flip every stacked tray';
+      return t('goal.hidden');
   }
   return g.type;
 }
@@ -795,16 +828,17 @@ function closeModal() {
 function pauseMenu() {
   audio.onEvent({ type: 'button' });
   openModal(
-    h('h2', 'Paused'),
+    h('h2', t('pause.title')),
     h('div.modal-buttons',
-      h('button.btn.primary', { on: { click: closeModal } }, 'Resume'),
-      h('button.btn', { on: { click: restart } }, 'Restart'),
-      h('a.btn', { href: '/levels', 'data-nav': true }, 'Levels'),
-      h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
+      h('button.btn.primary', { on: { click: closeModal } }, t('pause.resume')),
+      h('button.btn', { on: { click: restart } }, t('hud.restart')),
+      h('a.btn', { href: '/levels', 'data-nav': true }, t('menu.levels')),
+      h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.menu')),
     ),
-    h('div.volumes', volumeSlider('Effects', 'sfxVolume'), volumeSlider('Ambience', 'ambienceVolume'), qualityPicker()),
+    h('div.volumes', volumeSlider(t('settings.effects'), 'sfxVolume'), volumeSlider(t('settings.ambience'), 'ambienceVolume'), qualityPicker(), h('div.volume', h('span', t('lang.label')), langSwitch())),
     h('div.modal-foot', soundToggle()),
   );
+  app.modal.dataset.kind = 'pause';
 }
 
 async function showResult(won, reason) {
@@ -812,12 +846,12 @@ async function showResult(won, reason) {
   const level = app.level;
   if (!won) {
     openModal(
-      h('h2', reason === 'stuck' ? 'No room left!' : reason === 'charred' ? 'Burnt!' : 'Out of moves'),
-      h('p.muted', reason === 'stuck' ? 'Every slot is full. Undo a move or start over.' : reason === 'charred' ? 'Food left on the heat too long chars. Serve it, or park it on a tray, before its counter runs out.' : 'So close. One more try?'),
+      h('h2', t(reason === 'stuck' ? 'lose.stuck' : reason === 'charred' ? 'lose.charred' : 'lose.moves')),
+      h('p.muted', t(reason === 'stuck' ? 'lose.stuckBody' : reason === 'charred' ? 'lose.charredBody' : 'lose.movesBody')),
       h('div.modal-buttons',
-        h('button.btn.primary', { on: { click: restart } }, 'Try again'),
-        app.session.canUndo() ? h('button.btn', { on: { click: undo } }, 'Undo last move') : null,
-        h('a.btn.ghost', { href: '/', 'data-nav': true }, 'Menu'),
+        h('button.btn.primary', { on: { click: restart } }, t('lose.retry')),
+        app.session.canUndo() ? h('button.btn', { on: { click: undo } }, t('lose.undo')) : null,
+        h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.menu')),
       ),
     );
     return;
@@ -832,37 +866,37 @@ async function showResult(won, reason) {
     ? submitResult(app.mode === 'daily' ? 'daily' : 'challenge', app.code, { code: app.code, date: app.mode === 'daily' ? level.id.slice(6) : undefined, moves: app.session.replayString(), hash: app.session.finalHash(), versions: VERSIONS })
     : null;
   const daily = app.mode === 'daily' ? await dailyPanel(level.id.slice(6), s.movesUsed, submitted) : null;
-  const t = min ? starThresholds(min) : null;
+  const th = min ? starThresholds(min) : null;
   const idx = storyIndex(level.id);
   const nextId = app.mode === 'story' && idx >= 0 ? nextLevelAfter(PACKS, level.id, app.progress, THEMES) : null;
   const moreLocked = app.mode === 'story' && !nextId && idx >= 0 && idx < STORY.length - 1; // next pack not open yet
-  const used = Object.entries(app.session.boostersUsed()).map(([id, n]) => (n > 1 ? `${BOOSTERS[id].name} ×${n}` : BOOSTERS[id].name));
-  const beat = app.target ? (s.movesUsed < app.target ? `You beat your friend's ${app.target} moves!` : s.movesUsed === app.target ? `Tied with your friend's ${app.target} moves.` : `Your friend did it in ${app.target}. Rematch?`) : null;
+  const used = Object.entries(app.session.boostersUsed()).map(([id, n]) => (n > 1 ? t('booster.count', { name: boosterName(id), n }) : boosterName(id)));
+  const beat = app.target ? t(s.movesUsed < app.target ? 'win.beat' : s.movesUsed === app.target ? 'win.tied' : 'win.rematch', { n: app.target }) : null;
   openModal(
-    h('h2.win', stars === 3 ? 'Chef’s kiss!' : 'Order up!'),
+    h('h2.win', t(stars === 3 ? 'win.three' : 'win.title')),
     starsEl(stars, 3, 'stars.big'),
     h('div.result-stats',
-      h('div', h('b', String(s.movesUsed)), h('span', 'moves')),
-      h('div', h('b', String(s.score)), h('span', 'score')),
-      h('div', h('b', `x${s.maxCombo}`), h('span', 'best combo')),
+      h('div', h('b', String(s.movesUsed)), h('span', t('win.moves'))),
+      h('div', h('b', String(s.score)), h('span', t('win.score'))),
+      h('div', h('b', `x${s.maxCombo}`), h('span', t('win.combo'))),
     ),
-    min ? h('p.muted', stars === 3 ? `Solved in ${s.movesUsed}. The best possible is ${min}.` : `3 stars at ${t.three} moves or fewer (best possible: ${min}).`) : null,
-    used.length ? h('p.muted.boosters-used', `Boosters used: ${used.join(', ')}`) : null,
+    min ? h('p.muted', stars === 3 ? t('win.solved', { moves: s.movesUsed, min }) : t('win.threeAt', { three: th.three, min })) : null,
+    used.length ? h('p.muted.boosters-used', t('win.boosters', { list: used.join(', ') })) : null,
     beat ? h('p.beat', beat) : null,
     daily,
-    improved && app.mode === 'story' ? h('p.muted', 'New best saved.') : null,
+    improved && app.mode === 'story' ? h('p.muted', t('win.newBest')) : null,
     h('div.modal-buttons',
       nextId
-        ? h('a.btn.primary', { href: levelPath(nextId), 'data-nav': true }, 'Next level')
+        ? h('a.btn.primary', { href: levelPath(nextId), 'data-nav': true }, t('win.next'))
         : moreLocked
-          ? h('a.btn.primary', { href: '/levels', 'data-nav': true }, 'Levels')
-          : h('a.btn.primary', { href: '/', 'data-nav': true }, 'Menu'),
-      h('button.btn', { on: { click: () => share(s.movesUsed) } }, iconEl('share'), ' Challenge a friend'),
-      h('button.btn.ghost', { on: { click: restart } }, 'Play again'),
+          ? h('a.btn.primary', { href: '/levels', 'data-nav': true }, t('menu.levels'))
+          : h('a.btn.primary', { href: '/', 'data-nav': true }, t('common.menu')),
+      h('button.btn', { on: { click: () => share(s.movesUsed) } }, iconEl('share'), t('win.challenge')),
+      h('button.btn.ghost', { on: { click: restart } }, t('win.again')),
     ),
     h('div.result-links',
-      level.solver?.solution ? h('a.link', { href: `${location.pathname}?r=best`, 'data-nav': true }, iconEl('play'), 'Watch the best solution') : null,
-      h('button.link', { on: { click: () => shareReplay() } }, iconEl('share'), 'Share my replay'),
+      level.solver?.solution ? h('a.link', { href: `${location.pathname}?r=best`, 'data-nav': true }, iconEl('play'), t('win.watchBest')) : null,
+      h('button.link', { on: { click: () => shareReplay() } }, iconEl('share'), t('win.shareReplay')),
     ),
   );
 }
@@ -871,16 +905,16 @@ async function showResult(won, reason) {
 async function shareReplay() {
   const code = app.code ?? encodeStory(shareIndex(app.level.id));
   const url = `${location.origin}/p/${code}?${replayQuery(app.session.replayString(), app.session.finalHash())}`;
-  const text = `Watch how I cleared this Grill Shuffle board in ${app.session.state.movesUsed} moves.`;
+  const text = t('share.replayText', { n: app.session.state.movesUsed });
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'Grill Shuffle replay', text, url });
+      await navigator.share({ title: t('share.replayTitle'), text, url });
       return;
     }
   } catch {}
   try {
     await navigator.clipboard.writeText(`${text} ${url}`);
-    toast('Replay link copied!');
+    toast(t('share.replayCopied'));
   } catch {
     toast(url, 6000);
   }
@@ -893,16 +927,16 @@ async function shareReplay() {
 async function dailyPanel(date, moves, submitted) {
   const streak = (app.streak = advanceStreak(await db.get('dailyStreak', null), date));
   await db.set('dailyStreak', streak);
-  const rank = h('p.daily-rank.muted', 'Checking your moves with the kitchen…');
-  const verified = h('span.verified.pending', 'verifying');
+  const rank = h('p.daily-rank.muted', t('daily.checking'));
+  const verified = h('span.verified.pending', t('daily.verifying'));
   const clock = h('b.countdown', formatCountdown(msUntilNextDaily(Date.now())));
   const panel = h('div.daily-panel',
     h('div.daily-row',
-      h('span.streak', { title: `Best streak: ${streak.best} days` }, '🔥 ', h('b', String(streak.count)), ' day streak'),
+      h('span.streak', { title: t('daily.bestStreak', { n: streak.best }) }, '🔥 ', h('b', String(streak.count)), t('daily.streak')),
       verified,
     ),
     rank,
-    h('p.next-daily', 'Next daily grill in ', clock),
+    h('p.next-daily', t('daily.next'), clock),
   );
   const timer = setInterval(() => {
     const left = msUntilNextDaily(Date.now());
@@ -912,17 +946,17 @@ async function dailyPanel(date, moves, submitted) {
   submitted?.then((r) => {
     if (r?.queued) {
       verified.className = 'verified off';
-      verified.textContent = 'offline';
-      rank.textContent = 'Saved. Your result joins today’s ranking when you are back online.';
+      verified.textContent = t('daily.offline');
+      rank.textContent = t('daily.queued');
     } else if (r?.verified) {
       verified.className = 'verified ok';
-      verified.textContent = '✓ verified';
+      verified.textContent = t('daily.verified');
       rank.textContent = rankLine({ ...r, moves });
       rank.classList.remove('muted');
     } else {
       verified.className = 'verified off';
-      verified.textContent = 'offline';
-      rank.textContent = 'Saved on this device. Rankings need a connection.';
+      verified.textContent = t('daily.offline');
+      rank.textContent = t('daily.local');
     }
   });
   return panel;
@@ -931,16 +965,16 @@ async function dailyPanel(date, moves, submitted) {
 async function share(moves) {
   const code = app.code ?? encodeStory(shareIndex(app.level.id));
   const url = `${location.origin}/p/${code}?m=${moves}`;
-  const text = `I cleared this Grill Shuffle board in ${moves} moves. Can you beat it?`;
+  const text = t('share.text', { n: moves });
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'Grill Shuffle', text, url });
+      await navigator.share({ title: t('share.title'), text, url });
       return;
     }
   } catch {}
   try {
     await navigator.clipboard.writeText(`${text} ${url}`);
-    toast('Challenge link copied!');
+    toast(t('share.copied'));
   } catch {
     toast(url, 6000);
   }
@@ -984,11 +1018,12 @@ function onViewportChange() {
 window.addEventListener('resize', onViewportChange);
 window.addEventListener('orientationchange', onViewportChange);
 window.visualViewport?.addEventListener('resize', onViewportChange); // mobile address bar showing / hiding
-document.fonts?.ready.then(onViewportChange); // Fredoka arriving changes the HUD's size
+document.fonts?.ready.then(onViewportChange); // Baloo 2 arriving changes the HUD's size
 
 async function boot() {
   initVariant(); // ?variant=<n>: design prototypes (CONTRIBUTING.md step 0)
   app.settings = { ...DEFAULT_SETTINGS, ...(await db.get('settings', {})) };
+  useLang(LANGS.includes(urlLang) ? urlLang : detectLang(app.settings.lang, navigator.languages ?? [navigator.language]));
   audio.setMuted(app.settings.muted);
   audio.setVolumes({ sfx: app.settings.sfxVolume, ambience: app.settings.ambienceVolume });
   app.progress = await db.get('progress', {});

@@ -9,6 +9,7 @@
 //
 // Only story stars count: dailies and challenges do not open packs.
 import { isUnlocked } from '../../shared/progression.js';
+import { t, pick } from '../i18n/index.js';
 
 const starred = (progress, id) => (progress[id]?.stars ?? 0) > 0;
 
@@ -68,7 +69,8 @@ export function nextLevelAfter(packs, id, progress, themes) {
 /** Player-facing reason a pack is locked, e.g. "Finish Street BBQ and earn ★ 40" (null when open). */
 export function lockReason(status) {
   if (status.open) return null;
-  const stars = status.need > status.have ? `earn ★ ${status.need}` : null;
-  if (!status.previousDone) return stars ? `Finish ${status.previous.name} and ${stars}` : `Finish ${status.previous.name}`;
-  return `${stars[0].toUpperCase()}${stars.slice(1)} (you have ★ ${status.have})`;
+  const stars = status.need > status.have;
+  const pack = pick(status.previous?.name);
+  if (!status.previousDone) return stars ? t('lock.finishAndEarn', { pack, need: status.need }) : t('lock.finish', { pack });
+  return t('lock.earn', { need: status.need, have: status.have });
 }

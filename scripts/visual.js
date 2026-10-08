@@ -29,8 +29,8 @@ const SET = [
   { name: 'game-430x932', path: `/street-bbq/24?${q}`, w: 430, h: 932, mobile: true },
   { name: 'game-844x390', path: `/street-bbq/27?${q}`, w: 844, h: 390, mobile: true },
   { name: 'game-1280x800', path: `/street-bbq/31?${q}`, w: 1280, h: 800 },
-  { name: 'menu-390x844', path: `/?${q}`, w: 390, h: 844, mobile: true },
-  { name: 'menu-1280x800', path: `/?${q}`, w: 1280, h: 800 },
+  { name: 'menu-390x844', path: `/?${q}&lang=en`, w: 390, h: 844, mobile: true },
+  { name: 'menu-1280x800', path: `/?${q}&lang=en`, w: 1280, h: 800 },
 ];
 
 /** Compare two PNGs (buffers) inside the page. Returns { width, height, changed, ratio, sizeMismatch, diffPng }. */

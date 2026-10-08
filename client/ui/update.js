@@ -5,15 +5,16 @@
 // take over and reloads once it controls the page. Ignoring it is fine: the new version starts on the next launch
 // once every tab of the old one is closed.
 import { h } from './dom.js';
+import { t } from '../i18n/index.js';
 
 let bar = null;
 
 function showUpdate(reg) {
   if (bar?.isConnected) return;
   bar = h('div.update-bar', { role: 'status' },
-    h('span', 'A new version of Grill Shuffle is ready.'),
-    h('button.btn.primary', { on: { click: () => reg.waiting?.postMessage({ type: 'skip-waiting' }) } }, 'Update'),
-    h('button.btn.ghost', { 'aria-label': 'Later', on: { click: () => bar.remove() } }, '✕'),
+    h('span', t('update.ready')),
+    h('button.btn.primary', { on: { click: () => reg.waiting?.postMessage({ type: 'skip-waiting' }) } }, t('update.update')),
+    h('button.btn.ghost', { 'aria-label': t('update.later'), on: { click: () => bar.remove() } }, '✕'),
   );
   document.body.append(bar);
 }

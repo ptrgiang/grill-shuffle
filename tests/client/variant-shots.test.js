@@ -1,7 +1,7 @@
 // scripts/variant-shots.js (specs, labels, comment) and client/ui/variant.js (the ?variant switch).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseLabels, variantPage, commentBody } from '../../scripts/variant-shots.js';
+import { parseLabels, variantPage, commentBody, paramOf } from '../../scripts/variant-shots.js';
 import { parsePage, addQuery, withSection } from '../../scripts/lib/shots.js';
 import { variantFrom, initVariant, variant } from '../../client/ui/variant.js';
 
@@ -38,4 +38,13 @@ test('client variant switch: 1..9 only, read once, mirrored on <html>', () => {
   assert.equal(initVariant({ search: '' }, plain), 0);
   assert.equal(variant(), 0);
   assert.equal(plain.dataset.variant, undefined);
+});
+
+test('variant-shots: sets (several decisions in one issue)', () => {
+  assert.equal(paramOf(null), 'variant');
+  assert.equal(paramOf('font'), 'v-font');
+  assert.equal(variantPage(parsePage('/@390x844m'), 2, 'font').url, '/?freeze=1&quality=high&coach=0&v-font=2');
+  assert.match(commentBody({ issue: 89, sha: 'a', branch: 'b', count: 5, labels: {}, sheets: [], set: 'font' }), /^## 5 variants for #89: font/);
+  initVariant({ search: '?v-font=3&v-switch=5' }, { dataset: {} });
+  assert.deepEqual([variant('font'), variant('switch'), variant('other'), variant()], [3, 5, 0, 0]);
 });

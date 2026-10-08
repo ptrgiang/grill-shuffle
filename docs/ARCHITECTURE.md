@@ -53,6 +53,9 @@ solver/        search over the shared simulation
   benchmark.js
 client/        browser game (Vite root)
   main.js        routes, screens, HUD, wiring
+  i18n/          index.js (t(key, params), pick({ vi, en }), detectLang, setLang; pure), vi.js + en.js (same keys, tested),
+                 dom.js (index.html landing text via data-i18n). Every player-facing string goes through t() in vi and en;
+                 the first launch asks for the language, VI | EN in the menu footer and the pause menu, ?lang= for a visit
   ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), coach.js (first-level
                  onboarding hand), stats.js (?stats=1 overlay), install.js, update.js
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
@@ -72,7 +75,7 @@ client/        browser game (Vite root)
   storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync + offline outbox, flushed on `online`)
   ui/            dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps),
                  update.js (registers the service worker in production builds, "new version" bar)
-  public/        fonts/ (self-hosted Fredoka, OFL), favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
+  public/        fonts/ (self-hosted Baloo 2 with Vietnamese, OFL), favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
                  "Grill Shuffle"; regenerate the PNGs with node scripts/make-icons.js after a logo change)
   sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes)
 content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md)

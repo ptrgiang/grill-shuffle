@@ -86,13 +86,14 @@ async function runLayout(w, h) {
     for (const [path, ui, controls] of [
       ['/street-bbq/31', '.hud-top, .goal, .tool', '.hud button'],
       ['/street-bbq/41', '.hud-top, .goal, .tool', '.hud button'], // + booster buttons
-      ['/', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'],
+      ['/?lang=en', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'], // ?lang: no first-launch picker
+      ['/?lang=vi', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'], // Vietnamese labels run longer
     ]) {
       await page.goto(vite.url + path, { waitUntil: 'load' });
-      if (path !== '/') await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+      if (!path.startsWith('/?')) await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
       else await page.waitForSelector('.menu');
       await settle(page, 900);
-      const where = path === '/' ? 'menu' : 'game';
+      const where = path.startsWith('/?') ? `menu ${path.slice(2)}` : 'game';
       const box = await boardBox(page);
       check(box.left >= 0 && box.top >= 0 && box.right <= w && box.bottom <= h, `${name} ${where}: board fully on screen ${JSON.stringify(box, (k, v) => (typeof v === 'number' ? Math.round(v) : v))}`);
       const hit = (await covers(ui)).filter((r) => overlaps(r, box));
@@ -490,6 +491,47 @@ async function runPacks(name, { w, h }) {
   }
 }
 
+/** Language (#89): the first launch asks once; the choice switches the UI and sticks; the pause menu can change it. */
+async function runLang(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  try {
+    await page.goto(`${vite.url}/`, { waitUntil: 'load' });
+    await page.waitForSelector('.menu');
+    const picker = await page.waitForSelector('.lang-pick button[lang="vi"]', { timeout: 10000 }).catch(() => null);
+    check(!!picker, `${name}: the first launch asks for the language`);
+    await sleep(400);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-picker.png`) });
+    await picker?.tap();
+    await page.waitForFunction(() => document.documentElement.lang === 'vi' && !document.querySelector('.modal-back'), { timeout: 10000 });
+    const menu = await page.evaluate(() => ({
+      play: document.querySelector('.menu-buttons .btn.big')?.textContent,
+      pressed: document.querySelector('.menu-foot .lang-seg [aria-pressed="true"]')?.getAttribute('lang'),
+      landing: document.querySelector('[data-i18n="landing.h.how"]')?.textContent,
+    }));
+    check(menu.play === 'Chơi' && menu.pressed === 'vi' && menu.landing === 'Cách chơi', `${name}: picking Tiếng Việt switches the menu and the landing text (${JSON.stringify(menu)})`);
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForSelector('.menu');
+    await sleep(800);
+    const again = await page.evaluate(() => ({ lang: document.documentElement.lang, asked: !!document.querySelector('.lang-pick') }));
+    check(again.lang === 'vi' && !again.asked, `${name}: the choice is saved, no second question (${JSON.stringify(again)})`);
+    await page.evaluate(() => window.__gs.go('/street-bbq/3?coach=0'));
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const session = await page.evaluate(() => (window.__gsSession = window.__gs.app.session, true));
+    await page.tap('.hud-top .icon-btn');
+    await page.waitForSelector('.modal .lang-seg button[lang="en"]');
+    await page.tap('.modal .lang-seg button[lang="en"]');
+    await page.waitForFunction(() => document.documentElement.lang === 'en', { timeout: 10000 });
+    await sleep(300);
+    const after = await page.evaluate(() => ({ title: document.querySelector('.modal h2')?.textContent, moves: document.querySelector('.moves-label')?.textContent, same: window.__gsSession === window.__gs.app.session }));
+    check(session && after.title === 'Paused' && after.moves === 'Moves' && after.same, `${name}: English from the pause menu relabels the HUD, keeps the level and the pause menu (${JSON.stringify(after)})`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 // `npm run test:e2e -- --only replay,boosters`: just the groups whose name starts with one of those
 const onlyAt = process.argv.indexOf('--only');
@@ -511,6 +553,7 @@ try {
     ['packs-390', () => runPacks('packs-390', { w: 390, h: 844 })],
     ['boosters-390', () => runBoosters('boosters-390', { w: 390, h: 844 })],
     ['replay-390', () => runReplay('replay-390', { w: 390, h: 844 })],
+    ['lang-390', () => runLang('lang-390', { w: 390, h: 844 })],
   ];
   for (const [name, fn] of groups) if (want(name)) await fn();
 } finally {

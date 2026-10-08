@@ -1,6 +1,7 @@
 // "Install app": the browser's own install prompt when it offers one (Chrome / Edge / Samsung Internet fire
 // beforeinstallprompt), otherwise step-by-step instructions for the platform the player is on.
 import { h } from './dom.js';
+import { t } from '../i18n/index.js';
 
 let deferred = null; // the captured beforeinstallprompt event
 let installedNow = false; // installed during this visit (this tab stays a browser tab)
@@ -24,7 +25,7 @@ if (typeof window !== 'undefined') {
     changed();
   });
   // the window title of the installed app is just the name, not the SEO title
-  if (isInstalled()) document.title = 'Grill Shuffle';
+  if (isInstalled()) document.title = t('app.name');
 }
 
 export function platform(ua = navigator.userAgent, touch = navigator.maxTouchPoints > 1) {
@@ -35,28 +36,8 @@ export function platform(ua = navigator.userAgent, touch = navigator.maxTouchPoi
   return 'desktop';
 }
 
-const GUIDES = {
-  ios: {
-    title: 'iPhone / iPad',
-    steps: ['In Safari (or Chrome on iOS 16.4+), tap the Share button (square with an up arrow).', 'Scroll down the share sheet.', 'Tap “Add to Home Screen”, then “Add”.'],
-  },
-  android: {
-    title: 'Android',
-    steps: ['Open the browser menu (⋮).', 'Tap “Install app” or “Add to Home screen”.', 'Confirm with “Install”.'],
-  },
-  desktop: {
-    title: 'Computer (Chrome / Edge)',
-    steps: ['Click the install icon at the right end of the address bar, or open the browser menu.', 'Choose “Install Grill Shuffle”.', 'Confirm with “Install”.'],
-  },
-  'mac-safari': {
-    title: 'Mac (Safari)',
-    steps: ['Open the File menu.', 'Choose “Add to Dock”.', 'Confirm with “Add”.'],
-  },
-  'firefox-desktop': {
-    title: 'Firefox',
-    steps: ['Firefox on a computer cannot install web apps.', 'Open this page in Chrome, Edge or Safari.', 'Then use “Install app” there.'],
-  },
-};
+// texts: install.<platform>.title / .steps in client/i18n
+const PLATFORMS = ['ios', 'android', 'desktop', 'mac-safari', 'firefox-desktop'];
 
 /** Calls `onChange` whenever the native prompt becomes available or the app gets installed. */
 export function onInstallChange(onChange) {
@@ -80,12 +61,12 @@ export async function promptInstall() {
 
 /** Modal content: this platform's steps first, the others folded below. */
 export function installGuide(current = platform()) {
-  const block = (key) => h('div.install-steps', h('h3', GUIDES[key].title), h('ol', GUIDES[key].steps.map((s) => h('li', s))));
-  const others = ['ios', 'android', 'desktop', 'mac-safari'].filter((k) => k !== current);
+  const block = (key) => h('div.install-steps', h('h3', t(`install.${key}.title`)), h('ol', t(`install.${key}.steps`).map((s) => h('li', s))));
+  const others = PLATFORMS.filter((k) => k !== current && k !== 'firefox-desktop');
   return [
-    h('h2', 'Install app'),
-    h('p.muted', 'Play Grill Shuffle in its own window, with its icon on your home screen or desktop.'),
+    h('h2', t('install.title')),
+    h('p.muted', t('install.intro')),
     block(current),
-    h('details.install-more', h('summary', 'Other devices'), others.map(block)),
+    h('details.install-more', h('summary', t('install.others')), others.map(block)),
   ];
 }

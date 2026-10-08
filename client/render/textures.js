@@ -144,13 +144,13 @@ export function badgeTexture(text, { bg = '#2b2230', fg = '#fff3e0', ring = '#ff
     g.fillStyle = fg;
     g.fillRect(42, 46, 44, 34);
     g.fillStyle = bg;
-    g.font = 'bold 30px Fredoka, system-ui, sans-serif';
+    g.font = 'bold 30px "Baloo 2", system-ui, sans-serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(text, 64, 65);
   } else {
     g.fillStyle = fg;
-    g.font = 'bold 54px Fredoka, system-ui, sans-serif';
+    g.font = 'bold 54px "Baloo 2", system-ui, sans-serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(text, 64, 68);
