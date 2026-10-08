@@ -82,7 +82,7 @@ async function runLayout(w, h) {
     page.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => { const r = e.getBoundingClientRect(); return { sel, left: r.left, right: r.right, top: r.top, bottom: r.bottom, w: r.width, h: r.height, label: e.getAttribute('aria-label') || e.textContent.trim().slice(0, 24) }; }).filter((r) => r.w > 0 && r.h > 0), sel);
   try {
     for (const [path, ui, controls] of [
-      ['/level/31', '.hud-top, .goal, .tool', '.hud button'],
+      ['/street-bbq/31', '.hud-top, .goal, .tool', '.hud button'],
       ['/', '.logo, .menu-buttons, .menu-foot', '.menu button, .menu a'],
     ]) {
       await page.goto(vite.url + path, { waitUntil: 'load' });
@@ -117,7 +117,7 @@ async function run(name, { w, h, mobile, levelId, mode }) {
     await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     const path = await page.evaluate(() => location.pathname);
-    check(path === `/level/${STORY.indexOf(levelId) + 1}`, `${name}: /play/${levelId} is rewritten to the on-screen number (${path})`);
+    check(path === `/street-bbq/${STORY.indexOf(levelId) + 1}`, `${name}: /play/${levelId} is rewritten to /street-bbq/<on-screen number> (${path})`);
     await settle(page, 600);
     const state = () => page.evaluate(() => ({ status: window.__gs.state.status, movesUsed: window.__gs.state.movesUsed, grills: window.__gs.state.grills.map((g) => g.slots.map((x) => x && x.food)) }));
 
@@ -240,7 +240,7 @@ async function runCharred(name, { w, h, mobile, levelId }) {
   const errors = [];
   collectPageErrors(page, errors);
   try {
-    await page.goto(`${vite.url}/level/${STORY.indexOf(levelId) + 1}`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/street-bbq/${STORY.indexOf(levelId) + 1}`, { waitUntil: 'load' });
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     await settle(page, 600);
     const badges = await page.evaluate(() => window.__gs.state.grills.flatMap((g) => g.slots).filter((it) => it?.burn).length);
@@ -272,8 +272,10 @@ async function runQuality(name, { w, h }) {
   const errors = [];
   collectPageErrors(page, errors);
   try {
-    await page.goto(`${vite.url}/level/27?quality=low&coach=0`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/level/27?quality=low&coach=0`, { waitUntil: 'load' }); // an old (pre-#63) link
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const url = await page.evaluate(() => location.pathname + location.search);
+    check(url === '/street-bbq/27?quality=low&coach=0', `${name}: the old /level/27 link lands on /street-bbq/27 with its query (${url})`);
     await settle(page, 1500);
     check(await page.evaluate(() => window.__gs.stage.tierName) === 'low', `${name}: ?quality=low applies the low tier`);
     const frames = () => page.evaluate(() => window.__gs.stage.renderer.info.render.frame);

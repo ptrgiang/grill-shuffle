@@ -3,7 +3,7 @@
 One Worker (`worker/index.js`) + Workers Static Assets (`dist/`, the Vite build) + D1. Config: `wrangler.jsonc`.
 
 - `run_worker_first: ["/api/*"]`: only the API runs code; everything else is served as static assets.
-- `not_found_handling: "single-page-application"`: `/level/<n>`, `/play/…`, `/p/<code>`, `/daily`, `/levels` serve `index.html`.
+- `not_found_handling: "single-page-application"`: `/<pack>/<n>` (e.g. `/street-bbq/12`), `/level/<n>`, `/play/…`, `/p/<code>`, `/daily`, `/levels` serve `index.html`.
 - `/sandbox/board` resolves to `sandbox/board.html` (default html handling).
 
 ## API

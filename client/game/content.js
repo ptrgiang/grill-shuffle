@@ -15,8 +15,11 @@ packs.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.id.localeCompare(b.id)
 
 export const THEMES = Object.fromEntries(Object.values(themeFiles).map((t) => [t.id, t]));
 
-/** Story order: every pack's levels, in pack order. */
-export const STORY = packs.flatMap((p) => p.levels.filter((id) => levels.has(id)));
+/** Packs for routes and the level select: { id, slug?, name, theme, levels } with only levels that exist. */
+export const PACKS = packs.map((p) => ({ ...p, levels: p.levels.filter((id) => levels.has(id)) }));
+
+/** Story order: every pack's levels, in pack order (unlocks, "next level", continue). */
+export const STORY = PACKS.flatMap((p) => p.levels);
 
 export const getLevel = (id) => levels.get(id) ?? null;
 export const getPacks = () => packs;

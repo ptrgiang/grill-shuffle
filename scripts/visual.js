@@ -23,11 +23,11 @@ const q = 'freeze=1&quality=high&coach=0';
 const SET = [
   { name: 'food-lineup', path: `/sandbox/food?spin=0&seed=1&${q}`, w: 1200, h: 700 },
   { name: 'board-desktop', path: `/sandbox/board?level=street-003&anim=0&${q}`, w: 1280, h: 800 },
-  { name: 'game-360x640', path: `/level/31?${q}`, w: 360, h: 640, mobile: true },
-  { name: 'game-390x844', path: `/level/1?${q}`, w: 390, h: 844, mobile: true },
-  { name: 'game-430x932', path: `/level/24?${q}`, w: 430, h: 932, mobile: true },
-  { name: 'game-844x390', path: `/level/27?${q}`, w: 844, h: 390, mobile: true },
-  { name: 'game-1280x800', path: `/level/31?${q}`, w: 1280, h: 800 },
+  { name: 'game-360x640', path: `/street-bbq/31?${q}`, w: 360, h: 640, mobile: true },
+  { name: 'game-390x844', path: `/street-bbq/1?${q}`, w: 390, h: 844, mobile: true },
+  { name: 'game-430x932', path: `/street-bbq/24?${q}`, w: 430, h: 932, mobile: true },
+  { name: 'game-844x390', path: `/street-bbq/27?${q}`, w: 844, h: 390, mobile: true },
+  { name: 'game-1280x800', path: `/street-bbq/31?${q}`, w: 1280, h: 800 },
   { name: 'menu-390x844', path: `/?${q}`, w: 390, h: 844, mobile: true },
   { name: 'menu-1280x800', path: `/?${q}`, w: 1280, h: 800 },
 ];

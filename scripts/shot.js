@@ -30,7 +30,7 @@ const SET = [
   ...['high', 'medium', 'low'].map((q) => ({ path: `/play/street-009?coach=0&stats=1&quality=${q}`, w: 390, h: 844, mobile: true, out: `quality-${q}-390.png` })),
   { path: '/play/street-003?coach=0&quality=low', w: 1280, h: 800, out: 'quality-low-desktop.png' },
   ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].flatMap(([w, h]) => [
-    { path: '/level/31', w, h, mobile: w < 1000, out: `layout-game-${w}x${h}.png` },
+    { path: '/street-bbq/31', w, h, mobile: w < 1000, out: `layout-game-${w}x${h}.png` },
     { path: '/', w, h, mobile: w < 1000, out: `layout-menu-${w}x${h}.png` },
   ]),
 ];

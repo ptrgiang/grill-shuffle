@@ -11,7 +11,7 @@
    npm run test:e2e                # when input / UI changed (safe headless launcher)
    npm run shot -- --set           # when visuals changed: look at every PNG
    ```
-   After opening the PR, for any UI change: `npm run pr-shots -- --pages "/level/27@390x844m+select,..."` puts
+   After opening the PR, for any UI change: `npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,..."` puts
    before / after pairs (main vs the branch) into the PR body, so the reviewer sees the change without a checkout.
 4. **Pull request** into `main`, using the template, with `Closes #<issue>`. CI (`checks` job) must be green; on
    PRs touching `client/`, `content/` or `shared/` the `visual` workflow pixel-compares frozen captures against
