@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Brand Sandbox</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      html, body { height: auto; overflow: auto; }
+      body { margin: 0; padding: 18px; background: #2a1a14; color: #d9c2ad; }
+      .row { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; }
+      .cell { text-align: center; font-weight: 600; }
+      .big { width: 300px; }
+      .small { display: flex; gap: 14px; justify-content: center; align-items: end; margin-top: 8px; }
+      .s64 { width: 64px; } .s32 { width: 32px; }
+      svg { display: block; width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <!-- the Bà Năm's Grill badge (client/ui/brand.js): ?style=1..5 (or ?variant=) one style, else all; big, 64 px and 32 px (icons) -->
+    <div class="row" id="out"></div>
+    <script type="module" src="./brand.js"></script>
+  </body>
+</html>

@@ -38,6 +38,7 @@ export default defineConfig({
       input: {
         index: r('client/index.html'),
         'sandbox/board': r('client/sandbox/board.html'),
+        'sandbox/brand': r('client/sandbox/brand.html'),
         'sandbox/food': r('client/sandbox/food.html'),
       },
     },
