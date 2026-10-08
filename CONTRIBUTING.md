@@ -8,7 +8,7 @@
 3. **Work** (see `CLAUDE.md`): smallest coherent change, tests with it. Locally before pushing:
    ```
    npm run ci                      # check + tests + validate:levels + build
-   npm run test:e2e                # when input / UI changed (safe headless launcher)
+   npm run test:e2e                # when input / UI changed (safe headless launcher; -- --only replay,boosters for some groups)
    npm run shot -- --set           # when visuals changed: look at every PNG
    ```
    After opening the PR, for any UI change: `npm run pr-shots -- --pages "/street-bbq/27@390x844m+select,..."` puts
