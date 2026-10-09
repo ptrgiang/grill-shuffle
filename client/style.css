@@ -388,7 +388,7 @@ body.in-game .landing { display: none; }
 .hud.has-counter .tip.show { transform: rotate(-1.2deg); }
 /* phones held sideways: no counter, the hint keeps its corner note (it must never sit over the board) */
 @media (orientation: landscape) and (max-height: 520px) {
-  .hud.has-counter .tip, .hud.has-counter .tip.show { top: auto; bottom: calc(8px + var(--safe-bottom)); left: calc(10px + var(--safe-left)); width: 176px; transform: none; font-size: 13px; padding: 8px 10px; pointer-events: none; }
+  .hud.has-counter .tip, .hud.has-counter .tip.show { top: auto; bottom: calc(8px + var(--safe-bottom)); left: calc(10px + var(--safe-left)); width: 176px; transform: none; font-size: 13px; padding: 8px 10px; pointer-events: none; background: #fff3e3; border-radius: 14px; text-align: center; }
   .hud.has-counter .tip::before { display: none; }
 }
 .hud.has-counter .tip::before { content: ''; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: #c8302a; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
