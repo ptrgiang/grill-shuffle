@@ -241,6 +241,18 @@ the woven fan over the coals, iced tea in a dented cup, a vendor's call, motorbi
 postcard shorthand (conical hats and áo dài everywhere, the đàn bầu on every cue). Highland people are individuals
 with names, not decor; the Mountain Camp chapter is reviewed by someone from the region before it ships.
 
+**On the board** (#95, owner 2026-10-09: keep all five, each level wears the one that fits it): every stop has five
+looks (`content/themes/<id>.json` `looks`), chosen per level from its name and hint (`content/story/<pack>.json`
+`looks`):
+
+| Hẻm Sài Gòn | | Làng Chài | |
+|---|---|---|---|
+| `cart` | the cart's stainless top, dented and rusty (Út at the cart: laptop, phone, trays) | `sand` | the sand between basket boats (thúng chai) |
+| `stall` | wood with a woven fan, honeycomb coal, iced tea, muối ớt chanh (cooking: coals, heat) | `nets` | driftwood, nets drying, a bucket of ice |
+| `sidewalk` | gạch bông with red plastic stools (customers, neighbours) | `shack` | a stall under a tin roof, late sun (the catch, storms) |
+| `quan` | a quán's flowered plastic tablecloth (dishes, recipes, chefs) | `boat` | blue boat planks, peeling (boats, the sea) |
+| `night` | bare cement at night, the power lines' shadows (night shifts, leaving) | `dusk` | warm sand at sunset (sunset, golden hour, bonfire) |
+
 ## Retention loops (no new currency)
 
 - **The trail**: Bà Năm is always one stop ahead; the next stop is visible as a teaser on the journey map.

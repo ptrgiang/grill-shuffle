@@ -1,5 +1,17 @@
 {
   "pack": "beach_grill",
+  "looks": {
+    "beach-001": "sand", "beach-002": "sand", "beach-003": "boat", "beach-004": "nets", "beach-005": "shack",
+    "beach-006": "nets", "beach-007": "sand", "beach-008": "sand", "beach-009": "nets", "beach-010": "boat",
+    "beach-011": "dusk", "beach-012": "dusk", "beach-013": "shack", "beach-014": "nets", "beach-015": "shack",
+    "beach-016": "boat", "beach-017": "sand", "beach-018": "shack", "beach-019": "boat", "beach-020": "nets",
+    "beach-021": "sand", "beach-022": "sand", "beach-023": "nets", "beach-024": "shack", "beach-025": "nets",
+    "beach-026": "boat", "beach-027": "boat", "beach-028": "dusk", "beach-029": "shack", "beach-030": "shack",
+    "beach-031": "shack", "beach-032": "sand", "beach-033": "nets", "beach-034": "shack", "beach-035": "sand",
+    "beach-036": "sand", "beach-037": "shack", "beach-038": "shack", "beach-039": "boat", "beach-040": "boat",
+    "beach-041": "nets", "beach-042": "sand", "beach-043": "boat", "beach-044": "nets", "beach-045": "dusk",
+    "beach-046": "dusk", "beach-047": "boat", "beach-048": "dusk", "beach-049": "dusk", "beach-050": "sand"
+  },
   "beats": [
     {
       "id": "beach.arrival",

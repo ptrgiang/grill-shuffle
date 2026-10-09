@@ -78,7 +78,7 @@ client/        browser game (Vite root)
   render/        stage.js (renderer, camera, lights, backdrop, theme, quality tier, rAF loop), quality.js (pure: tiers,
                  frame monitor, idle gate), layout.js (pure board layout + hit test),
                  board.js (BoardView: state + events -> animation), grill.js, foods.js, materials.js,
-                 particles.js, textures.js, icons.js
+                 particles.js, textures.js, icons.js, decor.js (a theme's looks: surface, overlay, props)
   audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,
                  hide/show suspend + ambience fade, sfx/ambience volumes, idle buffer warm-up)
   storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync + offline outbox, flushed on `online`)

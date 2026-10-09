@@ -2,11 +2,11 @@
 // theme (content/themes/*.json, shared/themes.js). Knows nothing about rules. The board view (board.js) puts things on it.
 import * as THREE from 'three';
 import { materials, tickMaterials, setEmberDetail, applyMaterialTheme } from './materials.js';
-import { resolveTheme } from '../../shared/themes.js';
+import { resolveTheme, withLook } from '../../shared/themes.js';
 import { TIERS } from './quality.js';
 import { CAMERA_ELEVATION } from './layout.js';
 import { softDot } from './textures.js';
-import { createDecor, decorTheme } from './decor.js';
+import { createDecor } from './decor.js';
 
 const urlFlag = (name) => typeof location !== 'undefined' && new URLSearchParams(location.search).get(name) === '1';
 
@@ -76,11 +76,11 @@ export class Stage {
 
   /**
    * Colour the whole stage for a theme: background, lights, exposure, table, grills (shared materials), vignette and
-   * backdrop. Cheap when the theme id has not changed.
+   * backdrop, dressed in one of the theme's looks (by name, #95: surface, overlay, props). Cheap when neither changed.
    */
-  setTheme(theme = {}) {
-    if (this.theme && theme.id && this.theme.id === theme.id) return;
-    const t = decorTheme(resolveTheme(theme)); // ?variant= theme art prototypes (#95)
+  setTheme(theme = {}, look = null) {
+    if (this.theme && theme.id && this.theme.id === theme.id && (this.theme.look?.name ?? null) === (look && theme.looks?.[look] ? look : null)) return;
+    const t = withLook(resolveTheme(theme), look);
     this.theme = t;
     this.scene.background.set(t.palette.background);
     this.renderer.toneMappingExposure = t.lights.exposure;
@@ -147,7 +147,7 @@ export class Stage {
       this.scene.remove(this.decor.group);
       this.decor.dispose();
     }
-    this.decor = createDecor(this, t);
+    this.decor = createDecor(t);
     this.scene.add(this.decor.group);
     if (this.decor.surface) {
       const m = materials();

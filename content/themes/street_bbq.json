@@ -60,6 +60,57 @@
     "crackle": 7,
     "seed": 21
   },
+  "looks": {
+    "sidewalk": {
+      "surface": "gach_bong",
+      "props": [
+        {"prop": "stool", "side": "left", "at": 0.25, "gap": 0.85},
+        {"prop": "stool", "side": "right", "at": 0.7, "gap": 0.85, "turn": 0.3},
+        {"prop": "tea_cup", "side": "left", "at": 0.75, "gap": 0.6},
+        {"prop": "tea_cup", "side": "right", "at": 0.2, "gap": 0.55},
+        {"prop": "briquette_lit", "side": "right", "at": 0.42, "gap": 0.6}
+      ]
+    },
+    "stall": {
+      "surface": "wood",
+      "props": [
+        {"prop": "fan", "side": "left", "at": 0.3, "gap": 0.8, "turn": 0.4},
+        {"prop": "briquette_lit", "side": "right", "at": 0.25, "gap": 0.6},
+        {"prop": "briquette", "side": "right", "at": 0.48, "gap": 0.6},
+        {"prop": "tea_cup", "side": "left", "at": 0.78, "gap": 0.55},
+        {"prop": "salt_bowl", "side": "right", "at": 0.78, "gap": 0.55}
+      ]
+    },
+    "cart": {
+      "surface": "steel",
+      "lights": {"exposure": 0.95},
+      "props": [
+        {"prop": "tea_cup", "side": "left", "at": 0.2, "gap": 0.55},
+        {"prop": "salt_bowl", "side": "left", "at": 0.62, "gap": 0.5},
+        {"prop": "fan", "side": "right", "at": 0.5, "gap": 0.8, "turn": -0.5}
+      ]
+    },
+    "night": {
+      "surface": "cement",
+      "overlay": "wires",
+      "backdrop": {"count": 34, "opacity": 0.45},
+      "props": [
+        {"prop": "stool", "side": "left", "at": 0.55, "gap": 0.85, "turn": 0.2},
+        {"prop": "stool", "side": "right", "at": 0.3, "gap": 0.85, "turn": -0.2},
+        {"prop": "tea_cup", "side": "right", "at": 0.8, "gap": 0.55}
+      ]
+    },
+    "quan": {
+      "surface": "tablecloth",
+      "lights": {"exposure": 0.92},
+      "props": [
+        {"prop": "tea_cup", "side": "left", "at": 0.25, "gap": 0.55},
+        {"prop": "tea_cup", "side": "right", "at": 0.65, "gap": 0.55},
+        {"prop": "salt_bowl", "side": "left", "at": 0.7, "gap": 0.5},
+        {"prop": "fan", "side": "right", "at": 0.25, "gap": 0.8, "turn": 0.6}
+      ]
+    }
+  },
   "unlock": {
     "stars": 0
   },

@@ -1,13 +1,10 @@
-// Theme art prototypes (#95, design/variants): Vietnamese detail around the board, behind `?variant=1..5`
-// (client/ui/variant.js). Each variant is a recipe per theme: a surface under the grills (the table or the ground),
-// an optional overlay (shadows of power lines, a tin roof), a few code-drawn props in the margins beside the board,
-// and light tweaks. Presentation only. Once the owner picks, the pick moves into theme.json data and this switch goes.
+// A theme's looks (#95): Vietnamese detail around the board. A look (content/themes/<id>.json `looks`, picked per
+// story level in content/story/<pack>.json) is data: a surface under the grills (the table or the ground), an optional
+// overlay cast on it (power lines, a tin roof), and a few code-drawn props in the margins beside the board. This file
+// draws them; shared/themes.js lists the names. Presentation only, no bitmap assets.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { mulberry32 } from '../../shared/rng.js';
-import { variantFrom } from '../ui/variant.js';
-
-// read from the URL here: the stage is built before boot() runs initVariant()
-const pageVariant = () => variantFrom(globalThis.location?.search);
 
 const TABLE_Y = -0.36;
 
@@ -242,26 +239,6 @@ const boatPlanks = () =>
     }
   }, 9);
 
-/** Bamboo slats (a phên tre table top). */
-const bamboo = () =>
-  canvasTex(512, 512, (g, W) => {
-    const rng = mulberry32(31);
-    const n = 16, sw = W / n;
-    for (let i = 0; i < n; i++) {
-      g.fillStyle = `hsl(${38 + rng() * 6}, ${45 + rng() * 10}%, ${58 + rng() * 8}%)`;
-      g.fillRect(i * sw, 0, sw, W);
-      g.fillStyle = 'rgba(255,255,255,.18)';
-      g.fillRect(i * sw + 3, 0, 3, W);
-      g.fillStyle = 'rgba(70,45,20,.4)';
-      g.fillRect(i * sw, 0, 2, W);
-      for (let k = 0; k < 2; k++) {
-        const y = rng() * W; // the nodes
-        g.fillStyle = 'rgba(110,75,35,.45)';
-        g.fillRect(i * sw, y, sw, 4);
-      }
-    }
-  }, 10);
-
 // ---------------------------------------------------------------- overlays (transparent planes on the surface)
 
 /** Shadows of the tangled power lines overhead. */
@@ -334,6 +311,12 @@ const weave = (a = '#c9a15e', b = '#a57c3c', n = 12) =>
 // ---------------------------------------------------------------- props
 
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.7, ...o });
+/** Several placed copies of geometries as one (one draw call): parts = [[geometry, position, rotation]]. */
+const merged = (parts) => {
+  const g = mergeGeometries(parts.map(([geo, [x, y, z], [rx, ry, rz] = [0, 0, 0]]) => geo.rotateX(rx).rotateY(ry).rotateZ(rz).translate(x, y, z)), false);
+  for (const [geo] of parts) geo.dispose();
+  return g;
+};
 const shadowed = (m) => ((m.castShadow = true), (m.receiveShadow = true), m);
 
 /** Trà đá in a dented plastic cup: amber tea, ice on top, a straw. */
@@ -347,12 +330,8 @@ function teaCup() {
   tea.scale.x = 0.9;
   g.add(cup, tea);
   const rng = mulberry32(3);
-  for (let i = 0; i < 4; i++) {
-    const ice = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.13), std({ color: '#eaf6ff', transparent: true, opacity: 0.85, roughness: 0.1 }));
-    ice.position.set((rng() - 0.5) * 0.22, 0.54, (rng() - 0.5) * 0.22);
-    ice.rotation.set(rng(), rng(), rng());
-    g.add(ice);
-  }
+  const cubes = Array.from({ length: 4 }, () => [new THREE.BoxGeometry(0.13, 0.1, 0.13), [(rng() - 0.5) * 0.22, 0.54, (rng() - 0.5) * 0.22], [rng(), rng(), rng()]]);
+  g.add(new THREE.Mesh(merged(cubes), std({ color: '#eaf6ff', transparent: true, opacity: 0.85, roughness: 0.1 })));
   const straw = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.8), std({ color: '#e23b3b' }));
   straw.position.set(0.06, 0.62, 0);
   straw.rotation.z = -0.35;
@@ -431,12 +410,8 @@ function stool(color = '#d8322e') {
   const seat = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.08, 0.95), [mat, mat, std({ map: seatTex, roughness: 0.45 }), mat, mat, mat]));
   seat.position.y = 0.62;
   g.add(seat);
-  for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-    const leg = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.62, 0.12), mat));
-    leg.position.set(x * 0.4, 0.31, z * 0.4);
-    leg.rotation.set(z * 0.12, 0, -x * 0.12);
-    g.add(leg);
-  }
+  const legs = [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([x, z]) => [new THREE.BoxGeometry(0.12, 0.62, 0.12), [x * 0.4, 0.31, z * 0.4], [z * 0.12, 0, -x * 0.12]]);
+  g.add(shadowed(new THREE.Mesh(merged(legs), mat)));
   return g;
 }
 
@@ -511,78 +486,61 @@ function bucket() {
   return g;
 }
 
-// ---------------------------------------------------------------- recipes
+// ---------------------------------------------------------------- looks
 
-// `at`: [side, u, gap]: left / right of the board (u = 0 far … 1 near), far / near (u = 0 left … 1 right); gap = world
-// units between the board's edge and the prop's centre. Props past the visible edge are simply cut off by the frame.
-const P = (make, side, u, gap, rot = 0, scale = 1) => ({ make, at: [side, u, gap], rot, scale });
-
-const LATE_SUN = { lights: { sky: '#ffe0b8', key: '#ffc890', rim: '#ff9a60', keyIntensity: 2.3, exposure: 1.05 }, palette: { background: '#e8a070', vignette: '#7a4a38' } };
-
-const RECIPES = {
-  street_bbq: {
-    // 1: the sidewalk itself: grills on gạch bông, red stools around, iced tea on the floor
-    1: { surface: () => gachBong(0.4), props: [P(stool, 'left', 0.25, 0.85), P(stool, 'right', 0.7, 0.85, 0.3), P(teaCup, 'left', 0.75, 0.6), P(teaCup, 'right', 0.2, 0.55), P(() => briquette(true), 'right', 0.42, 0.6)] },
-    // 2: today's wood, with the stall's things on it: woven fan, honeycomb coal, iced tea, salt-chili-lime
-    2: { props: [P(fan, 'left', 0.3, 0.8, 0.4), P(() => briquette(true), 'right', 0.25, 0.6), P(() => briquette(false), 'right', 0.48, 0.6), P(teaCup, 'left', 0.78, 0.55), P(saltBowl, 'right', 0.78, 0.55)] },
-    // 3: the cart's stainless top, dented and spotted with rust
-    3: { surface: steel, lights: { exposure: 0.95 }, props: [P(teaCup, 'left', 0.2, 0.55), P(saltBowl, 'left', 0.62, 0.5), P(fan, 'right', 0.5, 0.8, -0.5)] },
-    // 4: the alley at night: bare cement, the power lines' tangle cast across it, stools, more lights
-    4: { surface: cement, overlay: wireShadows, backdrop: { count: 34, opacity: 0.45 }, props: [P(stool, 'left', 0.55, 0.85, 0.2), P(stool, 'right', 0.3, 0.85, -0.2), P(teaCup, 'right', 0.8, 0.55)] },
-    // 5: a quán nhậu's plastic tablecloth
-    5: { surface: tablecloth, lights: { exposure: 0.92 }, props: [P(teaCup, 'left', 0.25, 0.55), P(teaCup, 'right', 0.65, 0.55), P(saltBowl, 'left', 0.7, 0.5), P(fan, 'right', 0.25, 0.8, 0.6)] },
-  },
-  beach_grill: {
-    // 1: on the sand between the basket boats
-    1: { surface: () => sand(), props: [P(() => basketBoat(1.5), 'left', 0.35, 1.5), P(() => basketBoat(1.3), 'right', 0.7, 1.35), P(() => floats(4), 'right', 0.15, 0.4), P(shells, 'left', 0.85, 0.6)] },
-    // 2: today's driftwood, nets drying beside the grills
-    2: { props: [P(() => netPatch(2.2, 3.4), 'left', 0.5, 1.2), P(() => netPatch(2.2, 2.6), 'right', 0.4, 1.2), P(bucket, 'right', 0.85, 0.6)] },
-    // 3: the stall under a corrugated tin roof, the late sun
-    3: { overlay: roofShade, ...LATE_SUN, props: [P(bucket, 'left', 0.3, 0.6), P(teaCup, 'right', 0.25, 0.55), P(() => floats(3), 'right', 0.7, 0.4)] },
-    // 4: planks from an old boat, blue paint peeling, a red stripe
-    4: { surface: boatPlanks, props: [P(() => netPatch(2, 3), 'right', 0.5, 1.1), P(() => floats(3), 'left', 0.3, 0.4), P(bucket, 'left', 0.75, 0.6)] },
-    // 5: sand in the late afternoon: a basket boat, a net, long warm light
-    5: { surface: () => sand(1), ...LATE_SUN, props: [P(() => basketBoat(1.5), 'right', 0.4, 1.5), P(() => netPatch(2.2, 3), 'left', 0.45, 1.2), P(shells, 'right', 0.9, 0.5)] },
-  },
+const SURFACES = { gach_bong: () => gachBong(0.4), steel, cement, tablecloth, sand: () => sand(), sand_warm: () => sand(1), boat_planks: boatPlanks };
+const OVERLAYS = { wires: wireShadows, tin_roof: roofShade };
+const PROPS = {
+  stool,
+  tea_cup: teaCup,
+  salt_bowl: saltBowl,
+  fan,
+  briquette: () => briquette(false),
+  briquette_lit: () => briquette(true),
+  basket_boat: () => basketBoat(1.5),
+  floats: () => floats(4),
+  net: () => netPatch(2.2, 3.2),
+  shells,
+  bucket,
+};
+// surfaces are shared and kept (a handful of 512² canvases); props are rebuilt per look and disposed with it
+const surfaces = new Map();
+const surface = (name) => {
+  if (!SURFACES[name]) return null; // 'wood' and none: the theme's own planks
+  if (!surfaces.has(name)) surfaces.set(name, SURFACES[name]());
+  return surfaces.get(name);
 };
 
-/** The recipe of this page load for a theme (null: the shipped look). */
-export function decorRecipe(themeId, v = pageVariant()) {
-  return RECIPES[themeId]?.[v] ?? null;
-}
-
-/** Light / palette / backdrop tweaks of the recipe, merged onto the resolved theme. */
-export function decorTheme(t) {
-  const r = decorRecipe(t.id);
-  if (!r) return t;
-  return { ...t, lights: { ...t.lights, ...r.lights }, palette: { ...t.palette, ...r.palette }, backdrop: { ...t.backdrop, ...r.backdrop } };
-}
-
-/** Builds the recipe's surface / overlay / props on the stage; `fit(view)` places them each time the frame changes. */
-export function createDecor(stage, t) {
-  const r = decorRecipe(t.id);
+/**
+ * Builds a resolved theme's look (`t.look`, shared/themes.js withLook) for the stage: `surface` (a texture for the
+ * table, or null), `group` (overlay + props, at table height) and `fit(view)`, which places them each time the frame
+ * changes. view: { x0, x1, z0, z1 } the visible table area, { w, d } the board.
+ */
+export function createDecor(t) {
+  const look = t.look;
   const group = new THREE.Group();
   group.position.y = TABLE_Y;
-  if (!r) return { group, surface: null, fit() {}, dispose() {} };
+  if (!look) return { group, surface: null, fit() {}, dispose() {} };
   let overlay = null;
-  if (r.overlay) {
-    overlay = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: r.overlay(), transparent: true, depthWrite: false, toneMapped: false }));
+  if (OVERLAYS[look.overlay]) {
+    overlay = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: OVERLAYS[look.overlay](), transparent: true, depthWrite: false, toneMapped: false }));
     overlay.rotation.x = -Math.PI / 2;
     overlay.position.y = 0.015;
     overlay.renderOrder = -1;
     group.add(overlay);
   }
-  const props = r.props.map((p) => {
-    const o = p.make();
-    o.rotation.y = p.rot;
-    o.scale.setScalar(p.scale);
+  const props = (look.props ?? []).filter((p) => PROPS[p.prop]).map((p) => {
+    const o = PROPS[p.prop]();
+    o.rotation.y = p.turn ?? 0;
+    o.scale.setScalar(p.size ?? 1);
     group.add(o);
-    return { o, at: p.at };
+    return { o, side: p.side, u: p.at, gap: p.gap };
   });
   return {
     group,
-    surface: r.surface ? r.surface() : null,
-    /** view: { x0, x1, z0, z1 } visible table area, { w, d } the board. */
+    surface: surface(look.surface),
+    // `side`: left / right of the board (u = 0 far … 1 near), far / near (u = 0 left … 1 right); gap = world units
+    // between the board's edge and the prop's centre. Past the visible edge a prop is simply cut off by the frame.
     fit({ x0, x1, z0, z1, w, d }) {
       if (overlay) {
         overlay.scale.set(x1 - x0, z1 - z0, 1);
@@ -591,11 +549,11 @@ export function createDecor(stage, t) {
       }
       const zs = Math.max(z0 + 0.4, -d / 2 - 0.3), ze = Math.min(z1 - 0.4, d / 2 + 0.3);
       const half = Math.min(-x0, x1);
-      for (const { o, at: [side, u, gap] } of props) {
+      for (const { o, side, u, gap } of props) {
         const sg = side === 'left' ? -1 : 1;
         if (side === 'far' || side === 'near') o.position.set(-w / 2 + w * u, 0, (side === 'far' ? -1 : 1) * (d / 2 + gap));
         else if (half - w / 2 >= gap * 1.4) o.position.set(sg * (w / 2 + gap), 0, zs + (ze - zs) * u);
-        else if (gap >= 1.2) o.position.set(sg * half, 0, z1 - gap * 0.5); // a big one (a boat): half out of the corner
+        else if (gap >= 1.2) o.position.set(sg * half, 0, z1 - gap * 0.5); // a big one (a boat, a net): half out of the corner
         else {
           // no room beside the board (a wide board on a wide screen): the strip below it, from the corners inwards
           const zn = Math.min(z1 - gap * 0.7, d / 2 + gap);
@@ -606,7 +564,7 @@ export function createDecor(stage, t) {
     dispose() {
       group.traverse((o) => {
         o.geometry?.dispose();
-        for (const m of [o.material].flat()) if (m) (m.map?.dispose(), m.dispose());
+        for (const m of [o.material].flat()) if (m) (m.map?.dispose(), m.emissiveMap?.dispose(), m.dispose());
       });
     },
   };

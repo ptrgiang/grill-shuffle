@@ -2,13 +2,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { THEME_DEFAULTS, resolveTheme, validateTheme, validateThemeIcon } from '../../shared/themes.js';
+import { THEME_DEFAULTS, resolveTheme, validateTheme, validateThemeIcon, withLook } from '../../shared/themes.js';
 import { ambienceLoop } from '../../client/audio/synth.js';
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'));
 const street = read('../../content/themes/street_bbq.json');
+const beach = read('../../content/themes/beach_grill.json');
 const mint = read('../fixtures/themes/test_mint.json');
-const look = ({ id, name, description, foods, mechanics, ...rest }) => rest;
+const look = ({ id, name, description, foods, mechanics, looks, ...rest }) => rest; // the plain stage (looks: #95)
 
 test('themes: Street BBQ and the test fixture are valid', () => {
   assert.deepEqual(validateTheme(street), []);
@@ -16,7 +17,34 @@ test('themes: Street BBQ and the test fixture are valid', () => {
 });
 
 test('themes: Street BBQ is exactly the default look (the refactor changed nothing on screen)', () => {
-  assert.deepEqual(look(resolveTheme(street)), JSON.parse(JSON.stringify(THEME_DEFAULTS)));
+  assert.deepEqual(look(resolveTheme(street)), look(JSON.parse(JSON.stringify(THEME_DEFAULTS))));
+});
+
+test('themes: five looks per shipped theme (#95), valid; a look tunes lights / palette / backdrop on top', () => {
+  assert.deepEqual(validateTheme(beach), []);
+  assert.deepEqual(Object.keys(street.looks), ['sidewalk', 'stall', 'cart', 'night', 'quan']);
+  assert.deepEqual(Object.keys(beach.looks), ['sand', 'nets', 'shack', 'boat', 'dusk']);
+  const t = resolveTheme(beach);
+  const dusk = withLook(t, 'dusk');
+  assert.equal(dusk.look.name, 'dusk');
+  assert.equal(dusk.lights.key, '#ffc890', 'the late sun');
+  assert.equal(dusk.lights.sky, '#ffe0b8');
+  assert.equal(dusk.lights.rimIntensity, t.lights.rimIntensity, 'untouched keys stay the theme’s');
+  assert.equal(withLook(t, null).look, null);
+  assert.equal(withLook(t, 'nope').look, null, 'an unknown look is the plain theme');
+  assert.deepEqual(withLook(t, null).lights, t.lights);
+});
+
+test('themes: look validation catches unknown surfaces, props, sides and tunes', () => {
+  const bad = (looks) => validateTheme({ ...mint, looks }).join();
+  assert.equal(bad({ ok: { surface: 'sand', props: [{ prop: 'stool', side: 'left', at: 0.5, gap: 0.8 }] } }), '');
+  assert.match(bad({ a: { surface: 'marble' } }), /looks.a: surface must be one of/);
+  assert.match(bad({ a: { overlay: 'rain' } }), /overlay must be one of/);
+  assert.match(bad({ a: { props: [{ prop: 'piano', side: 'left', at: 0.5, gap: 1 }] } }), /prop must be one of/);
+  assert.match(bad({ a: { props: [{ prop: 'stool', side: 'up', at: 2, gap: 1 }] } }), /side must be one of.*at must be 0..1/);
+  assert.match(bad({ a: { lights: { keyy: 1 } } }), /unknown key looks.a.lights.keyy/);
+  assert.match(bad({ a: { tilt: 1 } }), /unknown key tilt/);
+  assert.match(bad({ 'Bad-Name': {} }), /snake_case/);
 });
 
 test('themes: a partial theme is completed from the defaults; its own values win', () => {

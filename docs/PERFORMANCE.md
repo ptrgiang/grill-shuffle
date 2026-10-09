@@ -59,6 +59,10 @@ Headless reference, `/play/street-009` at 390 × 844 @3× in SwiftShader: high 9
 85 calls / 30.0k (no shadow pass); CPU per frame 2–3 ms in every tier, so on real phones the GPU (fill rate: pixel
 ratio, shadow pass, ember shader) is the cost the tiers cut.
 
+Looks (#95, props beside the board): low tier, 390 × 844, `/saigon-alley/3` (sidewalk: two stools, two cups, a
+coal) 89 → 116 calls, 35.3k → 36.2k triangles; `/saigon-alley/19` (night) 89 → 109; `/saigon-alley/2` (cart)
+71 → 82; CPU per frame unchanged (~1 ms). Props merge their repeated parts (stool legs, ice cubes) into one mesh.
+
 - Headless Chrome with **SwiftShader** (software GL, no GPU) at 1280 × 800: ~8 fps; 390 × 844 @3×: ~6 fps.
   Not a target measurement, only a floor: the animation clock clamps dt to 50 ms, so animations run slower there
   but never skip. Measure real devices with the browser's performance panel on `/sandbox/board`.
