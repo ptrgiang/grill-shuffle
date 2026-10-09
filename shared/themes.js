@@ -114,12 +114,19 @@ export function validateTheme(theme) {
     else for (const [name, look] of Object.entries(theme.looks)) errors.push(...validateLook(look, `looks.${name}`, walk, name));
   }
 
-  if (theme.backdrop?.preset !== undefined && !BACKDROP_PRESETS.includes(theme.backdrop.preset)) err(`backdrop.preset must be one of ${BACKDROP_PRESETS.join(', ')}`);
+  errors.push(...backdropLimits(theme.backdrop, 'backdrop'));
   if (theme.ambience?.preset !== undefined && !AMBIENCE_PRESETS.includes(theme.ambience.preset)) err(`ambience.preset must be one of ${AMBIENCE_PRESETS.join(', ')}`);
-  if (theme.backdrop?.count !== undefined && (!Number.isInteger(theme.backdrop.count) || theme.backdrop.count > 80)) err('backdrop.count must be an integer 0..80');
   if (theme.table?.planks !== undefined && (!Number.isInteger(theme.table.planks) || theme.table.planks < 1 || theme.table.planks > 16)) err('table.planks must be an integer 1..16');
   if (theme.unlock?.stars !== undefined && !Number.isInteger(theme.unlock.stars)) err('unlock.stars must be an integer');
   if (theme.story?.transition !== undefined && !STORY_TRANSITIONS.includes(theme.story.transition)) err(`story.transition must be one of ${STORY_TRANSITIONS.join(', ')}`);
+  return errors;
+}
+
+/** The backdrop's preset and sprite count, for a theme and for a look's override. */
+function backdropLimits(b, path) {
+  const errors = [];
+  if (b?.preset !== undefined && !BACKDROP_PRESETS.includes(b.preset)) errors.push(`${path}.preset must be one of ${BACKDROP_PRESETS.join(', ')}`);
+  if (b?.count !== undefined && (!Number.isInteger(b.count) || b.count > 80)) errors.push(`${path}.count must be an integer 0..80`);
   return errors;
 }
 
@@ -147,6 +154,7 @@ function validateLook(look, path, walk, name) {
       });
   }
   for (const k of LOOK_TUNES) if (look[k] !== undefined) walk(look[k], THEME_DEFAULTS[k], `${path}.${k}`); // reports into the theme's list
+  errors.push(...backdropLimits(look.backdrop, `${path}.backdrop`));
   return errors;
 }
 

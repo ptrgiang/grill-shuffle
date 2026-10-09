@@ -624,7 +624,7 @@ function startLevel(level, { mode, code = null }) {
   app.code = code ?? (mode === 'story' ? encodeStory(shareIndex(level.id)) : null);
   const m = Number(new URLSearchParams(location.search).get('m'));
   app.target = Number.isFinite(m) && m > 0 ? m : null;
-  useTheme(themeFor(level), lookFor(level));
+  useTheme(themeFor(level), mode === 'story' ? lookFor(level) : null); // dailies and challenges: the plain theme
   const request = parseReplayParam(location.search);
   if (request) return startReplay(level, request);
   app.session = new Session(level);

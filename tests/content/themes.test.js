@@ -44,6 +44,8 @@ test('themes: look validation catches unknown surfaces, props, sides and tunes',
   assert.match(bad({ a: { props: [{ prop: 'stool', side: 'up', at: 2, gap: 1 }] } }), /side must be one of.*at must be 0..1/);
   assert.match(bad({ a: { lights: { keyy: 1 } } }), /unknown key looks.a.lights.keyy/);
   assert.match(bad({ a: { tilt: 1 } }), /unknown key tilt/);
+  assert.match(bad({ a: { backdrop: { count: 1000000 } } }), /looks.a.backdrop.count must be an integer 0..80/);
+  assert.match(bad({ a: { backdrop: { preset: 'fog' } } }), /looks.a.backdrop.preset must be one of/);
   assert.match(bad({ 'Bad-Name': {} }), /snake_case/);
 });
 
