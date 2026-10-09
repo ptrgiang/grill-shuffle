@@ -249,6 +249,7 @@ the reference.
 | `ambience` | `preset` (`grill`), `hiss`, `rumble`, `crackle` (pops / s), `seed` | `synth.ambienceLoop`, `Audio.setAmbience` |
 | `unlock` | `{ "stars": N }`: story stars needed to open the pack (after the previous pack, see Unlocks) | `game/unlock.js` |
 | `story` | `{ "transition": "lights" \| "wave" \| "fade" }`: the stop's signature transition at the start of its beats (`docs/STORY.md`) | `story/player.js` |
+| `looks` | named dressings of the stage (#95), picked per story level in `content/story/<pack>.json` `looks` (`{ levelId: name }`, every level of the pack, `validateStory`): `surface` (`wood` = the planks above, `gach_bong`, `steel`, `cement`, `tablecloth`, `sand`, `sand_warm`, `boat_planks`), optional `overlay` (`wires`, `tin_roof`), `props` (≤ 8: `{ prop, side: left \| right \| far \| near, at: 0..1 along it, gap: world units from the board, turn?, size? }`, props from `shared/themes.js` `LOOK_PROPS`), optional `lights` / `palette` / `backdrop` tuned on top. Dailies and challenges wear the plain theme | `withLook`, `render/decor.js` |
 | icon (`<id>.svg`) | separate file next to the theme: the theme's own picture (Street BBQ: grill under string lights; Beach Grill: beach umbrella, sun and waves). One `<svg>`, `viewBox="0 0 48 48"`, drawn on its own tile, readable at 30 px; no scripts, handlers, links or images; ≤ 8 KB (`validateThemeIcon`). Required for every theme a pack uses | level select tab |
 
 The game applies the theme of the level being played (and of the menu's demo board): `Stage.setTheme` recolours the

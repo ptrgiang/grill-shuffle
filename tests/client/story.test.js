@@ -102,6 +102,17 @@ test('story: seen ids merge unique and sorted', () => {
   assert.deepEqual(addSeen(undefined, undefined), []);
 });
 
+test('story: looks per level (#95): every level of the pack, a look of its theme, no other pack’s levels', () => {
+  const lp = [{ ...packs[0], looks: ['sidewalk', 'night'] }, { ...packs[1], looks: [] }];
+  const v = (looks) => validateStory([{ pack: 'street', looks, beats: [] }], lp, { checkText }).join('\n');
+  assert.equal(v({ s1: 'sidewalk', s2: 'night', s3: 'night', s4: 'sidewalk' }), '');
+  const errors = v({ s1: 'sidewalk', s2: 'disco', b1: 'night', s4: 'night' });
+  assert.match(errors, /s2 wears "disco", not a look of the theme/);
+  assert.match(errors, /b1 is not a level of street/);
+  assert.match(errors, /s3 has no look/);
+  assert.match(v(['sidewalk']), /looks must be \{ levelId: look \}/);
+});
+
 test('story: validation catches bad references, ids, cast, text and rewards', () => {
   const v = (s) => validateStory(s, packs, { checkText });
   assert.deepEqual(v(story), []);

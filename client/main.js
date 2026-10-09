@@ -15,7 +15,7 @@ import { Input } from './game/input.js';
 import { Session } from './game/session.js';
 import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-player.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, levelsPath } from './game/routes.js';
-import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, STORY_FILES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, STORY_FILES, getLevel, storyIndex, shareIndex, themeFor, lookFor } from './game/content.js';
 import { storyFor, STORY_DEFAULT_ON } from './game/story.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
@@ -49,9 +49,9 @@ const audio = new Audio();
 audio.attach(document, window); // unlock on any gesture; fade + suspend while the page is hidden
 const stage = new Stage(canvas, { theme: themeFor(null) });
 
-/** Look and sound of a theme (content/themes/*.json): the stage re-skins itself, the ambience loop follows. */
-function useTheme(theme) {
-  stage.setTheme(theme);
+/** Look and sound of a theme (content/themes/*.json), dressed in a level's look: the stage re-skins itself, the ambience loop follows. */
+function useTheme(theme, look = null) {
+  stage.setTheme(theme, look);
   audio.setAmbience(stage.theme.ambience);
 }
 useTheme(themeFor(null));
@@ -334,7 +334,7 @@ function showMenu() {
   const stars = storyStars(PACKS, app.progress); // story levels only: dailies and challenges have their own records
   const streak = currentStreak(app.streak, todayUTC());
   const next = nextStoryLevel();
-  useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
+  useTheme(themeFor(getLevel(next)), lookFor(getLevel(next))); // the menu wears the stage of the level "Continue" opens
   screen(
     h('div.menu',
       h('div.logo', h('span.badge-art', { html: badgeSvg() }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle'))),
@@ -624,7 +624,7 @@ function startLevel(level, { mode, code = null }) {
   app.code = code ?? (mode === 'story' ? encodeStory(shareIndex(level.id)) : null);
   const m = Number(new URLSearchParams(location.search).get('m'));
   app.target = Number.isFinite(m) && m > 0 ? m : null;
-  useTheme(themeFor(level));
+  useTheme(themeFor(level), mode === 'story' ? lookFor(level) : null); // dailies and challenges: the plain theme
   const request = parseReplayParam(location.search);
   if (request) return startReplay(level, request);
   app.session = new Session(level);

@@ -17,6 +17,54 @@
   "table": { "color": "#e8d6b8", "hue": 36, "saturation": 30, "lightness": 62, "planks": 7, "seed": 23 },
   "backdrop": { "preset": "bokeh", "colors": ["#ffffff", "#d8f6ff", "#fff3c4"], "count": 18, "opacity": 0.3, "size": 0.7, "height": 1.4 },
   "ambience": { "hiss": 0.1, "rumble": 1.4, "crackle": 4, "seed": 33 },
+  "looks": {
+    "sand": {
+      "surface": "sand",
+      "props": [
+        {"prop": "basket_boat", "side": "left", "at": 0.35, "gap": 1.5},
+        {"prop": "basket_boat", "side": "right", "at": 0.7, "gap": 1.35, "size": 0.87},
+        {"prop": "floats", "side": "right", "at": 0.15, "gap": 0.4},
+        {"prop": "shells", "side": "left", "at": 0.85, "gap": 0.6}
+      ]
+    },
+    "nets": {
+      "surface": "wood",
+      "props": [
+        {"prop": "net", "side": "left", "at": 0.5, "gap": 1.2},
+        {"prop": "net", "side": "right", "at": 0.4, "gap": 1.2, "size": 0.85},
+        {"prop": "bucket", "side": "right", "at": 0.85, "gap": 0.6}
+      ]
+    },
+    "shack": {
+      "surface": "wood",
+      "overlay": "tin_roof",
+      "lights": {"sky": "#ffe0b8", "key": "#ffc890", "rim": "#ff9a60", "keyIntensity": 2.3, "exposure": 1.05},
+      "palette": {"background": "#e8a070", "vignette": "#7a4a38"},
+      "props": [
+        {"prop": "bucket", "side": "left", "at": 0.3, "gap": 0.6},
+        {"prop": "tea_cup", "side": "right", "at": 0.25, "gap": 0.55},
+        {"prop": "floats", "side": "right", "at": 0.7, "gap": 0.4}
+      ]
+    },
+    "boat": {
+      "surface": "boat_planks",
+      "props": [
+        {"prop": "net", "side": "right", "at": 0.5, "gap": 1.1, "size": 0.9},
+        {"prop": "floats", "side": "left", "at": 0.3, "gap": 0.4},
+        {"prop": "bucket", "side": "left", "at": 0.75, "gap": 0.6}
+      ]
+    },
+    "dusk": {
+      "surface": "sand_warm",
+      "lights": {"sky": "#ffe0b8", "key": "#ffc890", "rim": "#ff9a60", "keyIntensity": 2.3, "exposure": 1.05},
+      "palette": {"background": "#e8a070", "vignette": "#7a4a38"},
+      "props": [
+        {"prop": "basket_boat", "side": "right", "at": 0.4, "gap": 1.5},
+        {"prop": "net", "side": "left", "at": 0.45, "gap": 1.2},
+        {"prop": "shells", "side": "right", "at": 0.9, "gap": 0.5}
+      ]
+    }
+  },
   "unlock": { "stars": 75 },
   "story": { "transition": "wave" }
 }

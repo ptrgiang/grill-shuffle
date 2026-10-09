@@ -106,6 +106,7 @@ export const addSeen = (seen = [], ids = []) => [...new Set([...seen, ...ids])].
 /**
  * Structural check of the story files against the packs. Pure; `validate:levels` runs it with the content text check
  * (scripts/lib/content-rules.js checkText) and adds the append-only check against the base revision. -> error strings.
+ * packs: [{ id, levels, looks? }] (looks: the names of the pack theme's looks, to check the per-level `looks` map)
  */
 export function validateStory(story, packs, { checkText }) {
   const errors = [];
@@ -131,6 +132,17 @@ export function validateStory(story, packs, { checkText }) {
     if (!pack) {
       errors.push(`${file}: no pack ${s.pack}`);
       continue;
+    }
+    if (s.looks !== undefined) {
+      // the stage's look per level (#95): a look of the pack's theme for every level of the pack, none for others
+      if (typeof s.looks !== 'object' || s.looks === null || Array.isArray(s.looks)) errors.push(`${file}: looks must be { levelId: look }`);
+      else {
+        for (const [id, look] of Object.entries(s.looks)) {
+          if (levelPack.get(id) !== s.pack) errors.push(`${file}: looks: ${id} is not a level of ${s.pack}`);
+          if (pack.looks && !pack.looks.includes(look)) errors.push(`${file}: looks: ${id} wears "${look}", not a look of the theme (${pack.looks.join(', ')})`);
+        }
+        for (const id of pack.levels) if (!Object.hasOwn(s.looks, id)) errors.push(`${file}: looks: ${id} has no look`);
+      }
     }
     for (const b of s.beats ?? []) {
       own(file, 'beat', b.id);

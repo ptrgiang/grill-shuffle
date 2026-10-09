@@ -148,7 +148,7 @@ for (const { pack, packFile, levels } of packFiles) {
 }
 
 const story = loadStory();
-errors.push(...validateStory(story, packFiles.map(({ pack }) => ({ id: pack.id, levels: pack.levels })), { checkText }));
+errors.push(...validateStory(story, packFiles.map(({ pack }) => ({ id: pack.id, levels: pack.levels, looks: Object.keys(themes[pack.theme]?.looks ?? {}) })), { checkText }));
 for (const s of story) {
   const was = atBase(s.file);
   for (const list of ['beats', 'keepsakes']) {

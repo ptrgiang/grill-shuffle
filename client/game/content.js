@@ -46,5 +46,9 @@ export const storyIndex = (id) => STORY.indexOf(id);
 export const SHARE = shareIndexFile.levels;
 export const shareIndex = (id) => SHARE.indexOf(id);
 
+/** The look a story level's stage wears (content/story/<pack>.json `looks`, #95), or null (dailies, challenges). */
+const LOOKS = new Map(STORY_FILES.flatMap((s) => Object.entries(s.looks ?? {})));
+export const lookFor = (level) => LOOKS.get(level?.id) ?? null;
+
 /** A level's theme: its own `theme`, else its pack's, else Street BBQ. */
 export const themeFor = (level) => THEMES[level?.theme ?? PACKS.find((p) => p.levels.includes(level?.id))?.theme] ?? THEMES.street_bbq;

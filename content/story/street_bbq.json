@@ -1,5 +1,17 @@
 {
   "pack": "street_bbq",
+  "looks": {
+    "street-001": "cart", "street-002": "cart", "street-003": "sidewalk", "street-014": "stall", "street-017": "cart",
+    "street-018": "stall", "street-004": "cart", "street-019": "cart", "street-005": "sidewalk", "street-015": "stall",
+    "street-020": "stall", "street-021": "cart", "street-006": "cart", "street-022": "stall", "street-023": "stall",
+    "street-007": "sidewalk", "street-024": "sidewalk", "street-016": "quan", "street-025": "night", "street-026": "sidewalk",
+    "street-027": "quan", "street-028": "sidewalk", "street-029": "stall", "street-008": "cart", "street-030": "night",
+    "street-031": "quan", "street-009": "sidewalk", "street-032": "quan", "street-033": "quan", "street-034": "cart",
+    "street-010": "cart", "street-035": "night", "street-011": "stall", "street-012": "cart", "street-013": "cart",
+    "street-036": "night", "street-037": "night", "street-038": "cart", "street-039": "sidewalk", "street-040": "night",
+    "street-041": "stall", "street-042": "quan", "street-043": "night", "street-049": "night", "street-045": "sidewalk",
+    "street-046": "stall", "street-047": "quan", "street-048": "stall", "street-044": "quan", "street-050": "sidewalk"
+  },
   "beats": [
     {
       "id": "street.cold-open",
