@@ -35,7 +35,7 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant } from './ui/variant.js';
+import { initVariant, variant } from './ui/variant.js';
 import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
@@ -250,6 +250,22 @@ function onFx(ev, at) {
 
 const parseRoute = (path = location.pathname) => routeOf(path, PACKS);
 const levelPath = (id) => pathOf(PACKS, id);
+
+// #103 variants (prototype): the HUD title when the pack label is long on a narrow phone
+//   1 shrink: one line, the font shrinks with the screen, an ellipsis at worst
+//   2 short: on a phone only "Level 40"; the pack is known from its theme
+//   3 stacked: the pack small on top, "Level 40 · name" bold underneath
+//   4 badge: the level number in a round badge, the box shows the pack and the name
+//   5 grow: the box grows to two lines of title when it has to
+function hudTitle(level, title, sub, replay) {
+  const v = variant();
+  const at = !replay && app.mode === 'story' ? levelPosition(PACKS, level.id) : null;
+  if (!at || v < 2 || v === 5) return h('div.hud-title', h('div.lvl', title), h('div.lvl-name', sub));
+  const pack = pick(at.pack.name);
+  if (v === 2) return h('div.hud-title', h('div.lvl', matchMedia('(max-width: 480px)').matches ? t('level.label', { n: at.n }) : title), h('div.lvl-name', sub));
+  if (v === 3) return h('div.hud-title.v-stacked', h('div.lvl-pack', pack), h('div.lvl', `${t('level.label', { n: at.n })} · ${sub}`));
+  return h('div.hud-title.v-badge', h('span.lvl-badge', String(at.n)), h('div.v-badge-text', h('div.lvl-pack', pack), h('div.lvl', sub)));
+}
 
 /** On-screen name of a story level: "Level 12", with the pack's name once there is more than one pack. */
 function levelLabel(id) {
@@ -760,7 +776,7 @@ class Hud {
         replay
           ? h('a.icon-btn', { href: location.pathname, 'data-nav': true, 'aria-label': t('hud.closeReplay') }, iconEl('close'))
           : h('button.icon-btn', { 'aria-label': t('hud.pause'), on: { click: () => pauseMenu() } }, iconEl('pause')),
-        h('div.hud-title', h('div.lvl', title), h('div.lvl-name', sub)),
+        hudTitle(level, title, sub, !!replay),
         h('div.moves', h('span.moves-label', t(replay ? 'hud.step' : 'hud.moves')), this.movesEl),
       ),
       this.goalsEl,

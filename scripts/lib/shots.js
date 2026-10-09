@@ -53,9 +53,8 @@ export async function capture(root, pages, dir, label) {
         collectPageErrors(page, errors, `${label} ${p.name}: `);
         if (p.unlock) {
           // open the menu, give every story level 3 stars (in memory: this profile is thrown away), then navigate
-          // ?lang= is read once at boot, so the menu load carries the page's language
-          const lang = new URL(p.url, 'http://x').searchParams.get('lang');
-          await page.goto(vite.url + '/?freeze=1&quality=high&coach=0' + (lang ? `&lang=${encodeURIComponent(lang)}` : ''), { waitUntil: 'load', timeout: 60000 });
+          // ?lang=, ?variant= … are read once at boot, so the menu load carries the page's whole query
+          await page.goto(vite.url + '/' + new URL(p.url, 'http://x').search, { waitUntil: 'load', timeout: 60000 });
           // the menu renders after boot loaded the saved progress, which would overwrite stars given earlier
           await page.waitForSelector('.menu', { timeout: 30000 });
           await page.evaluate((u) => {

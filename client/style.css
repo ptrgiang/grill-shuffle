@@ -376,3 +376,14 @@ body.in-game .landing { display: none; }
   .story-canvas.shown, .story-panel .story-canvas { opacity: 1; }
   .story-card { transition: opacity .5s; transform: translate(-50%, 0) rotate(-1deg); }
 }
+
+/* #103 variants (prototype, removed after the owner's pick) */
+html[data-variant="1"] .hud-title .lvl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(12px, 3.9vw, 16px); }
+.hud-title.v-stacked .lvl-pack { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-title.v-stacked .lvl { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-title.v-badge { flex-direction: row; align-items: center; gap: 8px; padding-left: 6px; }
+.hud-title.v-badge .lvl-badge { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #3a1a08; font-weight: 800; font-size: 17px; display: flex; align-items: center; justify-content: center; }
+.hud-title.v-badge .v-badge-text { min-width: 0; }
+.hud-title.v-badge .lvl-pack { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-title.v-badge .lvl { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html[data-variant="5"] .hud-title { height: auto; min-height: 46px; }
