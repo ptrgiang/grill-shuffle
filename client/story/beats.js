@@ -212,7 +212,7 @@ const PAGE2_UT = [
   { t: 1.8, x: 170, face: 1, pose: 'take', prop: 'lanternPage' },
   { t: 2.6, x: 170, face: 1, pose: 'read', prop: 'lanternPage' },
   { t: 4.6, x: 170, face: 1, pose: 'smile' },
-  { t: 6, x: 140, face: 1, pose: 'push' },
+  { t: 6, x: 64, face: 1, pose: 'push', move: true }, // walks back to the cart's handle (cart at 120 = 64 + 56)
   { t: 11, x: 470, face: 1, pose: 'push', move: true, walk: 'pushWalk' },
 ];
 const page2Cart = (t) => (t < 6 ? 120 : at(PAGE2_UT, t).x + 56);

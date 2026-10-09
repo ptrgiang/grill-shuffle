@@ -61,3 +61,11 @@ test('staging: every shipped beat is staged, in order, with three moments inside
     assert.equal(typeof b.scene(0), 'object');
   }
 });
+
+test('staging: the level-50 carts do not jump when Út takes the handle', () => {
+  for (const id of ['street.first-page', 'beach.second-page']) {
+    const B = BEATS[id];
+    const x = (t) => B.scene(t).cartX;
+    for (let t = 0; t < B.length; t += 0.05) assert.ok(Math.abs(x(t + 0.05) - x(t)) < 12, `${id}: cart moves smoothly at ${t.toFixed(2)} s (${x(t)} -> ${x(t + 0.05)})`);
+  }
+});
