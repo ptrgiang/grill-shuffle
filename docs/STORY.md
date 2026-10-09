@@ -196,10 +196,13 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
   lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
 - **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,
   the stop's page keeper (Cô Sáu in the alley, Chú Tư at the beach) tells the level's line in front of the place,
-  talking while the text types out over the blurred board; "Serve" starts the level (`client/story/intro.js`). With
-  the story off it is a note pinned onto the band instead.
-- **Customers are strangers** (a student with a backpack, a xe ôm driver in his helmet, an office worker with
-  glasses, a worker in a cap, an old man): never a story character's look, so nobody mistakes them for the cast.
+  talking while the text types out over the blurred board; "Serve" starts the level (`client/story/intro.js`). It is
+  the level's only introduction: nothing is ever pinned over the band (Story: Off skips the beats, not this); short
+  toasts ("no moves left") sit low, above the tools.
+- **Customers are strangers who belong to the place**: in the alley a student with a backpack, a xe ôm driver in his
+  helmet, an office worker with glasses, a worker in a cap, an old man; in the fishing village a fish seller in a nón
+  lá, a fisherman with a towel on his head, a child in a sun hat, an old fisherman, a village woman. Never a story
+  character's look, so nobody mistakes them for the cast.
 - **Mực sits on the ground beside the cart**, never on the grill (counter and beats).
 - **The cart** is the badge's cart (stainless body, glass cabinet, spoked wheels) with years of use on it: rust
   patches and streaks, a dent; the badge got the same rust (`client/ui/brand.js`, icons and og.png regenerated).

@@ -20,6 +20,13 @@ const BASE = {
   skinG3: '#f4cfae', hairG3: '#3a2418', shirtG3: '#e88aa8', pantsG3: '#2a2a32',
   skinG4: '#b98058', hairG4: '#1a1414', shirtG4: '#8a9098', pantsG4: '#4a3f30', capG4: '#2f6fd6',
   skinG5: '#d9a47c', hairG5: '#c9c4bc', shirtG5: '#7a5a3a', pantsG5: '#5a5248',
+  // Fishing Village guests: a fish seller in a nón lá, a young fisherman with a towel on his head, a child in a sun
+  // hat, an old fisherman in a bucket hat, a village woman
+  skinB1: '#c99068', hairB1: '#1c1414', shirtB1: '#8a6a4a', pantsB1: '#1e1a1c', hatB1: '#e6d29a',
+  skinB2: '#a86a42', hairB2: '#141010', shirtB2: '#f2f0ea', pantsB2: '#3a5a7a', towelB2: '#d9e6ea',
+  skinB3: '#e2a87a', hairB3: '#201818', shirtB3: '#f2a33a', pantsB3: '#3a6a9a', hatB3: '#f4e8c8',
+  skinB4: '#a0663e', hairB4: '#d0ccc4', shirtB4: '#5a7a6a', pantsB4: '#5a5040', hatB4: '#7a8a5a',
+  skinB5: '#d29a6e', hairB5: '#1c1414', shirtB5: '#3f8a6a', patternB5: '#f2e6b0', pantsB5: '#2a2a32',
   steel1: '#e8ecee', steel2: '#aab1b6', steelDark: '#6e767b', rust: '#9a4a22', rustDark: '#6a3014', glass: '#cfe8ec',
   // flashback: the fishing village at dawn, Bà Năm as a girl
   // the rest of the cast

@@ -16,8 +16,12 @@ import { cellFood } from '../../shared/levels.js';
 const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const CARRY = { ...POSES.walk, armF: [1.45, 0.1], prop: 'plate' };
-// strangers only (owner, 2026-10-09): a customer must never look like a story character
-const GUESTS = ['guest-1', 'guest-2', 'guest-3', 'guest-4', 'guest-5'];
+// strangers only (owner, 2026-10-09): a customer must never look like a story character, and belongs to the place:
+// the city's alley (a student, a xe ôm driver, an office worker, a worker, an old man) or the fishing village
+const GUESTS = {
+  street_bbq: ['guest-1', 'guest-2', 'guest-3', 'guest-4', 'guest-5'],
+  beach_grill: ['beach-1', 'beach-2', 'beach-3', 'beach-4', 'beach-5'],
+};
 
 /** Items per food still on a simulation state's board (slots hold items, stacked layers hold cells). */
 export function stateFoods(state) {
@@ -44,7 +48,7 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
   cv.className = 'counter-canvas';
   hud.prepend(cv);
   const wide = () => strip.getBoundingClientRect().width > 620;
-  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: GUESTS, carry: !reduced });
+  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: GUESTS[theme] ?? GUESTS.street_bbq, carry: !reduced });
   let c = make(state ? stateFoods(state) : boardFoods(level)); // mounted late: the board as it is now
   const beach = theme === 'beach_grill';
   let last = performance.now(), running = false, t = 0;

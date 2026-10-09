@@ -498,7 +498,7 @@ function levelIntro(level) {
       sound: (n, o) => audio.story(n, o),
     });
   }).then(release, () => {
-    // the opening could not load (offline before it was cached): the note on the band instead
+    // the opening could not load (offline before it was cached): a short toast with the line instead
     release();
     if (app.hud === hud) hud.tip(pick(level.hint));
   });
@@ -631,9 +631,9 @@ function startLevel(level, { mode, code = null }) {
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
   if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) {
-    // the level's opening: told by the stop's page keeper before play (story on), else the note on the band
-    if (STORY_ON && app.settings.story !== false) levelIntro(level);
-    else app.hud.tip(pick(level.hint));
+    // the level's opening: the stop's page keeper tells the level before play (the only introduction; nothing is
+    // pinned over the band). "Story: Off" skips the beats, not this. Headless tools and ?story=off: none.
+    if (!globalThis.__gsNoStory && storyParam !== 'off') levelIntro(level);
   }
   dismissCoach();
   if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
@@ -913,8 +913,7 @@ class Hud {
     this.tipEl.classList.add('show');
     clearTimeout(this.tipTimer);
     // with the counter it is a note pinned to the band: it stays longer and a tap puts it away
-    this.tipTimer = setTimeout(() => this.tipEl.classList.remove('show'), this.counter !== undefined && this.el.classList.contains('has-counter') ? 9000 : 5200);
-    this.tipEl.onclick = () => this.tipEl.classList.remove('show');
+    this.tipTimer = setTimeout(() => this.tipEl.classList.remove('show'), 5200);
   }
 }
 

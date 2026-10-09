@@ -48,6 +48,11 @@ const LOOKS = {
   'guest-3': { skin: 'skinG3', hair: 'hairG3', shirt: 'shirtG3', pants: 'pantsG3', bob: true, glasses: true, height: 0.93 },
   'guest-4': { skin: 'skinG4', hair: 'hairG4', shirt: 'shirtG4', pants: 'pantsG4', cap: true, capColor: 'capG4', height: 1 },
   'guest-5': { skin: 'skinG5', hair: 'hairG5', shirt: 'shirtG5', pants: 'pantsG5', glasses: true, height: 0.94 },
+  'beach-1': { skin: 'skinB1', hair: 'hairB1', shirt: 'shirtB1', pants: 'pantsB1', bun: true, nonla: 'hatB1', height: 0.93 },
+  'beach-2': { skin: 'skinB2', hair: 'hairB2', shirt: 'shirtB2', pants: 'pantsB2', short: true, headTowel: 'towelB2', height: 1 },
+  'beach-3': { skin: 'skinB3', hair: 'hairB3', shirt: 'shirtB3', pants: 'pantsB3', sunhat: 'hatB3', height: 0.74 },
+  'beach-4': { skin: 'skinB4', hair: 'hairB4', shirt: 'shirtB4', pants: 'pantsB4', sunhat: 'hatB4', glasses: false, height: 0.95 },
+  'beach-5': { skin: 'skinB5', hair: 'hairB5', shirt: 'shirtB5', pattern: 'patternB5', pants: 'pantsB5', bob: true, height: 0.92 },
   // flashback: Bà Năm as a girl selling her father's catch (a headscarf, a long braid, a shoulder pole)
   'ba-nam-young': { skin: 'skinBa', hair: 'hairBa', shirt: 'shirtBa', pants: 'pantsBa', braid: true, scarf: true, height: 0.9 },
 };
@@ -329,6 +334,28 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
     cap.lineTo(13, -1);
     cap.closePath();
     shape(ctx, cap, L.capColor ?? 'boatTrim');
+  }
+  if (L.nonla) {
+    // nón lá: the conical hat of the fish sellers
+    shape(ctx, new Path2D('M-22 -4 L0 -26 L22 -4 Q0 0 -22 -4 Z'), L.nonla);
+    ctx.strokeStyle = 'rgba(120,90,40,.5)';
+    ctx.lineWidth = 0.6;
+    for (const k of [0.35, 0.6, 0.85]) {
+      ctx.beginPath();
+      ctx.moveTo(-22 * k, -26 + 22 * k);
+      ctx.lineTo(22 * k, -26 + 22 * k);
+      ctx.stroke();
+    }
+  }
+  if (L.sunhat) {
+    // a soft bucket / sun hat
+    shape(ctx, new Path2D('M-18 -5 Q0 -9 18 -5 L14 -2 Q0 -5 -14 -2 Z'), L.sunhat);
+    shape(ctx, new Path2D('M-11 -5 Q-10 -20 0 -20 Q10 -20 11 -5 Z'), L.sunhat);
+  }
+  if (L.headTowel) {
+    // a towel knotted round the head against the sun
+    shape(ctx, new Path2D('M-13 -3 Q-12 -15 0 -15 Q12 -15 13 -3 L13 1 L-13 1 Z'), L.headTowel);
+    shape(ctx, new Path2D('M-13 -1 L-19 4 L-16 6 L-12 2 Z'), L.headTowel);
   }
   if (L.helmet) {
     // a motorbike half-helmet, strap under the chin
