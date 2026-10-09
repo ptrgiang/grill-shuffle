@@ -109,6 +109,9 @@ let storyRunning = null;
 // the launch story waits for the language (#112): the first launch asks for it on the menu before anything plays
 let langKnown;
 const languageReady = new Promise((r) => (langKnown = r));
+// settles once the launch story (cold open, recap) has played or was not due: a level opened at boot waits for it
+let launchSettled;
+const launchStory = new Promise((r) => (launchSettled = r));
 /** Play what `event` triggers (unless the player turned the story off), then mark it all seen. */
 async function runStory(event) {
   if (!STORY_ON && storyParam !== 'log') return;
@@ -485,7 +488,9 @@ function levelIntro(level) {
   const release = () => {
     if (app.hud === hud) app.introOpen = false;
   };
-  import('./story/intro.js').then((m) => {
+  // a beat playing goes first, and so does the launch story (a deep link renders the level before the cold open is
+  // scheduled): the opening waits for them, never types under them
+  Promise.all([storyRunning, launchStory]).then(() => import('./story/intro.js')).then((m) => {
     if (app.hud !== hud) return; // the player left the level meanwhile
     return m.playIntro({
       who,
@@ -1160,7 +1165,7 @@ async function boot() {
   // the cold open (first launch) and the memories recap, once the cloud's seen list is merged (or after 3 s offline) and
   // the language is known: saved, ?lang=, or detected when no picker is shown (a deep link); else after the pick
   if (!app.langPicking) langKnown();
-  Promise.all([Promise.race([syncNow(), new Promise((r) => setTimeout(r, 3000))]), languageReady]).then(() => runStory({ on: 'launch' }));
+  Promise.all([Promise.race([syncNow(), new Promise((r) => setTimeout(r, 3000))]), languageReady]).then(() => runStory({ on: 'launch' })).catch((e) => console.warn('launch story failed', e)).finally(launchSettled);
   registerServiceWorker();
 }
 // pull cloud progress, then send whatever waited while offline

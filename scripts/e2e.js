@@ -561,6 +561,7 @@ async function runStoryBeats(name, { w, h }) {
     check(cold, `${name}: the cold open plays on first launch`);
     await sleep(1500);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-cold-open.png`) });
+    check(!(await page.$('.level-intro')), `${name}: the level's opening waits for the cold open (a deep link)`);
     await tapStory();
     check(!(await page.$('.story-root')), `${name}: a tap skips the cold open`);
     await sleep(500);
