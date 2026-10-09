@@ -10,7 +10,8 @@ import { POSES, blendPose } from './rig.js';
 
 const G = STAGE.ground;
 const at = (keys, t) => track(keys, t, POSES, blendPose);
-const onCart = (x) => ({ x: x + 28, y: G - 70, pose: 'sit', face: -1 });
+// Mực on the ground beside the cart (owner, 2026-10-09: not on the grill); `rolling`: he trots along
+const onCart = (x, rolling = false) => ({ x: x + 62, y: G, pose: rolling ? 'walk' : 'sit', face: rolling ? 1 : -1 });
 
 const COLD_UT = [
   { t: 2.4, x: -40, face: 1, pose: 'stand' },
@@ -47,7 +48,7 @@ export const BEATS = {
     panels: [4.6, 9.4, 13.6],
     cam: [{ t: 0, x: 200, y: 150, z: 1 }, { t: 3, x: 190, y: 170, z: 1.15 }, { t: 8.4, x: 205, y: 190, z: 1.6 }, { t: 11.2, x: 130, y: 170, z: 1.5 }, { t: 14.5, x: 200, y: 160, z: 1.1 }],
     actors: [{ who: 'ut', keys: COLD_UT }],
-    cat: (t) => (t < 8.6 ? null : t < 9.4 ? { x: 280 - (t - 8.6) * 70, y: G - (t - 8.6) * 82, pose: 'jump', face: -1, k: (t - 8.6) / 0.8 } : onCart(196)),
+    cat: (t) => (t < 8.6 ? null : t < 9.6 ? { x: 330 - (t - 8.6) * 72, y: G, pose: 'walk', face: -1 } : onCart(196)), // Mực trots in and sits by the cart
     scene: (t) => ({ lightsFrom: 0.4, glow: 0.35, postcardOnCart: t < 8.2 }),
   },
   // the notebook opens: the missing pages
@@ -87,7 +88,7 @@ export const BEATS = {
       { who: 'regular-b', keys: [{ t: 0.5, x: 440, face: -1, pose: 'stand' }, { t: 2.5, x: 318, face: -1, pose: 'wave', move: true }, { t: 4, x: 318, face: -1, pose: 'smile' }] },
       { who: 'ut', keys: [{ t: 0, x: 150, face: 1, pose: 'stand' }, { t: 1.2, x: 150, face: 1, pose: 'serve' }, { t: 3, x: 150, face: 1, pose: 'smile' }, { t: 5.5, x: 150, face: 1, pose: 'nod' }] },
     ],
-    cat: () => ({ x: 226, y: G - 66, pose: 'sleep', face: -1 }),
+    cat: () => ({ x: 262, y: G, pose: 'sleep', face: -1 }), // asleep on the ground by the cart
     scene: () => ({ lightsFrom: -5, glow: 0.6, phone: 'dark' }),
   },
   // level 30: Khang's tasting visit; his flyer carries Út's own slogan
@@ -128,7 +129,7 @@ export const BEATS = {
       { who: 'co-sau', keys: [{ t: 0, x: 250, face: -1, pose: 'stand' }, { t: 1, x: 250, face: -1, pose: 'give', prop: 'page' }, { t: 2.6, x: 250, face: -1, pose: 'nod' }, { t: 7, x: 250, face: 1, pose: 'wave' }] },
       { who: 'ut', keys: PAGE_UT },
     ],
-    cat: (t) => onCart(pageCart(t)),
+    cat: (t) => onCart(pageCart(t), t > 6),
     scene: (t) => ({ dawn: true, glow: 0.3, cartX: pageCart(t) }),
   },
   // Fishing Village: arrival; Chú Tư by the boats: "she was here last week"
@@ -141,7 +142,7 @@ export const BEATS = {
       { who: 'chu-tu', keys: [{ t: 0, x: 262, face: -1, pose: 'stand' }, { t: 5.6, x: 262, face: -1, pose: 'wave' }, { t: 7.5, x: 262, face: -1, pose: 'nod' }] },
       { who: 'ut', keys: ARRIVE_UT },
     ],
-    cat: (t) => onCart(arriveCart(t)),
+    cat: (t) => onCart(arriveCart(t), t < 5),
     scene: (t) => ({ cartX: arriveCart(t), glow: 0.3 }),
   },
 };
@@ -225,7 +226,7 @@ BEATS['beach.second-page'] = {
     { who: 'chu-tu', keys: [{ t: 0, x: 262, face: -1, pose: 'stand' }, { t: 1, x: 262, face: -1, pose: 'give', prop: 'lanternPage' }, { t: 2.6, x: 262, face: -1, pose: 'nod' }, { t: 7, x: 262, face: 1, pose: 'wave' }] },
     { who: 'ut', keys: PAGE2_UT },
   ],
-  cat: (t) => onCart(page2Cart(t)),
+  cat: (t) => onCart(page2Cart(t), t > 6),
   scene: (t) => ({ cartX: page2Cart(t) }),
 };
 

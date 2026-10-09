@@ -16,7 +16,8 @@ import { cellFood } from '../../shared/levels.js';
 const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const CARRY = { ...POSES.walk, armF: [1.45, 0.1], prop: 'plate' };
-const CASTS = { beach_grill: ['chu-tu', 'regular-a', 'regular-b'], default: ['regular-a', 'regular-b', 'co-sau'] };
+// strangers only (owner, 2026-10-09): a customer must never look like a story character
+const GUESTS = ['guest-1', 'guest-2', 'guest-3', 'guest-4', 'guest-5'];
 
 /** Items per food still on a simulation state's board (slots hold items, stacked layers hold cells). */
 export function stateFoods(state) {
@@ -43,7 +44,7 @@ export function mountCounter(hud, { level, theme = 'street_bbq', reduced = false
   cv.className = 'counter-canvas';
   hud.prepend(cv);
   const wide = () => strip.getBoundingClientRect().width > 620;
-  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: CASTS[theme] ?? CASTS.default, carry: !reduced });
+  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: GUESTS, carry: !reduced });
   let c = make(boardFoods(level));
   const beach = theme === 'beach_grill';
   let last = performance.now(), running = false, t = 0;
@@ -147,14 +148,15 @@ export function mountCounter(hud, { level, theme = 'street_bbq', reduced = false
     if (cat.phase === 'steal') {
       const k = cat.t / T.steal;
       ctx.save();
-      ctx.translate(g.cart + k * g.r.width * 0.9, g.ground - (1 - k) * 56 * g.sc);
+      ctx.translate(g.cart + 50 * g.sc + k * g.r.width * 0.9, g.ground - Math.sin(Math.PI * Math.min(1, k * 4)) * 12 * g.sc);
       ctx.scale(g.sc * 0.8, g.sc * 0.8);
       drawCat(ctx, 0, 0, 1, 1, k < 0.25 ? 'jump' : 'walk', k * 4);
       foodGlyph(ctx, 'shrimp', 14, -24, 7);
       ctx.restore();
     } else {
       ctx.save();
-      ctx.translate(g.cart + 18 * g.sc, g.ground - 58 * g.sc);
+      // Mực sits on the ground beside the cart (owner, 2026-10-09: not on the grill)
+      ctx.translate(g.cart + 50 * g.sc, g.ground);
       ctx.scale(g.sc * 0.8, g.sc * 0.8);
       drawCat(ctx, 0, 0, 1, -1, 'sit', t);
       ctx.restore();

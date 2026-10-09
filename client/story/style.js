@@ -14,6 +14,13 @@ const BASE = {
   coalHot: '255,120,30', wheel: '#18141a', hub: '#9aa3ad', stool: '#d8312a', postcard: '#fdf3dc', stamp: '#d2483a', postLine: '#7c6a58',
   fan: '#d8b06a', fanLine: '#9c7436', fanHandle: '#7a5428', phone: '#15151c', screen: '#9fd6ff', badge: '#ff3b30', smoke: '190,180,175',
   sign: '#e8c34a', signDark: '#b8862a', plant: '#3f7a4a', pot: '#a8552e', shoe: '#1a1414', cheek: 'rgba(240,110,110,.35)',
+  // guests at the counter (#116): strangers with their own looks, so nobody mistakes them for the story's cast
+  skinG1: '#f2c8a0', hairG1: '#201818', shirtG1: '#f6f6f2', pantsG1: '#2d4f8a', bagG1: '#2f3d6a',
+  skinG2: '#c98a5c', hairG2: '#1c1414', shirtG2: '#3f8a4a', pantsG2: '#3a3a40', helmetG2: '#f2c230',
+  skinG3: '#f4cfae', hairG3: '#3a2418', shirtG3: '#e88aa8', pantsG3: '#2a2a32',
+  skinG4: '#b98058', hairG4: '#1a1414', shirtG4: '#8a9098', pantsG4: '#4a3f30', capG4: '#2f6fd6',
+  skinG5: '#d9a47c', hairG5: '#c9c4bc', shirtG5: '#7a5a3a', pantsG5: '#5a5248',
+  steel1: '#e8ecee', steel2: '#aab1b6', steelDark: '#6e767b', rust: '#9a4a22', rustDark: '#6a3014', glass: '#cfe8ec',
   // flashback: the fishing village at dawn, Bà Năm as a girl
   // the rest of the cast
   skinKhang: '#e2b48c', hairKhang: '#141014', chef: '#fafafa', pantsKhang: '#1c1c22', skinTu: '#b8784a', hairTu: '#5a5450', shirtTu: '#5a86a0', pantsTu: '#6a5a44',

@@ -24,6 +24,8 @@ export default {
 
   // chung
   'story.skip': 'Chạm để bỏ qua',
+  'intro.serve': 'Phục vụ',
+  'intro.says': '{name} kể',
   'story.memories': 'Ký ức',
   'story.memoriesSub': 'Chuyện đã qua',
   'story.continue': 'Tiếp tục',

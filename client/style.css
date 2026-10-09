@@ -392,3 +392,15 @@ body.in-game .landing { display: none; }
   .hud.has-counter .tip::before { display: none; }
 }
 .hud.has-counter .tip::before { content: ''; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: #c8302a; box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+
+/* the level's opening (#116, client/story/intro.js): the page keeper tells the level over the blurred board */
+.level-intro { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(18,10,18,.45); backdrop-filter: blur(7px) brightness(.75); -webkit-backdrop-filter: blur(7px) brightness(.75); transition: opacity .25s; }
+.level-intro.out { opacity: 0; }
+.intro-card { width: min(420px, 100%); background: #fbf1dc; color: #3a2630; border-radius: 10px; overflow: hidden; box-shadow: 0 14px 40px rgba(0,0,0,.5); display: flex; flex-direction: column; cursor: pointer; }
+.intro-scene { display: block; width: 100%; height: clamp(130px, 24vh, 190px); border-bottom: 3px solid #d9a521; }
+.intro-says { margin: 12px 18px 0; font-size: 13px; font-weight: 700; color: #b5482a; text-transform: uppercase; letter-spacing: .06em; }
+.intro-title { margin: 2px 18px 0; font-size: 20px; font-weight: 800; }
+.intro-text { margin: 8px 18px 0; min-height: 4.6em; font-size: 17px; line-height: 1.5; }
+.intro-serve { margin: 14px 18px 18px; align-self: stretch; opacity: .45; transition: opacity .3s; }
+.intro-serve.ready { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .level-intro { transition: none; } }

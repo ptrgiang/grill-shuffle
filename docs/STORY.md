@@ -194,8 +194,15 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
   the next one waiting; while Út is out the plate flies straight to them). They eat, leave, and a new customer sits
   down only for a food still on the board. A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
   lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
-- The **hint** is a note pinned onto the band (over the scene, never over the board), shown longer, a tap puts it
-  away.
+- **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,
+  the stop's page keeper (Cô Sáu in the alley, Chú Tư at the beach) tells the level's line in front of the place,
+  talking while the text types out over the blurred board; "Serve" starts the level (`client/story/intro.js`). With
+  the story off it is a note pinned onto the band instead.
+- **Customers are strangers** (a student with a backpack, a xe ôm driver in his helmet, an office worker with
+  glasses, a worker in a cap, an old man): never a story character's look, so nobody mistakes them for the cast.
+- **Mực sits on the ground beside the cart**, never on the grill (counter and beats).
+- **The cart** is the badge's cart (stainless body, glass cabinet, spoked wheels) with years of use on it: rust
+  patches and streaks, a dent; the badge got the same rust (`client/ui/brand.js`, icons and og.png regenerated).
 - Presentation only: it follows the board's events (`match`, `combo`, `level_complete`, `level_failed`) and never
   changes a rule. Reduced motion: Út stays at the cart, plates fade to the customer. Phones held sideways: no band.
 - Next: the band changes with the chapters (laptop on the cart, the tower poster, packing boxes) and the hint in a

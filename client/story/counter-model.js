@@ -13,7 +13,7 @@
 import { mulberry32 } from '../../shared/rng.js';
 
 export const T = Object.freeze({ fly: 0.45, walk: 0.9, hand: 0.25, eat: 2.4, leave: 1, arrive: 1, back: 0.8, direct: 0.6, cheer: 1.2, steal: 1.6 });
-export const CAST = Object.freeze(['regular-a', 'regular-b', 'co-sau', 'khang', 'chu-tu']);
+export const CAST = Object.freeze(['guest-1', 'guest-2', 'guest-3', 'guest-4', 'guest-5']); // strangers, never the story's cast
 
 export function createCounter({ foods = {}, seats = 3, seed = 1, cast = CAST, carry = true } = {}) {
   const c = { rng: mulberry32(seed >>> 0 || 1), left: { ...foods }, cast, seats: [], ut: { phase: carry ? 'home' : 'off', t: 0 }, plates: [], cat: { phase: 'idle', t: 0 }, mood: { phase: 'idle', t: 0 }, guests: 0 };

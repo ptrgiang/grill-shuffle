@@ -68,7 +68,8 @@ export function cuesBetween(B, t0, t1) {
   // the phone: buzzing while the scene says so, every 1.2 s from the beat's start
   for (const t of ticks(0, B.length, 1.2, t0, t1)) if (B.scene(t).phone === 'buzz') cues.push({ name: 'buzz', x: (B.scene(t).cartX ?? 196) - 30, t });
   // Mực's jump
-  for (const t of edges((u) => B.cat(u)?.pose === 'jump', t0, t1)) cues.push({ name: 'meow', x: B.cat(t).x, t });
+  // Mực turns up mid-beat: a meow
+  for (const t of edges((u) => B.cat(u) != null, t0, t1)) cues.push({ name: 'meow', x: B.cat(t).x, t });
   // the place: a motorbike passes once in the alley; soft surf on the beach
   if (!B.beach && B.length >= 7 && inWin(B.length * 0.45, t0, t1)) cues.push({ name: 'moto', x: 400, t: B.length * 0.45 });
   if (B.beach) for (const t of ticks(2, B.length, 3.5, t0, t1)) cues.push({ name: 'surf', x: 200, t });

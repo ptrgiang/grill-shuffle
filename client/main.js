@@ -474,6 +474,28 @@ function qualityPicker() {
   return h('div.volume', h('span', t('settings.graphics')), h('div.seg', { role: 'group', 'aria-label': t('settings.graphicsQuality') }, ...buttons));
 }
 
+/** The level's opening (#116): the page keeper of the stop tells the level's line over the blurred board; "Serve" plays. */
+function levelIntro(level) {
+  const at = levelPosition(PACKS, level.id);
+  const beach = themeFor(level).id === 'beach_grill';
+  const who = beach ? 'chu-tu' : 'co-sau';
+  const name = beach ? 'Chú Tư' : 'Cô Sáu';
+  const hud = app.hud;
+  import('./story/intro.js').then((m) => {
+    if (app.hud !== hud) return; // the player left the level meanwhile
+    m.playIntro({
+      who,
+      place: beach ? 'beach' : 'alley',
+      title: `${t('level.label', { n: at?.n ?? '' })} · ${pick(level.name)}`,
+      text: pick(level.hint),
+      serveLabel: t('intro.serve'),
+      saysLabel: t('intro.says', { name }),
+      reduced: reducedMotion(),
+      sound: (n, o) => audio.story(n, o),
+    });
+  });
+}
+
 /** Story beats on / off ("skip story"): off still marks them seen, so turning it on later never replays a backlog. */
 function storyPicker() {
   const buttons = [true, false].map((on) =>
@@ -599,7 +621,11 @@ function startLevel(level, { mode, code = null }) {
   app.fit = () => app.hud.margins();
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
-  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(pick(level.hint));
+  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) {
+    // the level's opening: told by the stop's page keeper before play (story on), else the note on the band
+    if (STORY_ON && app.settings.story !== false) levelIntro(level);
+    else app.hud.tip(pick(level.hint));
+  }
   dismissCoach();
   if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
   if (app.target) app.hud.tip(t('tip.friend', { moves: app.target }));
