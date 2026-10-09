@@ -25,6 +25,8 @@ export default {
   // common
   'common.close': 'Close',
   'story.skip': 'Tap to skip',
+  'story.protoFlashTitle': 'The fish seller',
+  'story.protoFlashLine': 'Long ago, a girl sold her father’s catch at dawn.',
   'common.back': 'Back',
   'common.menu': 'Menu',
   'common.backToMenu': '← Menu',

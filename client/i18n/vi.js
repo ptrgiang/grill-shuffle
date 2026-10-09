@@ -24,6 +24,8 @@ export default {
 
   // chung
   'story.skip': 'Chạm để bỏ qua',
+  'story.protoFlashTitle': 'Cô bé bán cá',
+  'story.protoFlashLine': 'Ngày xưa, có cô bé gánh cá của cha đi bán lúc rạng sáng.',
   'common.close': 'Đóng',
   'common.back': 'Quay lại',
   'common.menu': 'Menu',

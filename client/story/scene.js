@@ -230,3 +230,81 @@ export function drawCart(ctx, x, y, t, glow = 0.4, postcard = false) {
   }
   ctx.restore();
 }
+
+/**
+ * Flashback (Bà Năm's past, #106): the central-coast fishing village at dawn. Sun on the sea, a wooden boat with
+ * painted eyes on its bow (mắt thuyền), a round basket boat (thuyền thúng) and nets drying on poles.
+ */
+export function drawBeach(ctx, t) {
+  const { w, ground } = STAGE;
+  const sky = ctx.createLinearGradient(0, -100, 0, 170);
+  sky.addColorStop(0, col('dawn1'));
+  sky.addColorStop(1, col('dawn2'));
+  ctx.fillStyle = sky;
+  if (style().flatSky) ctx.fillStyle = col('dawn2');
+  ctx.fillRect(-200, -100, w + 400, 280);
+  shape(ctx, circle(176, 128, 24), 'sun', { line: false });
+  shape(ctx, rect(-200, 165, w + 400, 50), 'sea', { line: false });
+  ctx.strokeStyle = col('seaLight');
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 9; i++) {
+    const y = 172 + (i % 3) * 12, x = -40 + i * 52 + Math.sin(t + i) * 6;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.quadraticCurveTo(x + 9, y - 4, x + 18, y);
+    ctx.stroke();
+  }
+  shape(ctx, rect(-200, 212, w + 400, 160), 'sand', { line: false });
+  // nets on poles
+  for (const nx of [96]) {
+    const p = new Path2D();
+    p.moveTo(nx, ground);
+    p.lineTo(nx, 150);
+    p.moveTo(nx + 46, ground);
+    p.lineTo(nx + 46, 150);
+    stroke(ctx, p, 'pole', 2.4);
+    ctx.strokeStyle = col('ink');
+    ctx.globalAlpha = 0.35;
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i <= 46; i += 6) {
+      ctx.beginPath();
+      ctx.moveTo(nx + i, 154);
+      ctx.lineTo(nx + i, 205);
+      ctx.stroke();
+    }
+    for (let j = 154; j <= 205; j += 6) {
+      ctx.beginPath();
+      ctx.moveTo(nx, j);
+      ctx.lineTo(nx + 46, j);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  // her father's boat, drawn up on the sand: painted eyes on the bow
+  const boat = new Path2D();
+  boat.moveTo(70, 228);
+  boat.lineTo(222, 228);
+  boat.quadraticCurveTo(244, 226, 250, 206);
+  boat.lineTo(50, 210);
+  boat.quadraticCurveTo(56, 226, 70, 228);
+  boat.closePath();
+  shape(ctx, boat, 'boat');
+  shape(ctx, rect(52, 206, 198, 6, 2), 'boatTrim');
+  const eye = new Path2D();
+  eye.ellipse(230, 216, 7, 4, 0, 0, Math.PI * 2);
+  shape(ctx, eye, 'boatEye');
+  shape(ctx, circle(232, 216, 2.4), 'ink', { line: false });
+  // a round basket boat
+  const thung = new Path2D();
+  thung.ellipse(332, 244, 24, 11, 0, 0, Math.PI);
+  thung.closePath();
+  shape(ctx, thung, 'basket');
+  ctx.strokeStyle = col('basketLine');
+  ctx.lineWidth = 0.7;
+  for (let i = -20; i <= 20; i += 5) {
+    ctx.beginPath();
+    ctx.moveTo(332 + i, 244);
+    ctx.lineTo(332 + i * 0.8, 253);
+    ctx.stroke();
+  }
+}

@@ -18,12 +18,16 @@ export const POSES = {
   fan: { lean: 0.12, head: 0.2, armB: [0.25, 0.4], armF: [1.0, 0.9], legB: -0.08, legF: 0.1, mouth: 1, eyes: 1, prop: 'fan', fanning: 1 },
   point: { lean: 0.05, head: 0.05, armB: [0.1, 0.1], armF: [1.6, 0.05], legB: 0, legF: 0, mouth: 1, eyes: 1, prop: 'fan' },
   smile: { lean: -0.04, head: -0.12, armB: [0.15, 0.3], armF: [0.15, 0.3], legB: 0, legF: 0, mouth: 1, eyes: 0.5 },
+  carry: { lean: 0.06, head: -0.05, armB: [2.5, 0.6], armF: [0.9, 1.7], legB: 0, legF: 0, mouth: 1, eyes: 0.5, pole: 1 },
+  carryWalk: { lean: 0.1, head: 0, armB: [2.5, 0.6], armF: [0.9, 1.7], legB: 0, legF: 0, mouth: 0, eyes: 1, pole: 1, walk: 1 },
 };
 
 // palette keys per character (style.js)
 const LOOKS = {
   ut: { skin: 'skinUt', hair: 'hairUt', shirt: 'shirtUt', pants: 'pantsUt', apron: true, lanyard: true, height: 1 },
   'co-sau': { skin: 'skinSau', hair: 'hairSau', shirt: 'shirtSau', pattern: 'patternSau', pants: 'pantsSau', bun: true, height: 0.94 },
+  // flashback: Bà Năm as a girl selling her father's catch (a headscarf, a long braid, a shoulder pole)
+  'ba-nam-young': { skin: 'skinBa', hair: 'hairBa', shirt: 'shirtBa', pants: 'pantsBa', braid: true, scarf: true, height: 0.9 },
 };
 
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -149,6 +153,7 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   torso.closePath();
   shape(ctx, torso, L.shirt);
   shape(ctx, poly(-6, -39, 0, -32, 6, -39, 3, -40, 0, -36, -3, -40), L.shirt);
+  if (p.pole) pole(ctx, t, p.walk);
   if (L.pattern) {
     ctx.fillStyle = col(L.pattern);
     for (let i = 0; i < 9; i++) {
@@ -180,10 +185,16 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   ctx.rotate(p.head);
   ctx.scale(S.head, S.head);
   if (L.bun) shape(ctx, circle(-9, -9, 5.5), L.hair);
+  if (L.braid) {
+    const braid = new Path2D();
+    braid.moveTo(-10, 0);
+    braid.quadraticCurveTo(-16, 14, -12, 30);
+    stroke(ctx, braid, L.hair, 4.5);
+  }
   shape(ctx, circle(0, 0, 12), L.skin);
   const hair = new Path2D();
-  if (L.bun) {
-    // Cô Sáu: hair combed back into the bun
+  if (L.bun || L.braid) {
+    // Cô Sáu / young Bà Năm: hair combed back (bun / braid)
     hair.arc(0, -1, 12.8, Math.PI * 0.95, Math.PI * 1.95);
     hair.quadraticCurveTo(4, -9, -12.5, 1);
   } else {
@@ -201,6 +212,16 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   hair.closePath();
   shape(ctx, hair, L.hair);
+  if (L.scarf) {
+    const scarf = new Path2D();
+    scarf.moveTo(-13, 2);
+    scarf.arc(0, -1, 13.6, Math.PI * 0.95, Math.PI * 1.9);
+    scarf.lineTo(9, -6);
+    scarf.quadraticCurveTo(0, -9, -9, -4);
+    scarf.lineTo(-15, 8);
+    scarf.closePath();
+    shape(ctx, scarf, 'scarf');
+  }
   // ear
   shape(ctx, circle(-3, 1, 2.6), L.skin, { line: false });
   if (S.cheeks) {
@@ -250,6 +271,41 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   if (p.prop) prop(ctx, p.prop, hx, hy, t, p);
   ctx.restore();
   if (p.smoke) smoke(ctx, 26, -100, t);
+  ctx.restore();
+}
+
+/** Đòn gánh: a bamboo pole across the shoulder, a basket of fish swinging at each end. */
+function pole(ctx, t, walking) {
+  const sway = walking ? Math.sin(t * 9) * 0.08 : Math.sin(t * 1.5) * 0.03;
+  ctx.save();
+  ctx.translate(0, -40);
+  ctx.rotate(sway);
+  const bar = new Path2D();
+  bar.moveTo(-40, 2);
+  bar.quadraticCurveTo(0, -3, 40, 2);
+  stroke(ctx, bar, 'pole', 3);
+  for (const x of [-38, 38]) {
+    ctx.strokeStyle = col('basketLine');
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(x, 2);
+    ctx.lineTo(x - 7, 28);
+    ctx.moveTo(x, 2);
+    ctx.lineTo(x + 7, 28);
+    ctx.stroke();
+    for (const fx of [-5, 0, 5]) {
+      const fish = new Path2D();
+      fish.ellipse(x + fx, 26, 5, 2.2, fx * 0.12 - 0.5, 0, Math.PI * 2);
+      shape(ctx, fish, 'fish');
+    }
+    const basket = new Path2D();
+    basket.moveTo(x - 10, 28);
+    basket.lineTo(x + 10, 28);
+    basket.quadraticCurveTo(x + 9, 42, x, 42);
+    basket.quadraticCurveTo(x - 9, 42, x - 10, 28);
+    basket.closePath();
+    shape(ctx, basket, 'basket');
+  }
   ctx.restore();
 }
 

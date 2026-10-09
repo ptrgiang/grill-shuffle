@@ -9,7 +9,7 @@
 import { variant } from '../ui/variant.js';
 import { pick, t as tr } from '../i18n/index.js';
 import { drawPerson, drawCat, POSES, blendPose } from './rig.js';
-import { drawScene, STAGE } from './scene.js';
+import { drawScene, drawBeach, STAGE } from './scene.js';
 import { overlay } from './style.js';
 
 const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
@@ -59,6 +59,17 @@ const BEATS = {
     cat: () => ({ x: 304, y: STAGE.ground - 26, pose: 'sit', face: -1 }),
     scene: (t) => ({ lightsFrom: -5, glow: clamp((t - 3.3) / 1.6) * 0.6 + 0.12 }),
   },
+  // #106 comparison: a flashback in Bà Năm's past (no shipped beat yet; Fishing Village, "The fish seller")
+  'flashback.fish': {
+    length: 12,
+    panels: [2, 6, 10],
+    cam: [{ t: 0, x: 225, y: 185, z: 1.2 }, { t: 6, x: 220, y: 190, z: 1.3 }],
+    who: 'ba-nam-young',
+    ut: [{ t: 0, x: 440, face: -1, pose: 'carryWalk' }, { t: 6, x: 272, face: -1, pose: 'carry', move: true }],
+    cat: () => null,
+    draw: drawBeach,
+    scene: () => ({}),
+  },
 };
 
 /** Draw the beat at time t into a canvas region (stage coordinates fitted to w × h, camera applied). */
@@ -71,11 +82,12 @@ function paint(ctx, beat, t, w, h, { backdrop = true, cam = true } = {}) {
   ctx.save();
   ctx.translate(w / 2 - c.x * s, h / 2 - c.y * s);
   ctx.scale(s, s);
-  drawScene(ctx, t, s, { backdrop, ...beat.scene(t) });
+  if (beat.draw) beat.draw(ctx, t);
+  else drawScene(ctx, t, s, { backdrop, ...beat.scene(t) });
   const sau = beat.sau && track(beat.sau, t);
   if (sau) drawPerson(ctx, 'co-sau', sau.x, STAGE.ground, 1, sau.face, sau.pose, t);
   const ut = track(beat.ut, t);
-  if (ut) drawPerson(ctx, 'ut', ut.x, STAGE.ground, 1, ut.face, ut.pose, t);
+  if (ut) drawPerson(ctx, beat.who ?? 'ut', ut.x, STAGE.ground, 1, ut.face, ut.pose, t);
   const cat = beat.cat(t);
   if (cat) drawCat(ctx, cat.x, cat.y, 0.9, cat.face, cat.pose, cat.pose === 'jump' ? (t - 8.6) / 0.8 : t);
   ctx.restore();
@@ -147,6 +159,7 @@ const CSS = `
 
 /** Mount the prototype for `beatId` over the page; `still`: seconds of the frozen frame, or null to play. */
 export function mountProto(beatId, still, storyFiles) {
+  if (variant('cmp') === 2) beatId = 'flashback.fish'; // #106 comparison: A's flashback frame
   const beat = BEATS[beatId];
   if (!beat) return;
   const data = storyFiles.flatMap((f) => f.beats ?? []).find((b) => b.id === beatId);
@@ -155,8 +168,9 @@ export function mountProto(beatId, still, storyFiles) {
   style.textContent = CSS;
   const root = h('div', `sv sv-${v}`);
   const skip = h('div', 'sv-skip', tr('story.skip'));
-  const title = h('div', 'sv-title', pick(data?.title));
-  const line = h('div', 'sv-line', pick(data?.lines?.[0]));
+  const fb = beatId === 'flashback.fish';
+  const title = h('div', 'sv-title', fb ? tr('story.protoFlashTitle') : pick(data?.title));
+  const line = h('div', 'sv-line', fb ? tr('story.protoFlashLine') : pick(data?.lines?.[0]));
   document.head.append(style);
   let draw;
   if (v === 2) {

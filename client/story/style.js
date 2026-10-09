@@ -17,9 +17,31 @@ const BASE = {
   coalHot: '255,120,30', wheel: '#18141a', hub: '#9aa3ad', stool: '#d8312a', postcard: '#fdf3dc', stamp: '#d2483a', postLine: '#7c6a58',
   fan: '#d8b06a', fanLine: '#9c7436', fanHandle: '#7a5428', phone: '#15151c', screen: '#9fd6ff', badge: '#ff3b30', smoke: '190,180,175',
   sign: '#e8c34a', signDark: '#b8862a', plant: '#3f7a4a', pot: '#a8552e', shoe: '#1a1414', cheek: 'rgba(240,110,110,.35)',
+  // flashback: the fishing village at dawn, Bà Năm as a girl
+  dawn1: '#f2b880', dawn2: '#f6dcb0', sun: '#f6e27a', sea: '#3d6e8a', seaLight: '#8ab8c8', sand: '#e2c48e', boat: '#6a8a5a', boatTrim: '#c0483a',
+  boatEye: '#f4efe2', basket: '#b8864a', basketLine: '#7a5428', fish: '#9ab0b8', pole: '#8a6a3a', skinBa: '#e2b07c', hairBa: '#1c1418', shirtBa: '#e9e2d0', pantsBa: '#1e1a1c', scarf: '#b8382c',
+};
+
+const FOLK = {
+  ink: '#16110e', hairUt: '#16110e', pantsUt: '#2c4a6e', apron: '#b8382c', apronDark: '#8e2a20', lanyard: '#2c4a6e',
+  shirtSau: '#2c4a6e', patternSau: '#efe4cc', pantsSau: '#16110e', sky1: '#2c3e5c', sky2: '#2c3e5c', wallA: '#d8b45a', wallB: '#b85440',
+  door: '#16110e', window: '#4f7a4a', windowLight: '#efe4cc', notice: '#efe4cc', noticeRed: '#b8382c', noticeText: '#16110e', ground: '#5a4a32',
+  groundLine: '#16110e', bulbOn: '#f2d27a', bulbOff: '#5a4a32', cartBody: '#3a3a3a', cartDark: '#16110e', stool: '#b8382c', postcard: '#efe4cc',
+  stamp: '#b8382c', sign: '#d9a521', plant: '#4f7a4a', pot: '#8e4a2a', cat: '#16110e', catEye: '#d9a521',
+  dawn1: '#e0a060', dawn2: '#efe4cc', sun: '#d9a521', sea: '#2c4a6e', seaLight: '#6a8aa8', sand: '#d8b45a', boat: '#4f7a4a', boatTrim: '#b8382c',
+  boatEye: '#efe4cc', basket: '#a8743a', fish: '#7a9aa8', pole: '#7a5428', shirtBa: '#efe4cc', pantsBa: '#16110e', scarf: '#b8382c',
 };
 
 export const STYLES = {
+  // #106 comparison: A = 1 for the present (warmer, a hint of paper) + 4 for Bà Năm's past; B = one fused style
+  flatWarm: {
+    id: 'flatWarm', outline: { color: '#2a1a22', width: 2 }, head: 1.05, eyesWhite: true, cheeks: true, paper: 0.035,
+    palette: { ...BASE, wallA: '#6e4a40', wallB: '#5a3a3e', sky1: '#2e1e30', sky2: '#5a3438', sign: '#e8b84a', apron: '#e06a2c' },
+  },
+  fusion: {
+    id: 'fusion', outline: { color: '#1e1612', width: 2.3 }, head: 1.08, eyesWhite: true, cheeks: true, paper: 0.05, diep: true, flatSky: true,
+    palette: { ...BASE, ...FOLK, ink: '#1e1612', shirtUt: '#f2ead8', skinUt: '#eec396' },
+  },
   flat: { id: 'flat', outline: { color: '#2a1a22', width: 2 }, palette: BASE, head: 1.05, eyesWhite: true, cheeks: true },
   toy: {
     id: 'toy', outline: null, shade: 'toy', head: 1.55, legs: 0.68, limbs: 1.4, body: 1.12, eyesWhite: true, eyeShine: true, cheeks: true,
@@ -32,7 +54,7 @@ export const STYLES = {
   dongho: {
     id: 'dongho', outline: { color: '#16110e', width: 2.6 }, shade: 'print', head: 1.08, paper: 0.08, diep: true, flatSky: true,
     palette: {
-      ...BASE, ink: '#16110e', skinUt: '#e9c08a', hairUt: '#16110e', shirtUt: '#efe4cc', pantsUt: '#2c4a6e', apron: '#b8382c', apronDark: '#8e2a20',
+      ...BASE, ...FOLK, ink: '#16110e', skinUt: '#e9c08a', hairUt: '#16110e', shirtUt: '#efe4cc', pantsUt: '#2c4a6e', apron: '#b8382c', apronDark: '#8e2a20',
       lanyard: '#2c4a6e', skinSau: '#d9a86e', hairSau: '#7a7268', shirtSau: '#2c4a6e', patternSau: '#efe4cc', pantsSau: '#16110e',
       sky1: '#2c3e5c', sky2: '#2c3e5c', wallA: '#d8b45a', wallB: '#b85440', door: '#16110e', window: '#4f7a4a', windowLight: '#efe4cc',
       notice: '#efe4cc', noticeRed: '#b8382c', noticeText: '#16110e', ground: '#5a4a32', groundLine: '#16110e', bulbOn: '#f2d27a', bulbOff: '#5a4a32',
@@ -53,7 +75,8 @@ export const STYLES = {
 };
 
 const ORDER = ['flat', 'toy', 'cutout', 'dongho', 'lacquer'];
-export const style = () => STYLES[ORDER[(variant('art') || 1) - 1]] ?? STYLES.flat;
+const CMP = ['flatWarm', 'dongho', 'fusion']; // ?v-cmp=1..3 (#106 comparison sheet)
+export const style = () => STYLES[variant('cmp') ? CMP[variant('cmp') - 1] : ORDER[(variant('art') || 1) - 1]] ?? STYLES.flat;
 
 export const col = (key) => style().palette[key] ?? key;
 
