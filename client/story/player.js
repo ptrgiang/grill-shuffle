@@ -42,6 +42,8 @@ export function paintBeat(ctx, id, t, w, h, { style = 'present' } = {}) {
   const cat = B.cat(t);
   if (cat) drawCat(ctx, cat.x, cat.y, 0.9, cat.face, cat.pose, cat.k ?? t);
   ctx.restore();
+  B.inset?.(ctx, t, w, h); // a close-up over the scene (screen space): a phone, a notice, a postcard
+  setStyle(style);
   overlay(ctx, w, h, t);
 }
 

@@ -7,6 +7,7 @@
 import { STAGE } from './scene.js';
 import { track } from './timeline.js';
 import { POSES, blendPose } from './rig.js';
+import { coldOpenVariant, coldOpenFor } from './cold-open-variants.js';
 
 const G = STAGE.ground;
 const at = (keys, t) => track(keys, t, POSES, blendPose);
@@ -239,6 +240,9 @@ export const FALLBACK = {
   cat: () => onCart(196),
   scene: () => ({ lightsFrom: -5, glow: 0.5 }),
 };
+
+// #82 prototype: the cold open's key frame, ?variant=2..5 (removed after the owner's pick)
+if (coldOpenVariant() > 1) BEATS['street.cold-open'] = coldOpenFor(coldOpenVariant(), BEATS['street.cold-open'], { onCart });
 
 export const stagingFor = (id) => BEATS[id] ?? FALLBACK;
 export { at as actorAt };
