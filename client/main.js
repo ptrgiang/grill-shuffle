@@ -485,7 +485,8 @@ function levelIntro(level) {
   const release = () => {
     if (app.hud === hud) app.introOpen = false;
   };
-  import('./story/intro.js').then((m) => {
+  // a beat playing (the cold open on a first launch) goes first: the opening waits for it, never types under it
+  Promise.resolve(storyRunning).then(() => import('./story/intro.js')).then((m) => {
     if (app.hud !== hud) return; // the player left the level meanwhile
     return m.playIntro({
       who,
