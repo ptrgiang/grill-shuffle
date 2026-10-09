@@ -1,9 +1,10 @@
 // Close-ups over a story beat (screen space, drawn by the player after the stage: staging `inset(ctx, t, w, h)`).
-// A card over the upper middle of the screen, so the caption card below stays free. Wordless: only a name and numbers,
-// the same in vi and en.
+// A card over the upper middle of the screen, so the caption card below stays free. Nearly wordless: a name and a
+// count (client/i18n, the same in vi and en).
 import { STAGE, drawBeach } from './scene.js';
 import { setStyle, shape } from './style.js';
 import { drawPerson, POSES } from './rig.js';
+import { t as tr } from '../i18n/index.js';
 
 const G = STAGE.ground;
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -65,10 +66,10 @@ export function phoneCard(ctx, cw, ch) {
   ctx.fillStyle = '#2a1a22';
   ctx.font = `700 ${Math.round(pw * 0.15)}px "Baloo 2", system-ui, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('Bà Năm', 0, ay + pw * 0.42); // a name: the same in vi and en
+  ctx.fillText(tr('story.callerBa'), 0, ay + pw * 0.42);
   ctx.fillStyle = '#e0362c';
   ctx.font = `700 ${Math.round(pw * 0.2)}px "Baloo 2", system-ui, sans-serif`;
-  ctx.fillText('↙ ×5', 0, ay + pw * 0.72);
+  ctx.fillText(tr('story.missedCalls', { n: 5 }), 0, ay + pw * 0.72);
   // a sixth call ringing: the green / red buttons, the red one under Út's thumb
   for (const [bx, c] of [[-0.22, '#3bb36a'], [0.22, '#e0362c']]) {
     ctx.fillStyle = c;
