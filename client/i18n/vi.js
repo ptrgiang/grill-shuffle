@@ -23,6 +23,7 @@ export default {
   'lang.pickTitle': 'Chọn ngôn ngữ',
 
   // chung
+  'story.skip': 'Chạm để bỏ qua',
   'common.close': 'Đóng',
   'common.back': 'Quay lại',
   'common.menu': 'Menu',

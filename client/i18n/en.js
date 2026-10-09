@@ -24,6 +24,7 @@ export default {
 
   // common
   'common.close': 'Close',
+  'story.skip': 'Tap to skip',
   'common.back': 'Back',
   'common.menu': 'Menu',
   'common.backToMenu': '← Menu',

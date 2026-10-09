@@ -1056,6 +1056,13 @@ function syncNow() {
     flushOutbox();
     logStory({ on: 'launch' });
   });
+  // #81 design variants: ?beat=<id>[&t=<s>] plays (or freezes) a beat over the page (client/story/proto.js)
+  const q = new URLSearchParams(location.search);
+  if (q.get('beat') && !syncNow.proto) {
+    syncNow.proto = true;
+    const still = q.has('t') ? Number(q.get('t')) : null;
+    setTimeout(() => import('./story/proto.js').then((m) => m.mountProto(q.get('beat'), still, STORY_FILES)), 300);
+  }
 }
 window.addEventListener('online', syncNow);
 boot();
