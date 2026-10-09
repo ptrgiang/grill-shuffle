@@ -553,7 +553,8 @@ export function createDecor(t) {
         const sg = side === 'left' ? -1 : 1;
         if (side === 'far' || side === 'near') o.position.set(-w / 2 + w * u, 0, (side === 'far' ? -1 : 1) * (d / 2 + gap));
         else if (half - w / 2 >= gap * 1.4) o.position.set(sg * (w / 2 + gap), 0, zs + (ze - zs) * u);
-        else if (gap >= 1.2) o.position.set(sg * half, 0, z1 - gap * 0.5); // a big one (a boat, a net): half out of the corner
+        else if (gap >= 1.2 && half - w / 2 >= 0.5) o.position.set(sg * (w / 2 + gap), 0, zs + (ze - zs) * u); // a big one (a boat, a net) beside the board, cut by the frame
+        else if (gap >= 1.2) o.position.set(sg * half, 0, z1 - gap * 0.5); // no margin at all: half out of the corner
         else {
           // no room beside the board (a wide board on a wide screen): the strip below it, from the corners inwards
           const zn = Math.min(z1 - gap * 0.7, d / 2 + gap);
