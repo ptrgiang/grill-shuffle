@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Brand Sandbox</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      html, body { height: auto; overflow: auto; }
+      body { margin: 0; padding: 18px; background: #2a1a14; color: #d9c2ad; }
+      .row { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; align-items: end; }
+      .cell { text-align: center; font-weight: 600; }
+      .big { width: 300px; }
+      .small { display: flex; gap: 14px; justify-content: center; align-items: end; margin-top: 8px; }
+      .s64 { width: 64px; } .s32 { width: 32px; }
+      svg { display: block; width: 100%; height: auto; }
+      body.og { width: 1200px; height: 630px; padding: 0; overflow: hidden; background: radial-gradient(circle at 30% 40%, #5a2a1c, #1b1420 70%); }
+      body.og .row { height: 630px; flex-wrap: nowrap; align-items: center; gap: 40px; padding: 0 60px; }
+      .og-badge { width: 430px; flex: none; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.6)); }
+      .og-text { text-align: left; }
+      body.og .title { font-size: 104px; }
+      .og-en { margin: 18px 0 0; color: #f3e6d8; font-size: 34px; line-height: 1.2; font-weight: 600; }
+      .og-vi { margin: 8px 0 0; color: #d9c2ad; font-size: 30px; }
+    </style>
+  </head>
+  <body>
+    <!-- the Bà Năm’s Grill badge (client/ui/brand.js): big, then 64 / 32 / 16 px (app icon, favicon); ?og=1 the share card -->
+    <div class="row" id="out"></div>
+    <script type="module" src="./brand.js"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
-# Grill Shuffle
+# Bà Năm’s Grill
 
-**Food Sort & Match Puzzle** — a tactile 2.5D grill puzzle in the browser. Drag food between grills, put three of a
+*A food-sorting puzzle from a Saigon alley* (repo and Worker keep the working name `grill-shuffle`). A tactile 2.5D grill puzzle in the browser. Drag food between grills, put three of a
 kind together, watch them flame up and get served. Every level is proven solvable by a solver, its move budget and
 stars come from the true minimum, and boards can be shared as links that rebuild the exact same puzzle.
 

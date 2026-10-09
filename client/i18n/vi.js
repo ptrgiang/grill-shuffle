@@ -1,9 +1,9 @@
 // Tiếng Việt. Cùng bộ khoá với en.js (tests/client/i18n.test.js). Giọng: thân mật, chất bếp hẻm, ngắn gọn.
-const name = 'Grill Shuffle';
+const name = 'Bà Năm’s Grill';
 
 export default {
   'app.name': name,
-  'app.subtitle': 'Xếp đồ nướng · Ghép ba',
+  'app.subtitle': 'Xếp đồ nướng, theo dấu bà',
   'app.board': `Bàn chơi ${name}`,
 
   // menu

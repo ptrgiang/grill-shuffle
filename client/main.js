@@ -35,6 +35,7 @@ import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
 import { initVariant } from './ui/variant.js';
+import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
 
@@ -275,7 +276,7 @@ function showMenu() {
   useTheme(themeFor(getLevel(next))); // the menu wears the theme of the level "Continue" opens
   screen(
     h('div.menu',
-      h('div.logo', h('img.logo-mark', { src: '/favicon.svg', alt: '' }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle'))),
+      h('div.logo', h('span.badge-art', { html: badgeSvg() }), h('h1.title', t('app.name')), h('p.subtitle', t('app.subtitle'))),
       h('div.menu-spacer'),
       h('div.menu-buttons',
         h('a.btn.big.primary', { href: levelPath(next) ?? '/play', 'data-nav': true }, stars ? t('menu.continue', { label: levelLabel(next) }) : t('menu.play')),

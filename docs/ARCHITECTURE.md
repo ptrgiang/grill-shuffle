@@ -74,11 +74,13 @@ client/        browser game (Vite root)
   audio/         synth.js (pure generators), audio.js (Web Audio engine: gesture unlock + iOS priming,
                  hide/show suspend + ambience fade, sfx/ambience volumes, idle buffer warm-up)
   storage/       db.js (IndexedDB kv), sync.js (best-effort cloud sync + offline outbox, flushed on `online`)
-  ui/            dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps),
+  ui/            brand.js (the Bà Năm badge as SVG: menu logo, favicon, icons; #93), dom.js (tiny DOM helpers), install.js ("Install app": native prompt or per-platform steps),
                  update.js (registers the service worker in production builds, "new version" bar)
-  public/        fonts/ (self-hosted Baloo 2 with Vietnamese, OFL), favicon.svg (the logo), manifest.webmanifest + icons/ (installed app: name and icon are
-                 "Grill Shuffle"; regenerate the PNGs with node scripts/make-icons.js after a logo change)
-  sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes)
+  public/        fonts/ (self-hosted Baloo 2 with Vietnamese, OFL), favicon.svg + icons/ + og.png (all from the
+                 Bà Năm badge in ui/brand.js: node scripts/make-icons.js; og.png from /sandbox/brand?og=1),
+                 manifest.webmanifest (installed app: "Bà Năm’s Grill")
+  sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes),
+                 /sandbox/brand (the badge big and at icon sizes; ?og=1 the share card)
 content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md)
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema

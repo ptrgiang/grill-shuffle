@@ -3,26 +3,26 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-    <title>Grill Shuffle: Food Sort &amp; Match Puzzle</title>
-    <meta name="description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Grill Shuffle." />
+    <title>Bà Năm’s Grill: a food-sorting puzzle from a Saigon alley</title>
+    <meta name="description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Bà Năm’s Grill." />
     <meta name="theme-color" content="#1b1420" />
     <link rel="canonical" href="https://grillshuffle.thebuilder.work/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <!-- installed app: name and icon on the home screen / Start menu / Dock are just "Grill Shuffle" -->
-    <meta name="application-name" content="Grill Shuffle" />
-    <meta name="apple-mobile-web-app-title" content="Grill Shuffle" />
+    <!-- installed app: name and icon on the home screen / Start menu / Dock are just "Bà Năm’s Grill" -->
+    <meta name="application-name" content="Bà Năm’s Grill" />
+    <meta name="apple-mobile-web-app-title" content="Bà Năm’s Grill" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Grill Shuffle: Food Sort & Match Puzzle" />
-    <meta property="og:description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Grill Shuffle." />
+    <meta property="og:title" content="Bà Năm’s Grill: a food-sorting puzzle from a Saigon alley" />
+    <meta property="og:description" content="Sort tasty food, match three, clear the grill and solve satisfying food puzzles in Bà Năm’s Grill." />
     <meta property="og:url" content="https://grillshuffle.thebuilder.work/" />
     <meta property="og:image" content="https://grillshuffle.thebuilder.work/og.png" />
-    <meta property="og:site_name" content="Grill Shuffle" />
+    <meta property="og:site_name" content="Bà Năm’s Grill" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" href="/fonts/baloo2-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./style.css" />
@@ -30,8 +30,8 @@
       {
         "@context": "https://schema.org",
         "@type": "VideoGame",
-        "name": "Grill Shuffle",
-        "alternateName": "Grill Shuffle: Food Sort & Match Puzzle",
+        "name": "Bà Năm’s Grill",
+        "alternateName": ["Ba Nam's Grill", "Bà Năm’s Grill: a food-sorting puzzle from a Saigon alley"],
         "description": "A tactile food sort and match puzzle: rearrange food across grills, match three of a kind and clear the grill.",
         "genre": ["Puzzle", "Sorting", "Match 3"],
         "gamePlatform": ["Web browser", "Android", "iOS", "Windows", "macOS", "Linux"],
@@ -45,21 +45,21 @@
   </head>
   <body>
     <div id="app">
-      <canvas id="stage" aria-label="Grill Shuffle game board" data-i18n-aria="app.board"></canvas>
+      <canvas id="stage" aria-label="Bà Năm’s Grill game board" data-i18n-aria="app.board"></canvas>
       <div id="ui"></div>
     </div>
 
     <!-- Landing content: what search engines and players see before the game loads, and below the menu. -->
     <main id="landing" class="landing">
       <header class="landing-hero">
-        <h1><img src="/favicon.svg" alt="" width="44" height="44" />Grill Shuffle</h1>
+        <h1><img src="/favicon.svg" alt="" width="44" height="44" />Bà Năm’s Grill</h1>
         <p class="tagline" data-i18n-html="landing.tagline">A food sort &amp; match puzzle you play right in your browser.</p>
         <a class="cta" href="/play" data-i18n="landing.cta">Play free</a>
       </header>
       <section>
         <h2 data-i18n="landing.h.sort">Sort the food, match three, clear the grill</h2>
         <p data-i18n="landing.p.sort">
-          Grill Shuffle is a tactile grill puzzle game. Shrimp, steak, corn and drumsticks are scattered across sizzling
+          Bà Năm’s Grill is a tactile grill puzzle game. Shrimp, steak, corn and drumsticks are scattered across sizzling
           grills: drag food between grills, put three of a kind together and watch them flame up and get served. Every
           level is a compact food puzzle with a move limit, and every one has been solved by a computer so you know a
           clean solution exists.
@@ -82,9 +82,9 @@
         </p>
       </section>
       <section id="install">
-        <h2 data-i18n="landing.h.install">Install Grill Shuffle on your phone or computer</h2>
+        <h2 data-i18n="landing.h.install">Install Bà Năm’s Grill on your phone or computer</h2>
         <p data-i18n="landing.p.install">
-          Grill Shuffle is a web app: install it straight from the browser and it opens in its own window with its own
+          Bà Năm’s Grill is a web app: install it straight from the browser and it opens in its own window with its own
           icon, like a regular app. Nothing to download from a store, and your progress stays with you.
         </p>
         <h3 data-i18n="landing.h.ios">iPhone and iPad (Safari)</h3>
@@ -98,13 +98,13 @@
           <li data-i18n="landing.android.1">Open the game in your browser.</li>
           <li data-i18n-html="landing.android.2">Tap <strong>Install app</strong> in the game menu, or open the browser menu (⋮) and tap
             <strong>Install app</strong> / <strong>Add to Home screen</strong>.</li>
-          <li data-i18n-html="landing.android.3">Confirm with <strong>Install</strong>. Grill Shuffle appears with your other apps.</li>
+          <li data-i18n-html="landing.android.3">Confirm with <strong>Install</strong>. Bà Năm’s Grill appears with your other apps.</li>
         </ol>
         <h3 data-i18n="landing.h.desktop">Windows, macOS, Linux and ChromeOS (Chrome or Edge)</h3>
         <ol>
           <li data-i18n-html="landing.desktop.1">Open the game and click <strong>Install app</strong> in the menu, or the install icon at the right end of
             the address bar.</li>
-          <li data-i18n-html="landing.desktop.2">Click <strong>Install</strong>. Grill Shuffle gets a Start menu / Launchpad entry and can be pinned to the
+          <li data-i18n-html="landing.desktop.2">Click <strong>Install</strong>. Bà Năm’s Grill gets a Start menu / Launchpad entry and can be pinned to the
             taskbar or Dock.</li>
         </ol>
         <h3 data-i18n="landing.h.mac">Mac (Safari)</h3>
@@ -114,10 +114,10 @@
         </ol>
         <p data-i18n="landing.p.firefox">Firefox on a computer cannot install web apps: open the game in Chrome, Edge or Safari to install it.</p>
       </section>
-      <footer data-i18n="landing.footer">Grill Shuffle — an original food sorting puzzle. No downloads, no sign-up.</footer>
+      <footer data-i18n="landing.footer">Bà Năm’s Grill — an original food sorting puzzle. No downloads, no sign-up.</footer>
     </main>
 
-    <noscript>Grill Shuffle needs JavaScript and WebGL to run.</noscript>
+    <noscript>Bà Năm’s Grill needs JavaScript and WebGL to run.</noscript>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
