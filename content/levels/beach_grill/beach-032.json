@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-032",
-  "name": "Hammock",
+  "name": {"vi":"Võng đưa","en":"Hammock"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Same foods, different trap. Find the free grill.",
+  "hint": {"vi":"Vẫn mấy món đó, bẫy khác. Tìm vỉ trống.","en":"Same foods, different trap. Find the free grill."},
   "solver": {
     "minMoves": 9,
     "difficulty": 57,

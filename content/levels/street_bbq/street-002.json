@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-002",
-  "name": "Corn Joins In",
+  "name": {"vi":"Bắp sau giờ làm","en":"Corn After Work"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 11,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Empty slots are your workspace. Gather three of a kind on one grill.",
+  "hint": {"vi":"Laptop trên xe, tạp dề trên người. Ô trống là chỗ để xoay xở: gom ba món giống nhau lên một vỉ.","en":"Laptop on the cart, apron on. Empty slots are your workspace: gather three of a kind on one grill."},
   "solver": {
     "minMoves": 6,
     "difficulty": 15,

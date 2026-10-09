@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-022",
-  "name": "Shell Game",
+  "name": {"vi":"Sò điệp hình quạt","en":"Fan-Shaped Shells"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "New catch: scallop, the fan-shaped shell. Match three like any food.",
+  "hint": {"vi":"Mẻ mới: sò điệp, vỏ hình cánh quạt. Ghép ba như mọi món.","en":"New catch: scallop, the fan-shaped shell. Match three like any food."},
   "solver": {
     "minMoves": 5,
     "difficulty": 52,

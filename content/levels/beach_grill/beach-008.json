@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-008",
-  "name": "Sandcastle",
+  "name": {"vi":"Lâu đài cát","en":"Sandcastle"},
   "theme": "beach_grill",
   "tier": "normal",
   "moves": 12,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Count what is still hidden before you fill a grill.",
+  "hint": {"vi":"Đếm xem còn bao nhiêu món giấu bên dưới trước khi lấp đầy một vỉ.","en":"Count what is still hidden before you fill a grill."},
   "solver": {
     "minMoves": 8,
     "difficulty": 33,

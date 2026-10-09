@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-001",
-  "name": "Low Tide",
+  "name": {"vi":"Tới làng biển","en":"Arriving by the Sea"},
   "theme": "beach_grill",
   "tier": "easy",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Welcome to the beach. Three of a kind on one grill clear it.",
+  "hint": {"vi":"Xe nướng tới làng biển. Ba món giống nhau trên một vỉ sẽ được dọn đi.","en":"The cart reaches the sea. Three of a kind on one grill clear it."},
   "solver": {
     "minMoves": 5,
     "difficulty": 15,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-034",
-  "name": "Tiki Bar",
+  "name": {"vi":"Quán hải sản","en":"Seafood Shack"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "The lock opens late. Build towards it.",
+  "hint": {"vi":"Vỉ khoá mở muộn. Chuẩn bị dần cho nó.","en":"The lock opens late. Build towards it."},
   "solver": {
     "minMoves": 5,
     "difficulty": 58,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-011",
-  "name": "Sunset Rush",
+  "name": {"vi":"Hoàng hôn tất bật","en":"Sunset Rush"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "A lock and a hidden plate. Keep one grill free.",
+  "hint": {"vi":"Một vỉ khoá và một khay chồng. Chừa một vỉ trống.","en":"A lock and a hidden plate. Keep one grill free."},
   "solver": {
     "minMoves": 8,
     "difficulty": 44,

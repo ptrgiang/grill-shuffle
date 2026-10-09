@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-003",
-  "name": "Drumstick Dash",
+  "name": {"vi":"Vị khách đầu tiên","en":"The First Customer"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 14,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Four kinds of food now. Plan which grill each one will finish on.",
+  "hint": {"vi":"Có người ngồi xuống ghế nhựa đỏ chờ. Giờ có bốn món: tính trước món nào sẽ xong trên vỉ nào.","en":"Someone sits on a red stool and waits. Four kinds of food now: plan which grill each one finishes on."},
   "solver": {
     "minMoves": 8,
     "difficulty": 20,

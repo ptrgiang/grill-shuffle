@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-031",
-  "name": "Sun Deck",
+  "name": {"vi":"Chờ mưa tạnh","en":"Waiting Out the Rain"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Nine moves and a lock. Pineapple first.",
+  "hint": {"vi":"Chín lượt và một vỉ khoá. Thơm trước.","en":"Nine moves and a lock. Pineapple first."},
   "solver": {
     "minMoves": 9,
     "difficulty": 57,

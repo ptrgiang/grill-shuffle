@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-016",
-  "name": "Calamari Cove",
+  "name": {"vi":"Đèn câu mực","en":"Squid Boat Lights"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Five grills, one hidden plate. Count what is still under it.",
+  "hint": {"vi":"Năm vỉ, một khay chồng. Đếm xem còn gì bên dưới.","en":"Five grills, one hidden plate. Count what is still under it."},
   "solver": {
     "minMoves": 7,
     "difficulty": 48,

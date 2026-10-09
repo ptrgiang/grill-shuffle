@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-005",
-  "name": "Shrimp Order",
+  "name": {"vi":"Cho sáu con tôm","en":"Six Shrimp, Please"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 6,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_food","food":"shrimp","count":6}],
   "modifiers": [],
-  "hint": "Only the shrimp order matters. Serve six shrimp.",
+  "hint": {"vi":"Bà hàng xóm chỉ gọi tôm. Dọn ra sáu con tôm, mấy món khác để sau.","en":"A neighbour only wants shrimp. Serve six shrimp; the rest can wait."},
   "solver": {
     "minMoves": 4,
     "difficulty": 26,

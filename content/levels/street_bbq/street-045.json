@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-045",
-  "name": "Mixed Grill",
+  "name": {"vi":"Cả hẻm kéo tới","en":"Everyone Comes"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Five foods. The stack hides the key piece.",
+  "hint": {"vi":"Năm món. Khay chồng giấu món then chốt.","en":"Five foods. The stack hides the key piece."},
   "solver": {
     "minMoves": 9,
     "difficulty": 50,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-049",
-  "name": "Shooting Star",
+  "name": {"vi":"Chiếc lồng đèn trôi","en":"A Lantern Drifts By"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 13,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Nearly there. Twelve moves, no slack.",
+  "hint": {"vi":"Sắp tới rồi. Mười hai lượt, không dư.","en":"Nearly there. Twelve moves, no slack."},
   "solver": {
     "minMoves": 12,
     "difficulty": 71,

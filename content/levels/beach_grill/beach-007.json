@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-007",
-  "name": "Buried Treasure",
+  "name": {"vi":"Nước lên, cá tới","en":"The Tide Brings More"},
   "theme": "beach_grill",
   "tier": "normal",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "A plate under a grill hides more food. Clear the grill to reveal it.",
+  "hint": {"vi":"Như con nước lên, khay chồng dưới vỉ mang thêm đồ tới. Dọn trống vỉ để lật nó lên.","en":"Like the tide, a plate under a grill brings more food. Clear the grill to reveal it."},
   "solver": {
     "minMoves": 6,
     "difficulty": 33,

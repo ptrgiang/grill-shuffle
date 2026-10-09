@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-015",
-  "name": "Orange Trio",
+  "name": {"vi":"Cây quạt nan","en":"The Woven Fan"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 12,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "Shrimp curl, carrots point, salmon lies flat. Sort the oranges.",
+  "hint": {"vi":"Cô Sáu quạt than rồi chỉ: tôm cong, cà rốt nhọn, cá hồi nằm dẹt. Phân loại mấy món màu cam.","en":"Cô Sáu fans the coals and points: shrimp curl, carrots point, salmon lies flat. Sort the oranges."},
   "solver": {
     "minMoves": 8,
     "difficulty": 26,

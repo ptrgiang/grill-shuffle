@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-046",
-  "name": "Deep Stack",
+  "name": {"vi":"Mẻ than cuối","en":"Last Coal Delivery"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Three matches to open the lock, two stacks to dig.",
+  "hint": {"vi":"Ba lần ghép để mở khoá, hai khay chồng để đào.","en":"Three matches to open the lock, two stacks to dig."},
   "solver": {
     "minMoves": 9,
     "difficulty": 53,

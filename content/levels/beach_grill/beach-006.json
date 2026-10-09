@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-006",
-  "name": "Picnic Spread",
+  "name": {"vi":"Vá lưới","en":"Mending Nets"},
   "theme": "beach_grill",
   "tier": "normal",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "Park a food on the tray to free a grill.",
+  "hint": {"vi":"Để tạm một món lên khay cho trống một vỉ.","en":"Park a food on the tray to free a grill."},
   "solver": {
     "minMoves": 7,
     "difficulty": 29,

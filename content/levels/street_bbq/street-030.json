@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-030",
-  "name": "Double Decker",
+  "name": {"vi":"Hẻm giờ tan tầm","en":"Rush Hour Alley"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Two stacks: one hides salmon, the other bread. Which do you open first?",
+  "hint": {"vi":"Xe máy lách qua xe nướng. Hai khay chồng: một giấu cá hồi, một giấu bánh mì. Mở cái nào trước?","en":"Motorbikes squeeze past the cart. Two stacks: one hides salmon, the other bread. Which first?"},
   "solver": {
     "minMoves": 7,
     "difficulty": 45,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-046",
-  "name": "Low Sun",
+  "name": {"vi":"Chiều tà","en":"Low Sun"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Two plates and a lock. Count what is hidden.",
+  "hint": {"vi":"Hai khay chồng và một vỉ khoá. Đếm những gì đang giấu.","en":"Two plates and a lock. Count what is hidden."},
   "solver": {
     "minMoves": 10,
     "difficulty": 69,

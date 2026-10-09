@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-043",
-  "name": "Long Haul",
+  "name": {"vi":"Đêm dài","en":"Long Night"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Ten moves at best. Do not waste the empty slots.",
+  "hint": {"vi":"Ít nhất mười lượt. Đừng phí ô trống.","en":"Ten moves at best. Do not waste the empty slots."},
   "solver": {
     "minMoves": 10,
     "difficulty": 51,

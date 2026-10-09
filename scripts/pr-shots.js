@@ -6,13 +6,15 @@
 //   npm run pr-shots                                   PR of the current branch, default pages
 //   npm run pr-shots -- --pages "/saigon-alley/27@390x844m+select,/@1280x800"
 //   npm run pr-shots -- --pr 61 --base origin/main --no-publish     (local only: shots/pr/)
+//   npm run pr-shots -- --all --pages "…"              show every pair, also the small ones (a HUD line of text)
 //
 // Page spec: <path>@<W>x<H>[m][+select][+unlock][+tap=<css>]
 //   m = phone (touch, DPR 2), +select = tap-select a food first (game pages), +unlock = every story level 3 stars
 //   first (locked packs open, e.g. /fishing-village/37), +tap=<css> = tap that element first (e.g. a HUD button:
 //   +tap=[data-booster=fan]; skipped quietly where it does not exist, as on a base without the feature).
 // Every URL gets freeze=1&quality=high&coach=0 (still frames, pinned tier); a base without those flags ignores them.
-// Pairs that differ by more than 0.4 % of their pixels are shown; the others are listed as unchanged.
+// Pairs that differ by more than 0.4 % of their pixels are shown; the others are listed as unchanged (--all: every
+// pair is shown, for changes too small for the threshold, e.g. a level name in the HUD).
 import { writeFileSync, readFileSync, existsSync, rmSync, rmdirSync, symlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { launchChrome } from './lib/browser.js';
@@ -114,8 +116,9 @@ async function main() {
 
   const pairs = pages.map((p) => ({ ...p, before: join(outDir, 'before', `${p.name}.png`), after: join(outDir, 'after', `${p.name}.png`), pair: join(outDir, `${p.name}.png`) }));
   await compose(pairs, { before: `Before · ${base.replace('origin/', '')} ${baseSha}`, after: `After · ${branch} ${headSha}` });
-  const changed = pairs.filter((p) => p.ratio > MAX_CHANGED);
-  const same = pairs.filter((p) => p.ratio <= MAX_CHANGED);
+  const shown = (p) => args.all || p.ratio > MAX_CHANGED;
+  const changed = pairs.filter(shown);
+  const same = pairs.filter((p) => !shown(p));
   for (const p of pairs) console.log(`${p.ratio > MAX_CHANGED ? 'changed  ' : 'unchanged'} ${p.spec}  ${(p.ratio * 100).toFixed(2)} % -> ${p.pair}`);
   if (errors.length) console.log('page errors:\n' + errors.join('\n'));
   if (!publishIt) return;

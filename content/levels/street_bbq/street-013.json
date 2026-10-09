@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-013",
-  "name": "Off the Heat",
+  "name": {"vi":"Nhấc khỏi lửa","en":"Off the Heat"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 13,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter","prep_tray"],
   "boosters": {"torch":1,"cooler":1},
-  "hint": "Food on the prep tray stops cooking. Park what is burning there while you set up its match.",
+  "hint": {"vi":"Món trên khay không bị nướng nữa. Để món sắp cháy lên đó trong lúc chuẩn bị bộ ba cho nó.","en":"Food on the prep tray stops cooking. Park what is burning there while you set up its match."},
   "solver": {
     "minMoves": 9,
     "difficulty": 49,

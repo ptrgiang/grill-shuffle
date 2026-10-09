@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-040",
-  "name": "Deep Blue",
+  "name": {"vi":"Khang mua cả mẻ","en":"Khang Buys the Catch"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Eleven moves. Work from the lock outwards.",
+  "hint": {"vi":"Khang muốn mua cả mẻ cá cho toà tháp. Mười một lượt: làm từ vỉ khoá ra ngoài.","en":"Khang wants the whole catch for the tower. Eleven moves: work from the lock outwards."},
   "solver": {
     "minMoves": 11,
     "difficulty": 67,

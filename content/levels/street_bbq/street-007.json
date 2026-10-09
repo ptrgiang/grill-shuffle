@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-007",
-  "name": "Padlocked",
+  "name": {"vi":"Ổ khoá của Cô Sáu","en":"Cô Sáu’s Padlock"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill"],
-  "hint": "The locked grill opens after two matches anywhere on the board.",
+  "hint": {"vi":"Cô Sáu cho mượn một vỉ nhưng còn khoá. Ghép đủ hai lần ở đâu cũng được thì vỉ mở.","en":"Cô Sáu lends a grill but keeps it locked. It opens after two matches anywhere on the board."},
   "solver": {
     "minMoves": 6,
     "difficulty": 25,

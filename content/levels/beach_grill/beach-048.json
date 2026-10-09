@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-048",
-  "name": "Bonfire",
+  "name": {"vi":"Lửa trại","en":"Bonfire"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Few free slots. Use the plates wisely.",
+  "hint": {"vi":"Ít ô trống. Dùng khay chồng cho khéo.","en":"Few free slots. Use the plates wisely."},
   "solver": {
     "minMoves": 11,
     "difficulty": 71,

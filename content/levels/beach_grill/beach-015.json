@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-015",
-  "name": "Squid Pro Quo",
+  "name": {"vi":"Mực hay tôm?","en":"Squid or Shrimp?"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Squid and shrimp look nothing alike: sort them before you dig.",
+  "hint": {"vi":"Mực với tôm chẳng giống nhau chút nào: phân loại xong rồi hãy đào.","en":"Squid and shrimp look nothing alike: sort them before you dig."},
   "solver": {
     "minMoves": 7,
     "difficulty": 48,

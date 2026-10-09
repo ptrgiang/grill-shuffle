@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-035",
-  "name": "Corner Stand",
+  "name": {"vi":"Cô Sáu im lặng","en":"Cô Sáu Says Nothing"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 8,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "A tray and a stack. Fill the tray only when it buys you a match.",
+  "hint": {"vi":"Một khay và một khay chồng. Chỉ để lên khay khi việc đó giúp bạn ghép được.","en":"A tray and a stack. Fill the tray only when it buys you a match."},
   "solver": {
     "minMoves": 6,
     "difficulty": 46,

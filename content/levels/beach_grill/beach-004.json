@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-004",
-  "name": "Salt Breeze",
+  "name": {"vi":"Gió mặn","en":"Salt Breeze"},
   "theme": "beach_grill",
   "tier": "easy",
   "moves": 7,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Every grill has a gap. Use them as workspace.",
+  "hint": {"vi":"Vỉ nào cũng có ô trống. Dùng chúng để xoay xở.","en":"Every grill has a gap. Use them as workspace."},
   "solver": {
     "minMoves": 4,
     "difficulty": 19,

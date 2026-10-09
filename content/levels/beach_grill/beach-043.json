@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-043",
-  "name": "Long Pier",
+  "name": {"vi":"Cầu tàu dài","en":"Long Pier"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 13,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Twelve moves. Every empty slot is precious.",
+  "hint": {"vi":"Mười hai lượt. Ô trống nào cũng quý.","en":"Twelve moves. Every empty slot is precious."},
   "solver": {
     "minMoves": 12,
     "difficulty": 68,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-049",
-  "name": "Twelve Steps",
+  "name": {"vi":"Khoanh mực đỏ","en":"Circled in Red"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 15,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "The longest line in the pack: twelve moves at best.",
+  "hint": {"vi":"Buổi tối dài nhất trong hẻm: ít nhất mười hai lượt.","en":"The longest evening in the alley: twelve moves at best."},
   "solver": {
     "minMoves": 12,
     "difficulty": 46,

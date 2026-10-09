@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-036",
-  "name": "Salt Spray",
+  "name": {"vi":"Ruộng muối","en":"Salt Fields"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Short, but every move counts.",
+  "hint": {"vi":"Ngắn, nhưng nước nào cũng quan trọng.","en":"Short, but every move counts."},
   "solver": {
     "minMoves": 5,
     "difficulty": 59,

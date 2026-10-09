@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-008",
-  "name": "Stack Attack",
+  "name": {"vi":"Hai chồng khay cũ","en":"Two Old Stacks"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 10,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Two grills hide stacked trays. Which one do you open first?",
+  "hint": {"vi":"Hai vỉ giấu khay chồng. Mở cái nào trước?","en":"Two grills hide stacked trays. Which one do you open first?"},
   "solver": {
     "minMoves": 7,
     "difficulty": 42,

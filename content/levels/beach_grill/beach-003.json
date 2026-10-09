@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-003",
-  "name": "Sausage Sizzle",
+  "name": {"vi":"Ghe của Chú Tư","en":"Chú Tư’s Boat"},
   "theme": "beach_grill",
   "tier": "easy",
   "moves": 7,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Fill the gaps first, then finish each grill.",
+  "hint": {"vi":"Lấp ô trống trước, rồi làm xong từng vỉ.","en":"Fill the gaps first, then finish each grill."},
   "solver": {
     "minMoves": 4,
     "difficulty": 18,

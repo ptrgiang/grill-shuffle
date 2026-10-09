@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-023",
-  "name": "Corn Cellar",
+  "name": {"vi":"Bắp nằm dưới","en":"Corn Underneath"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "The corn you are missing is underneath. Open the stack.",
+  "hint": {"vi":"Mấy trái bắp còn thiếu nằm bên dưới. Mở khay chồng ra.","en":"The corn you are missing is underneath. Open the stack."},
   "solver": {
     "minMoves": 6,
     "difficulty": 29,

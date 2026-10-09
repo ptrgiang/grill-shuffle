@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-042",
-  "name": "Surf and Turf",
+  "name": {"vi":"Đất và biển","en":"Land and Sea"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Sausage on the beach. Sort the meat from the sea.",
+  "hint": {"vi":"Xúc xích trên bãi biển. Tách thịt ra khỏi đồ biển.","en":"Sausage on the beach. Sort the meat from the sea."},
   "solver": {
     "minMoves": 10,
     "difficulty": 68,

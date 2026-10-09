@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-023",
-  "name": "Driftwood",
+  "name": {"vi":"Gỗ trôi dạt","en":"Driftwood"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Hidden food decides the order here. Reveal it early.",
+  "hint": {"vi":"Món bị giấu quyết định thứ tự. Lật nó lên sớm.","en":"Hidden food decides the order here. Reveal it early."},
   "solver": {
     "minMoves": 5,
     "difficulty": 53,

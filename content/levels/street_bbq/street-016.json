@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-016",
-  "name": "Toast or Steak",
+  "name": {"vi":"Bánh mì hay bò?","en":"Toast or Steak?"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill"],
-  "hint": "Toast has a golden crust, steak a white fat rim. Do not mix up the slabs.",
+  "hint": {"vi":"Bánh mì có vỏ vàng, bò có viền mỡ trắng. Đừng lộn hai miếng.","en":"Toast has a golden crust, steak a white fat rim. Do not mix up the slabs."},
   "solver": {
     "minMoves": 6,
     "difficulty": 31,

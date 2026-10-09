@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-028",
-  "name": "Beef Rush",
+  "name": {"vi":"Giờ tan trường","en":"After School"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "Six beef, one free tray slot. Park wisely.",
+  "hint": {"vi":"Như những chiều tan trường năm nào: sáu miếng bò, khay chỉ còn một chỗ. Để tạm cho khéo.","en":"Like the afternoons after school: six beef, one free tray slot. Park wisely."},
   "solver": {
     "minMoves": 6,
     "difficulty": 29,

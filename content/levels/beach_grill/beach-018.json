@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-018",
-  "name": "Pier Pressure",
+  "name": {"vi":"Ai cũng bận","en":"Every Hand Busy"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Every grill is busy. Find the move that frees two.",
+  "hint": {"vi":"Vỉ nào cũng bận. Tìm nước đi giải phóng được hai vỉ.","en":"Every grill is busy. Find the move that frees two."},
   "solver": {
     "minMoves": 8,
     "difficulty": 48,

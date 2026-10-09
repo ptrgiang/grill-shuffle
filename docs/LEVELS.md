@@ -27,8 +27,8 @@
 Grill fields: `type` (`grill` | `tray`), `slots`, optional `layers` (each exactly as long as `slots`), optional
 `lock`. A slot is `null`, a food id, or a burning item `{"food": "shrimp", "burn": 4}` (rules v2, modifier
 `burn_counter`; see docs/PUZZLE.md). `name` and `hint` are player-facing text: `{ "vi": …, "en": … }` (#89; `validate:levels` checks both and the length:
-name ≤ 28, hint ≤ 160, pack name ≤ 24). A plain string is the legacy English-only form, still accepted and counted until
-#90 / #92 rewrite them. `tier` decides the move budget from the solver minimum; `moves` and `solver` are **written by tooling**
+name ≤ 28, hint ≤ 160, pack name ≤ 24). An English-only plain string is an error since #90 (names and hints tell the
+story, `docs/STORY.md`; keep names ≤ 20 characters so they fit the 360 px HUD). `tier` decides the move budget from the solver minimum; `moves` and `solver` are **written by tooling**
 (`npm run solve -- <id> --write`), never by hand. No level carries code.
 
 ## Packs

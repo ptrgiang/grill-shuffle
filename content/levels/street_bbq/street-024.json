@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-024",
-  "name": "Key Ring",
+  "name": {"vi":"Bưu thiếp tới","en":"A Postcard Arrives"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 7,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill"],
-  "hint": "One match unlocks the padlocked grill. Make it fast.",
+  "hint": {"vi":"Một lần ghép là mở được vỉ khoá. Làm nhanh lên.","en":"One match unlocks the padlocked grill. Make it fast."},
   "solver": {
     "minMoves": 5,
     "difficulty": 29,

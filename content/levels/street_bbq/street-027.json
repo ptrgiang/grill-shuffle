@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-027",
-  "name": "Bread Basement",
+  "name": {"vi":"Ổ bánh mì cuối","en":"The Last Bread"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 12,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "The last bread is under the stack.",
+  "hint": {"vi":"Ổ bánh mì cuối cùng nằm dưới khay chồng.","en":"The last bread is under the stack."},
   "solver": {
     "minMoves": 8,
     "difficulty": 29,

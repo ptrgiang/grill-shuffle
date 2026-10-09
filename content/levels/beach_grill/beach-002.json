@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-002",
-  "name": "Shrimp on the Sand",
+  "name": {"vi":"Xiên nướng trên cát","en":"Skewers on the Sand"},
   "theme": "beach_grill",
   "tier": "easy",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Skewers stay whole: match three of them like any food.",
+  "hint": {"vi":"Xiên nướng giữ nguyên cả xiên: ghép ba xiên như mọi món khác.","en":"Skewers stay whole: match three of them like any food."},
   "solver": {
     "minMoves": 5,
     "difficulty": 15,

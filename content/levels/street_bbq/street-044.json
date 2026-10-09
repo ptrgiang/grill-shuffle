@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-044",
-  "name": "Last Orders",
+  "name": {"vi":"Suất cuối","en":"Last Orders"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Two stacks and a lock that needs two matches. Count before you dig.",
+  "hint": {"vi":"Hai khay chồng và một vỉ khoá cần hai lần ghép. Đếm trước rồi hãy đào.","en":"Two stacks and a lock that needs two matches. Count before you dig."},
   "solver": {
     "minMoves": 9,
     "difficulty": 56,

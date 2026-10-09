@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-019",
-  "name": "Tray Service",
+  "name": {"vi":"Hai tay, một khay","en":"Two Hands, One Tray"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "The tray never matches, but it holds two items while you set up.",
+  "hint": {"vi":"Khay không bao giờ ghép được, nhưng giữ được hai món trong lúc bạn sắp xếp.","en":"The tray never matches, but it holds two items while you set up."},
   "solver": {
     "minMoves": 6,
     "difficulty": 29,

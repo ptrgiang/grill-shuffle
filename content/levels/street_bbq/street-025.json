@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-025",
-  "name": "Breather",
+  "name": {"vi":"Tối yên ả","en":"A Quiet Night"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Chicken, carrot, corn. Take a breath.",
+  "hint": {"vi":"Đùi gà, cà rốt, bắp. Thở chút đi: Mực đang ngủ trên cuốn sổ.","en":"Chicken, carrot, corn. Take a breath: Mực is asleep on the notebook."},
   "solver": {
     "minMoves": 5,
     "difficulty": 18,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-001",
-  "name": "First Flip",
+  "name": {"vi":"Buổi tối đầu tiên","en":"First Evening"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 4,
@@ -14,7 +14,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Drag a shrimp onto the grill that already has two. Three of a kind sizzle away.",
+  "hint": {"vi":"Buổi tối đầu tiên bên xe của bà. Kéo con tôm sang vỉ đã có hai con: ba món giống nhau sẽ xèo lửa và được dọn đi.","en":"Bà Năm’s cart, your first evening. Drag a shrimp onto the grill that already has two: three of a kind sizzle away."},
   "solver": {
     "minMoves": 2,
     "difficulty": 15,

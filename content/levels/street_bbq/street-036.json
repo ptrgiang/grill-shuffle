@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-036",
-  "name": "Two Layers",
+  "name": {"vi":"Hàng xóm dọn đồ","en":"Neighbours Packing"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 8,
@@ -16,7 +16,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "Two hidden trays and no lock. Count what is still missing.",
+  "hint": {"vi":"Hai khay chồng, không có vỉ khoá. Đếm xem còn thiếu món gì.","en":"Two hidden trays and no lock. Count what is still missing."},
   "solver": {
     "minMoves": 6,
     "difficulty": 46,

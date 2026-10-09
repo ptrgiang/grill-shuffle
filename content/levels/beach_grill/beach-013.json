@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-013",
-  "name": "Ink Spot",
+  "name": {"vi":"Mực gặp mực","en":"Mực Meets Squid"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 5,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "New catch: squid. The pale one with tentacles. Three of a kind, as always.",
+  "hint": {"vi":"Mẻ mới: mực, con màu nhạt có xúc tu. Con mèo Mực rất chú ý. Vẫn là ghép ba.","en":"New catch: squid, the pale one with tentacles. Mực the cat is very interested. Three of a kind, as always."},
   "solver": {
     "minMoves": 4,
     "difficulty": 48,

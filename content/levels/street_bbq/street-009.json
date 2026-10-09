@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-009",
-  "name": "Hot Seat",
+  "name": {"vi":"Người lạ mặc vest","en":"A Stranger in a Suit"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","prep_tray","stacked_tray"],
-  "hint": "Locks, a stacked tray and a prep tray. Count your matches before you open things up.",
+  "hint": {"vi":"Vỉ khoá, khay chồng và khay để tạm. Đếm số lần ghép trước khi mở.","en":"Locks, a stacked tray and a prep tray. Count your matches before you open things up."},
   "solver": {
     "minMoves": 9,
     "difficulty": 43,
