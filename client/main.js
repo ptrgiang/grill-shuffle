@@ -35,7 +35,7 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant, variant } from './ui/variant.js';
+import { initVariant } from './ui/variant.js';
 import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
@@ -227,6 +227,7 @@ const foodName = (id) => t(`food.${id}`);
 function onFx(ev, at) {
   audio.onEvent(ev, at ? at.x / stage.size.w : 0.5);
   if (!app.hud) return;
+  app.hud.counter?.onFx(ev, at);
   switch (ev.type) {
     case 'score':
       if (at) floatText(fxLayer, ev.combo > 1 ? `+${ev.points}  x${ev.combo}` : `+${ev.points}`, at.x, at.y - 10, ev.combo > 1 ? 'hot' : '');
@@ -782,16 +783,15 @@ class Hud {
       this.tipEl,
       footer,
     );
-    // #116 variants (prototype): the story inside the level screen; a strip the board makes room for
-    if (variant() && app.mode === 'story' && !replay) {
-      const v = variant();
-      this.el.append(h(`div.inplay-strip.inplay-strip-${v}`, { 'data-side': v === 2 || v === 3 ? 'bottom' : 'top' }));
-      const serve = new URLSearchParams(location.search).get('serve');
-      const boardRect = () => {
-        const m = this.margins(), { w: W, h: H } = stage.size;
-        return { x: m.marginLeft, y: m.marginTop, w: W - m.marginLeft - m.marginRight, h: H - m.marginTop - m.marginBottom };
-      };
-      import('./story/inplay-proto.js').then((m) => m.mountInplay(this.el, v, { serve: serve == null ? null : Number(serve), boardRect }));
+    // the counter above the board (#116): customers, Út serving the finished trios; story levels only
+    this.counter = null;
+    if (app.mode === 'story' && !replay) {
+      this.el.classList.add('has-counter');
+      this.el.append(h('div.counter-strip', { 'aria-hidden': 'true' }));
+      import('./story/counter.js').then((m) => {
+        if (!this.el.isConnected && app.hud !== this) return;
+        this.counter = m.mountCounter(this.el, { level, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
+      });
     }
     if (this.boosters.length) footer.classList.add('has-boosters');
     this.goalEls = [];
@@ -804,7 +804,7 @@ class Hud {
     const base = baseMargins();
     return isShortLandscape()
       ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
-      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.inplay-strip[data-side=top]')], bottom: [...q('.tool'), ...q('.inplay-strip[data-side=bottom]')] }, base, 6);
+      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.counter-strip')], bottom: q('.tool') }, base, 6);
   }
 
   update(s, { immediate = false } = {}) {
@@ -875,7 +875,9 @@ class Hud {
     this.tipEl.textContent = text;
     this.tipEl.classList.add('show');
     clearTimeout(this.tipTimer);
-    this.tipTimer = setTimeout(() => this.tipEl.classList.remove('show'), 5200);
+    // with the counter it is a note pinned to the band: it stays longer and a tap puts it away
+    this.tipTimer = setTimeout(() => this.tipEl.classList.remove('show'), this.counter !== undefined && this.el.classList.contains('has-counter') ? 9000 : 5200);
+    this.tipEl.onclick = () => this.tipEl.classList.remove('show');
   }
 }
 

@@ -181,6 +181,26 @@ first time a beat is due; the main bundle only carries the wiring in `main.js`.
   for a visit. Headless tools start without it (`launchChrome({ story })`, `window.__gsNoStory`), so a fresh profile
   does not open on the cold open. `/sandbox/story?beat=<id>&t=<s>` shows one frame (also in `npm run shot -- --set`).
 
+## The counter: the story during play (#116)
+
+The micro layer. Owner direction after playing (2026-10-09, reference: Đám Cưới Chuột tells its story inside the
+play): the story must not live only between levels. Owner pick: a framed band above the board (variant 1) with the
+painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (3).
+
+- `client/story/counter.js` (lazy-loaded on every story level) draws the stop's place in the band (the alley, the
+  beach), Bà Năm's cart with Mực on it, Út, and customers on red stools, each with an order bubble for a food that
+  is on the board. `client/story/counter-model.js` (pure, tested) decides who orders what and who gets served.
+- A **match** plates the trio: it flies up from the grill to Út, who carries it to the customer who ordered it (or
+  the next one waiting; while Út is out the plate flies straight to them). They eat, leave, and a new customer sits
+  down only for a food still on the board. A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
+  lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
+- The **hint** is a note pinned onto the band (over the scene, never over the board), shown longer, a tap puts it
+  away.
+- Presentation only: it follows the board's events (`match`, `combo`, `level_complete`, `level_failed`) and never
+  changes a rule. Reduced motion: Út stays at the cart, plates fade to the customer. Phones held sideways: no band.
+- Next: the band changes with the chapters (laptop on the cart, the tower poster, packing boxes) and the hint in a
+  character's voice.
+
 ## Motion grammar: pantomime
 
 The story has no voice-over, so it follows **pantomime** (Pixar shorts, Shaun the Sheep, Cut the Rope), not

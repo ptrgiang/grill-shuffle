@@ -106,11 +106,11 @@ function motorbike(ctx, x, y) {
 }
 
 /**
- * The alley. Options: `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
+ * The alley. Options: `props: false` (only the place: houses, wires, lights), `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
  * `postcardOnCart`, `dawn` (a pale morning sky, lights off), `cartX` (the cart rolls), `lanyardOnNail`,
  * `phone` ('buzz' | 'dark': Út's phone lying on the cart).
  */
-export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null } = {}) {
+export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true } = {}) {
   const { w, ground } = STAGE;
   if (backdrop) {
     const sky = ctx.createLinearGradient(0, -100, 0, ground);
@@ -161,6 +161,7 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     }
     shape(ctx, circle(bx, by, 3.4), on ? 'bulbOn' : 'bulbOff', { line: false });
   }
+  if (!props) return; // the counter (client/story/counter.js) places its own stools and cart
   if (backdrop) drawSugarcaneCart(ctx, 362, ground);
   drawStool(ctx, 300, ground);
   drawStove(ctx, 262, ground, t, glow);
@@ -197,7 +198,7 @@ function drawSugarcaneCart(ctx, x, y) {
   }
 }
 
-function drawStool(ctx, x, y) {
+export function drawStool(ctx, x, y) {
   const p = new Path2D();
   p.rect(x - 13, y - 26, 26, 5);
   p.moveTo(x - 12, y - 21);
