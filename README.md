@@ -4,7 +4,7 @@
 kind together, watch them flame up and get served. Every level is proven solvable by a solver, its move budget and
 stars come from the true minimum, and boards can be shared as links that rebuild the exact same puzzle.
 
-Play: **https://grillshuffle.thebuilder.work**
+Play: **https://banamgrill.thebuilder.work**
 
 Original game: its own rules, levels, obstacles, art (all procedural), audio (all synthesised) and progression.
 

@@ -31,7 +31,7 @@
    changes bump `PUZZLE_RULE_VERSION`, levels re-solved, mobile checked when input/UI changed, docs updated.
 6. **Merge**: squash only (the PR title becomes the commit), branch auto-deleted.
 7. **Deploy**: the push to `main` runs CI again and the `deploy` job (D1 migrations → `wrangler deploy` →
-   smoke test) to https://grillshuffle.thebuilder.work. Verify the change on the live site (and a phone for
+   smoke test) to https://banamgrill.thebuilder.work. Verify the change on the live site (and a phone for
    mobile issues), then the issue closes via the PR.
 
 Rollback: `npx wrangler rollback` (previous Worker version) or revert the squash commit on `main`.

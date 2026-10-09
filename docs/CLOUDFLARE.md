@@ -61,8 +61,11 @@ npm run dev                  # Vite on :5188 (proxies /api to :8797, or GS_API_P
 
 ## Deploy
 
-Production: **https://grillshuffle.thebuilder.work** (Worker custom domain, `routes` in wrangler.jsonc; zone
+Production: **https://banamgrill.thebuilder.work** (Worker custom domain, `routes` in wrangler.jsonc; zone
 `thebuilder.work` on the same Cloudflare account). D1 `grill-shuffle` id `25ccd2c2-595c-4c22-b13d-62e6e349bb08`.
+Until #94 (2026-10-09) the game was served at grillshuffle.thebuilder.work; that custom domain was detached
+completely (no redirect: there were no real players yet, owner's decision). A newly attached custom domain takes a
+few minutes for DNS and its certificate, so the CI smoke test retries for up to five minutes.
 
 CI/CD (`.github/workflows/ci.yml`): every PR and push runs check → tests → validate:levels → fuzz → build. On
 push to `main` the `deploy` job applies D1 migrations, runs `wrangler deploy` and smoke-tests the site. It needs

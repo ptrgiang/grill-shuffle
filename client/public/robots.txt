@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /sandbox/
 Disallow: /api/
-Sitemap: https://grillshuffle.thebuilder.work/sitemap.xml
+Sitemap: https://banamgrill.thebuilder.work/sitemap.xml
