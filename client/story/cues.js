@@ -4,8 +4,8 @@
 //   cuesBetween(staging, t0, t1) -> [{ name, x }] for every cue with time in (t0, t1]
 //
 // name: step (an actor walking, ~3 per second) · paper (a postcard / page / flyer / notebook comes out) · basket ·
-// sting (a shock) · fan (the woven fan, every 0.9 s while fanning) · bulb (each string light flicking on) · coals (the
-// glow catching) · buzz (the phone, every 1.2 s) · meow (Mực jumps) · rain (the storm, once at the start) · clink
+// sting (a shock) · fan (the woven fan, every 0.9 s while fanning; the tarp pulled off) · bulb (each string light flicking on) · coals (the
+// glow catching) · buzz (the phone, on the cart or in Út's hand, every 1.2 s) · meow (Mực jumps) · rain (the storm, once at the start) · clink
 // (a plate served, the lanyard hung) · moto (a motorbike squeezing past, once in an alley beat) · surf (soft waves on
 // the beach, every 3.5 s).
 // x: stage x of the source (the player pans by it). The caption chime and the stop's transition are the player's.
@@ -66,7 +66,13 @@ export function cuesBetween(B, t0, t1) {
   }
   for (const t of edges((u) => (B.scene(u).glow ?? 0) > 0.5, t0, t1)) cues.push({ name: 'coals', x: B.scene(t).cartX ?? 196, t });
   // the phone: buzzing while the scene says so, every 1.2 s from the beat's start
-  for (const t of ticks(0, B.length, 1.2, t0, t1)) if (B.scene(t).phone === 'buzz') cues.push({ name: 'buzz', x: (B.scene(t).cartX ?? 196) - 30, t });
+  for (const t of ticks(0, B.length, 1.2, t0, t1)) {
+    const s = B.scene(t);
+    if (s.phone === 'buzz') cues.push({ name: 'buzz', x: (s.cartX ?? 196) - 30, t });
+    else if (s.ringing != null) cues.push({ name: 'buzz', x: s.ringing, t }); // in Út's hand
+  }
+  // the tarp pulled off the cart: a gust of cloth
+  for (const t of edges((u) => (B.scene(u).tarp ?? 0) > 0, t0, t1)) cues.push({ name: 'fan', x: B.scene(t).cartX ?? 196, t });
   // Mực's jump
   // Mực turns up mid-beat: a meow
   for (const t of edges((u) => B.cat(u) != null, t0, t1)) cues.push({ name: 'meow', x: B.cat(t).x, t });

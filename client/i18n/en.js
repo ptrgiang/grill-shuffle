@@ -30,6 +30,8 @@ export default {
   'story.memories': 'Memories',
   'story.memoriesSub': 'What happened so far',
   'story.continue': 'Continue',
+  'story.callerBa': 'Bà Năm',
+  'story.missedCalls': '↙ ×{n}',
   'settings.story': 'Story',
   'common.on': 'On',
   'common.off': 'Off',

@@ -29,6 +29,8 @@ export default {
   'story.memories': 'Ký ức',
   'story.memoriesSub': 'Chuyện đã qua',
   'story.continue': 'Tiếp tục',
+  'story.callerBa': 'Bà Năm',
+  'story.missedCalls': '↙ ×{n}',
   'settings.story': 'Truyện',
   'common.on': 'Bật',
   'common.off': 'Tắt',

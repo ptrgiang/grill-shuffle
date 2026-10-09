@@ -108,9 +108,10 @@ function motorbike(ctx, x, y) {
 /**
  * The alley. Options: `props: false` (only the place: houses, wires, lights), `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
  * `postcardOnCart`, `dawn` (a pale morning sky, lights off), `cartX` (the cart rolls), `lanyardOnNail`,
- * `phone` ('buzz' | 'dark': Út's phone lying on the cart).
+ * `phone` ('buzz' | 'dark': Út's phone lying on the cart), `tarp` (0 covered … 1 pulled off; null: none),
+ * `laptopBag` (stage x: Út's office bag left on the ground), `ringing` (stage x of a phone in Út's hand: sound only).
  */
-export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true } = {}) {
+export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true, tarp = null, laptopBag = null } = {}) {
   const { w, ground } = STAGE;
   if (backdrop) {
     const sky = ctx.createLinearGradient(0, -100, 0, ground);
@@ -166,6 +167,20 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
   drawStool(ctx, 300, ground);
   drawStove(ctx, 262, ground, t, glow);
   drawCart(ctx, cartX, ground, t, glow, postcardOnCart);
+  if (tarp != null) drawTarp(ctx, cartX, ground, tarp);
+  if (laptopBag != null) {
+    // the office laptop bag standing on the ground, a flap, the company's tag (the lanyard's blue); Mực likes it
+    const bx = laptopBag;
+    ctx.strokeStyle = '#26324a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(bx - 10, ground - 24);
+    ctx.quadraticCurveTo(bx, ground - 38, bx + 10, ground - 24);
+    ctx.stroke();
+    shape(ctx, rect(bx - 19, ground - 25, 38, 25, 3), '#34466a');
+    shape(ctx, rect(bx - 19, ground - 25, 38, 11, 3), '#46597f');
+    shape(ctx, rect(bx + 6, ground - 12, 8, 6, 1), 'lanyard');
+  }
   if (phone) {
     // Út's phone on the cart: face up and buzzing, or face down and dark
     ctx.save();
@@ -174,6 +189,45 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     if (phone === 'buzz' && Math.sin(t * 40) > 0) shape(ctx, circle(6, -3, 2.2), 'badge', { line: false });
     ctx.restore();
   }
+}
+
+/**
+ * The blue plastic tarp (bạt xanh) over a cart left standing: `k` 0 = covering it, roped down; 0..1 = pulled off
+ * towards the left (Út's side), lifting and flapping; 1 = gone.
+ */
+export function drawTarp(ctx, x, y, k) {
+  if (k >= 1) return;
+  ctx.save();
+  ctx.translate(x - k * 150, y - k * 60);
+  ctx.rotate(-k * 0.5);
+  const lift = Math.sin(k * Math.PI) * 26;
+  const p = new Path2D();
+  p.moveTo(-54, -18);
+  p.quadraticCurveTo(-60, -70 - lift, -30, -98 - lift);
+  p.quadraticCurveTo(0, -112 - lift * 1.3, 34, -96 - lift * 0.6);
+  p.quadraticCurveTo(58, -70, 54, -18);
+  p.quadraticCurveTo(30, -12, 0, -16);
+  p.quadraticCurveTo(-30, -12, -54, -18);
+  shape(ctx, p, '#2f6fb0');
+  ctx.strokeStyle = 'rgba(255,255,255,.25)';
+  ctx.lineWidth = 1.4;
+  for (const fx of [-24, 6, 30]) {
+    ctx.beginPath();
+    ctx.moveTo(fx, -96 - lift * 0.8);
+    ctx.quadraticCurveTo(fx + 4, -60, fx - 2, -20);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#e07a2a'; // the orange underside showing at the hem
+  ctx.fillRect(-52, -20, 104, 3);
+  if (k === 0) {
+    ctx.strokeStyle = '#c9b48a'; // the rope holding it down
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-50, -40);
+    ctx.lineTo(50, -50);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** Cô Sáu's sugarcane-juice cart next door: a glass case, cane stalks standing in it, the press wheel. */

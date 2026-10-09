@@ -605,6 +605,81 @@ async function runStoryBeats(name, { w, h }) {
   }
 }
 
+// a returning player (levels 1–9 won before the story existed): the cold open and the memories recap play once on
+// launch, never again after a reload; winning level 10 plays its chapter beat (the woven fan) before the results
+async function runStoryReturning(name, { w, h }) {
+  const levelId = STORY[9];
+  const lvl = level(levelId);
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000, story: true });
+  const errors = [];
+  collectPageErrors(page, errors);
+  const seen = () => page.evaluate(() => new Promise((res) => {
+    const r = indexedDB.open('grill-shuffle');
+    r.onsuccess = () => {
+      const q = r.result.transaction('kv').objectStore('kv').get('storySeen');
+      q.onsuccess = () => res(q.result ?? []);
+    };
+  }));
+  const tapStory = async () => {
+    await page.touchscreen.tap(w / 2, h / 3);
+    await sleep(400);
+  };
+  try {
+    // seed the save on a page that does not boot the game: nine levels won, nothing seen yet
+    await page.goto(`${vite.url}/sandbox/food?spin=0`, { waitUntil: 'load' });
+    await page.evaluate((ids) => new Promise((res, rej) => {
+      const r = indexedDB.open('grill-shuffle', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onerror = rej;
+      r.onsuccess = () => {
+        const tx = r.result.transaction('kv', 'readwrite');
+        tx.objectStore('kv').put(Object.fromEntries(ids.map((id) => [id, { stars: 3 }])), 'progress');
+        tx.oncomplete = () => (r.result.close(), res());
+      };
+    }), STORY.slice(0, 9));
+    await page.goto(`${vite.url}/saigon-alley/10`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const cold = await page.waitForFunction(() => document.querySelector('.story-root .story-beat'), { timeout: 15000 }).then(() => true, () => false);
+    check(cold, `${name}: a returning player gets the cold open`);
+    await tapStory();
+    const recap = await page.waitForSelector('.story-recap .story-continue', { timeout: 10000 }).then(() => true, () => false);
+    check(recap, `${name}: then the memories recap of the beats passed before`);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-recap.png`) });
+    await page.evaluate(() => document.querySelector('.story-recap .story-continue')?.click());
+    await page.waitForFunction(() => !document.querySelector('.story-root'), { timeout: 10000 }).catch(() => {});
+    await sleep(500);
+    const s1 = await seen();
+    check(s1.includes('street.cold-open') && s1.includes('street.notebook'), `${name}: both are saved as seen (${s1.join(', ')})`);
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    await sleep(4500); // past the launch story's sync wait
+    check(!(await page.$('.story-root .story-beat, .story-recap')), `${name}: nothing replays after a reload`);
+    await page.waitForSelector('.level-intro .intro-serve', { timeout: 15000 }).catch(() => {});
+    for (let i = 0; i < 2 && (await page.$('.level-intro:not(.out)')); i++) {
+      await page.evaluate(() => document.querySelector('.level-intro .intro-serve')?.click());
+      await sleep(300);
+    }
+    await page.waitForFunction(() => !document.querySelector('.level-intro'), { timeout: 5000 }).catch(() => {});
+    await settle(page, 600);
+    for (const m of decodeActions(lvl.solver.solution)) {
+      const a = await slotXY(page, m.from.grill, m.from.slot, 0.4);
+      const b = await slotXY(page, m.to.grill, m.to.slot);
+      await page.touchscreen.tap(a.x, a.y);
+      await sleep(120);
+      await page.touchscreen.tap(b.x, b.y);
+      await settle(page, 450);
+    }
+    const beat = await page.waitForFunction(() => document.querySelector('.story-root .story-title')?.textContent, { timeout: 30000 }).then((x) => x.jsonValue(), () => null);
+    check(beat === 'The woven fan', `${name}: winning level 10 plays its chapter beat (${beat})`);
+    await tapStory();
+    await page.waitForFunction(() => document.querySelectorAll('.stars.big .star.on').length > 0, { timeout: 30000 }).catch(() => {});
+    check((await seen()).includes('street.fan'), `${name}: the chapter beat is saved as seen`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 async function runStoryLang(name, { w, h }) {
   const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 2 * 60_000, story: true });
   const errors = [];
@@ -639,6 +714,7 @@ try {
     ['burn-char', () => runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' })],
     ['mobile-360', () => run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' })],
     ['story-390', () => runStoryBeats('story-390', { w: 390, h: 844 })],
+    ['story-returning', () => runStoryReturning('story-returning', { w: 390, h: 844 })],
     ['story-lang', () => runStoryLang('story-lang', { w: 390, h: 844 })],
     ['landscape', () => run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' })],
     ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].map(([w, h]) => [`layout-${w}x${h}`, () => runLayout(w, h)]),

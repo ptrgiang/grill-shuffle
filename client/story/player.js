@@ -42,6 +42,8 @@ export function paintBeat(ctx, id, t, w, h, { style = 'present' } = {}) {
   const cat = B.cat(t);
   if (cat) drawCat(ctx, cat.x, cat.y, 0.9, cat.face, cat.pose, cat.k ?? t);
   ctx.restore();
+  B.inset?.(ctx, t, w, h); // a close-up over the scene (screen space): a phone, a notice, a postcard
+  setStyle(style);
   overlay(ctx, w, h, t);
 }
 
@@ -109,6 +111,8 @@ function playBeat(root, beat, { transition, reduced, still = null, style, sound 
     paintBeat(ctx, beat.id, t, w, h, { style });
     if (!reduced) drawTransition(ctx, transition, t, w, h);
     card.classList.toggle('on', t >= CARD_IN);
+    // the line can wait for its moment (the cold open: Bà Năm's words appear when Út reads her postcard)
+    card.classList.toggle('lines-on', t >= (B.linesAt ?? 0));
     if (t >= CARD_IN && !cardShown && still == null) {
       cardShown = true;
       sound('chime');

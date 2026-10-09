@@ -7,21 +7,29 @@
 import { STAGE } from './scene.js';
 import { track } from './timeline.js';
 import { POSES, blendPose } from './rig.js';
+import { inset, window01, phoneCard, photoCard } from './insets.js';
 
 const G = STAGE.ground;
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const at = (keys, t) => track(keys, t, POSES, blendPose);
 // Mực on the ground beside the cart (owner, 2026-10-09: not on the grill); `rolling`: he trots along
 const onCart = (x, rolling = false) => ({ x: x + 62, y: G, pose: rolling ? 'walk' : 'sit', face: rolling ? 1 : -1 });
 
+// owner pick (#82: 3 + 2): Út walks in on the phone, Bà Năm's missed calls; the cart under a tarp; Út pulls it off, the
+// string lights come on, her postcard was under it
 const COLD_UT = [
-  { t: 2.4, x: -40, face: 1, pose: 'stand' },
-  { t: 6, x: 150, face: 1, pose: 'phone', move: true },
-  { t: 7.4, x: 150, face: 1, pose: 'reach' },
-  { t: 8.2, x: 150, face: 1, pose: 'read' },
-  { t: 11.2, x: 150, face: -1, pose: 'read' },
-  { t: 12, x: 150, face: -1, pose: 'shock' },
-  { t: 13.2, x: 150, face: -1, pose: 'slump' },
+  { t: 1.6, x: -40, face: 1, pose: 'phone' },
+  { t: 5.6, x: 108, face: 1, pose: 'phone', move: true },
+  { t: 9.6, x: 108, face: 1, pose: 'stand' },
+  { t: 10.2, x: 108, face: 1, pose: 'reach' },
+  { t: 12, x: 108, face: 1, pose: 'stand' },
+  { t: 12.8, x: 150, face: 1, pose: 'reach', move: true },
+  { t: 13.4, x: 150, face: 1, pose: 'read' },
+  { t: 15.6, x: 150, face: -1, pose: 'read' },
+  { t: 16.2, x: 150, face: -1, pose: 'shock' },
+  { t: 17, x: 150, face: -1, pose: 'slump' },
 ];
+const TARP = [10.4, 12]; // pulled off between these (s)
 
 const PAGE_UT = [
   { t: 0, x: 160, face: 1, pose: 'stand', set: { noLanyard: 1 } },
@@ -42,14 +50,17 @@ const ARRIVE_UT = [
 const arriveCart = (t) => (at(ARRIVE_UT, t)?.x ?? -120) + 56;
 
 export const BEATS = {
-  // the empty alley, the cart, the postcard, the notice (15–20 s)
+  // the empty alley at dusk: Bà Năm's missed calls, the cart under its tarp, the postcard, the notice on the wall (18 s)
   'street.cold-open': {
-    length: 16,
-    panels: [4.6, 9.4, 13.6],
-    cam: [{ t: 0, x: 200, y: 150, z: 1 }, { t: 3, x: 190, y: 170, z: 1.15 }, { t: 8.4, x: 205, y: 190, z: 1.6 }, { t: 11.2, x: 130, y: 170, z: 1.5 }, { t: 14.5, x: 200, y: 160, z: 1.1 }],
+    length: 18,
+    panels: [7.4, 11.2, 16.8],
+    linesAt: 13.4, // her words when Út reads the postcard
+    cam: [{ t: 0, x: 200, y: 150, z: 1 }, { t: 4.8, x: 165, y: 175, z: 1.3 }, { t: 9.8, x: 182, y: 175, z: 1.25 }, { t: 13.6, x: 200, y: 190, z: 1.55 }, { t: 17.4, x: 195, y: 165, z: 1.12 }],
     actors: [{ who: 'ut', keys: COLD_UT }],
-    cat: (t) => (t < 8.6 ? null : t < 9.6 ? { x: 330 - (t - 8.6) * 72, y: G, pose: 'walk', face: -1 } : onCart(196)), // Mực trots in and sits by the cart
-    scene: (t) => ({ lightsFrom: 0.4, glow: 0.35, postcardOnCart: t < 8.2 }),
+    cat: (t) => (t < 13.6 ? null : t < 14.6 ? { x: 330 - (t - 13.6) * 72, y: G, pose: 'walk', face: -1 } : onCart(196)), // Mực trots in and sits by the cart
+    scene: (t) => ({ lightsFrom: TARP[0] + 0.5, glow: t < TARP[0] ? 0.3 : 0.35, postcardOnCart: t > 11.2 && t < 13.4, tarp: clamp01((t - TARP[0]) / (TARP[1] - TARP[0])), ringing: t > 4.4 && t < 9.4 ? 108 : null }),
+    // the phone close-up: her name, five missed calls, a sixth ringing out
+    inset: (ctx, t, w, h) => inset(ctx, w, h, window01(t, 4.4, 9.4), phoneCard, { ratio: 1.2, tilt: 0.04 }),
   },
   // the notebook opens: the missing pages
   'street.notebook': {
@@ -88,8 +99,8 @@ export const BEATS = {
       { who: 'regular-b', keys: [{ t: 0.5, x: 440, face: -1, pose: 'stand' }, { t: 2.5, x: 318, face: -1, pose: 'wave', move: true }, { t: 4, x: 318, face: -1, pose: 'smile' }] },
       { who: 'ut', keys: [{ t: 0, x: 150, face: 1, pose: 'stand' }, { t: 1.2, x: 150, face: 1, pose: 'serve' }, { t: 3, x: 150, face: 1, pose: 'smile' }, { t: 5.5, x: 150, face: 1, pose: 'nod' }] },
     ],
-    cat: () => ({ x: 262, y: G, pose: 'sleep', face: -1 }), // asleep on the ground by the cart
-    scene: () => ({ lightsFrom: -5, glow: 0.6, phone: 'dark' }),
+    cat: () => ({ x: 236, y: G - 25, pose: 'sleep', face: -1 }), // asleep on Út's laptop bag, left on the ground all evening
+    scene: () => ({ lightsFrom: -5, glow: 0.6, phone: 'dark', laptopBag: 236 }),
   },
   // level 30: Khang's tasting visit; his flyer carries Út's own slogan
   'street.flyer': {
@@ -131,6 +142,8 @@ export const BEATS = {
     ],
     cat: (t) => onCart(pageCart(t), t > 6),
     scene: (t) => ({ dawn: true, glow: 0.3, cartX: pageCart(t) }),
+    // tucked in the page: young Bà Năm on her father's boat, the clue to the coast
+    inset: (ctx, t, w, h) => inset(ctx, w, h, window01(t, 2.8, 5.6), (c, cw, ch) => photoCard(c, cw, ch, t), { ratio: 0.8, tilt: 0.05 }),
   },
   // Fishing Village: arrival; Chú Tư by the boats: "she was here last week"
   'beach.arrival': {
