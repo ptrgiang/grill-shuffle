@@ -57,6 +57,21 @@ test('progress: sanitised, merged, never more stars than the moves earn', async 
   assert.equal(r.data.progress[id2].stars, 1);
 });
 
+test('progress: seen story beats sync, only known ids, only ever added', async () => {
+  const { STORY_SEEN_IDS } = await import('../../worker/content.gen.js');
+  const [a, b] = STORY_SEEN_IDS;
+  const pid = 'test-player-story';
+  let r = await call('POST', '/api/progress', { pid, body: { progress: {}, story: [b, a, a, 'not-a-beat', 42] } });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.story, 2);
+  await call('POST', '/api/progress', { pid, body: { progress: {}, story: [] } });
+  r = await call('GET', '/api/progress', { pid });
+  assert.deepEqual(r.data.story, [a, b].sort());
+  // an old client without the field still syncs
+  assert.equal((await call('POST', '/api/progress', { pid, body: { progress: {} } })).status, 200);
+  assert.equal((await call('POST', '/api/progress', { pid, body: { progress: {}, story: 'x' } })).status, 400);
+});
+
 test('malformed inputs are rejected', async () => {
   assert.equal((await call('POST', '/api/progress', { raw: '{nope' })).status, 400);
   assert.equal((await call('POST', '/api/progress', { body: { progress: [1, 2] } })).status, 400);

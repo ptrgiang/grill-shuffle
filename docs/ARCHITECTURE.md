@@ -63,6 +63,8 @@ client/        browser game (Vite root)
                  replay-player.js (replay viewer: ?r=<actions>&h=<hash> or ?r=best, validated, then stepped through the
                  same session + BoardView.play; nothing recorded),
                  unlock.js (pure: pack / level unlocks, continue, next level),
+                 story.js (pure: which story beats / keepsakes an app start or a win triggers, seen ids, validateStory;
+                 docs/STORY.md "Story engine"; ?story=log prints them),
                  routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /hem-sai-gon/12 = /saigon-alley/12,
                  n = position inside the pack; pack.json `slugs` { vi, en }: either opens it, links and the address bar
                  use the current language's),
@@ -81,7 +83,8 @@ client/        browser game (Vite root)
                  manifest.webmanifest (installed app: "Bà Năm’s Grill")
   sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes),
                  /sandbox/brand (the badge big and at icon sizes; ?og=1 the share card)
-content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md)
+content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md),
+               story/<pack>.json (beats + keepsakes: docs/STORY.md)
 worker/        index.js (API), progress.js (sanitising uploads), content.gen.js (generated)
 migrations/    D1 schema
 scripts/       solve, validate-levels, generate-levels, fuzz, check, shot, e2e, visual (+ visual-accept), build-content, build-sw, make-icons, lib/browser.js

@@ -16,3 +16,9 @@ export function mergeProgressRecords(entries, levels, starsFor) {
   }
   return out;
 }
+
+/** A player's seen story beats / keepsakes: only ids the story has (content/story), each once. */
+export function cleanSeen(list, allowed) {
+  const known = new Set(allowed);
+  return [...new Set(list.filter((id) => typeof id === 'string' && known.has(id)))];
+}

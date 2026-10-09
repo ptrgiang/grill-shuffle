@@ -14,8 +14,8 @@ All JSON; players are anonymous device ids sent as `x-player-id` (`[A-Za-z0-9-]{
 |---|---|
 | `GET /api/version` | rule / format / challenge / generator / save versions |
 | `GET /api/me` | registers / touches the player |
-| `GET /api/progress` | best per story level |
-| `POST /api/progress` `{ progress }` | merged per level (max stars, min moves); only story levels; stars capped by what the claimed moves earn |
+| `GET /api/progress` | best per story level, `story`: the seen story beat / keepsake ids |
+| `POST /api/progress` `{ progress, story? }` | merged per level (max stars, min moves); only story levels; stars capped by what the claimed moves earn. `story`: seen beat ids, only ids from `content/story`, only ever added |
 | `GET /api/daily[?date=]` | `{ date, code, seed, band, rulesVersion, challengeVersion, boardHash, minMoves, level, players, bestMoves, avgMoves }`; `level` is the pre-built puzzle (null until built, or when built under older rules) |
 | `POST /api/daily/result` `{ date, moves, hash }` | replayed on the server; keeps the player's best; returns percentile |
 | `POST /api/challenge` `{ band }` | a fresh generated code |
@@ -40,10 +40,10 @@ Worker tests call `worker.scheduled(...)` directly.
 The daily result screen shows the server's verified rank (percentile, players today, best moves), a local streak
 (`dailyStreak` in IndexedDB: consecutive UTC days with a daily win) and the countdown to the next daily.
 
-## D1 schema (`migrations/0001_init.sql`)
+## D1 schema (`migrations/`)
 
 `users`, `user_settings`, `level_progress`, `challenge_links`, `challenge_results`, `daily_results`,
-`booster_inventory`. Planned: `event_progress`, `analytics_rollups`.
+`booster_inventory` (0001), `story_seen` (0002, #80). Planned: `event_progress`, `analytics_rollups`.
 
 ## Share links
 

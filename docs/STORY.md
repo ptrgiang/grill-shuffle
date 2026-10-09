@@ -111,6 +111,48 @@ Rules:
 - Text: a chapter title and at most one short line per beat; handwriting in the notebook carries the rest. Every
   string exists in vi and en.
 
+## Story engine (#80)
+
+Beats are data, `content/story/<pack>.json` (one file per pack, bundled with the packs; `validate:levels` checks it):
+
+```json
+{
+  "pack": "street_bbq",
+  "beats": [
+    { "id": "street.cold-open", "at": { "on": "firstLaunch" }, "cast": ["ut", "muc"], "scene": "alley-evening",
+      "title": { "vi": "…", "en": "…" }, "lines": [{ "vi": "…", "en": "…" }] },
+    { "id": "street.first-page", "at": { "level": "street-050", "on": "firstWin" }, "…": "…",
+      "reward": { "recipePage": 1 } }
+  ],
+  "keepsakes": [
+    { "id": "street.k.notice", "level": "street-014", "kind": "date", "art": "notice-wall", "lines": [{ "vi": "…", "en": "…" }] }
+  ]
+}
+```
+
+- `at`: `{ on: "firstLaunch" }` (the cold open, first pack only), `{ level, on: "firstWin" }` (a level of this pack, by
+  **id**), `{ pack, on: "unlock" | "complete" }` (this pack opens / every level has a star; never `unlock` on the
+  first pack). `cast` from the cast list (`CAST` in `client/game/story.js`), `scene` an id the presentation draws.
+- `reward` (optional): `{ recipePage: n }`, `{ keepsake: id }` or `{ booster: id }`.
+- Keepsakes (meso layer): `kind` postcard | photo | note | date, `art` an id, 1–3 caption lines; unlocked by the first
+  win of `level`.
+- Text: `title` ≤ 28 characters, at most one line per beat, lines ≤ 80, always `{ vi, en }`.
+- Ids: lowercase, dots and dashes, unique across all files, **append-only** like the packs (a shipped id is never
+  removed or reordered; `validate:levels` checks against the base branch). `recap` is reserved.
+
+`client/game/story.js` is pure (like `unlock.js`): `storyFor(event, { progress, seen }, story, { packs, themes })` →
+`{ beats, keepsakes, seen }`.
+
+| Event | Plays |
+|---|---|
+| `{ on: "launch" }` (app start) | the cold open once; then **one recap** (`{ id: "recap", recap: true, beats }`, "memories" stills) of every beat already passed but never seen (a player past chapters before the story shipped, wins synced from another device, a beat added to a won level); the keepsakes already earned |
+| `{ on: "win", level }` (after the win is recorded) | that level's beats in file order, its pack's `complete` beat, the `unlock` beat of every pack open now, then the level's keepsakes |
+
+`seen` lists the ids to mark once shown (`db.markStorySeen`; a recap marks the beats inside it). Seen ids live in
+IndexedDB (`storySeen`) and sync with `/api/progress` (`story`, D1 `story_seen`; the Worker keeps only ids that exist).
+A seen id never plays again, so a returning player never gets a backlog. `?story=log` prints what an app start or a
+story win would trigger (nothing plays or is marked seen until the beats get their presentation).
+
 ## Motion grammar: pantomime
 
 The story has no voice-over, so it follows **pantomime** (Pixar shorts, Shaun the Sheep, Cut the Rope), not

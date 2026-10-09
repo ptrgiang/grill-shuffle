@@ -1,0 +1,75 @@
+{
+  "pack": "street_bbq",
+  "beats": [
+    {
+      "id": "street.cold-open",
+      "at": { "on": "firstLaunch" },
+      "cast": ["ut", "muc"],
+      "scene": "alley-evening",
+      "title": { "vi": "Xe nướng của bà", "en": "Grandma’s grill cart" },
+      "lines": [{ "vi": "“Giữ xe giùm bà vài bữa nghen.” – Bà Năm", "en": "“Keep the cart for me a few days, dear.” – Bà Năm" }]
+    },
+    {
+      "id": "street.notebook",
+      "at": { "level": "street-001", "on": "firstWin" },
+      "cast": ["ut", "muc"],
+      "scene": "cart-notebook",
+      "title": { "vi": "Cuốn sổ của bà", "en": "Bà Năm’s notebook" },
+      "lines": [{ "vi": "Vài trang đã bị xé mất.", "en": "Some pages have been torn out." }]
+    },
+    {
+      "id": "street.fan",
+      "at": { "level": "street-015", "on": "firstWin" },
+      "cast": ["ut", "co-sau"],
+      "scene": "cart-coals",
+      "title": { "vi": "Cây quạt nan", "en": "The woven fan" },
+      "lines": [{ "vi": "Quạt nhẹ thôi, than mới đỏ đều.", "en": "Fan it gently and the coals glow even." }]
+    },
+    {
+      "id": "street.regulars",
+      "at": { "level": "street-026", "on": "firstWin" },
+      "cast": ["ut", "co-sau", "muc"],
+      "scene": "alley-stools",
+      "title": { "vi": "Khách quen", "en": "The regulars" },
+      "lines": [{ "vi": "Cả buổi tối, Út quên nhìn điện thoại.", "en": "All evening, Út forgets to check the phone." }]
+    },
+    {
+      "id": "street.flyer",
+      "at": { "level": "street-034", "on": "firstWin" },
+      "cast": ["ut", "khang"],
+      "scene": "cart-flyer",
+      "title": { "vi": "Tờ rơi", "en": "The flyer" },
+      "lines": [{ "vi": "Khẩu hiệu trên tờ rơi là do Út viết.", "en": "Út wrote the slogan on that flyer." }]
+    },
+    {
+      "id": "street.lanyard",
+      "at": { "level": "street-040", "on": "firstWin" },
+      "cast": ["ut", "co-sau"],
+      "scene": "alley-notice",
+      "title": { "vi": "Cây đinh của Cô Sáu", "en": "Cô Sáu’s nail" },
+      "lines": [{ "vi": "Út treo thẻ nhân viên lên đinh, để điện thoại reo.", "en": "Út hangs up the lanyard and lets the phone ring." }]
+    },
+    {
+      "id": "street.first-page",
+      "at": { "level": "street-050", "on": "firstWin" },
+      "cast": ["ut", "co-sau", "muc"],
+      "scene": "alley-dawn",
+      "title": { "vi": "Trang đầu tiên", "en": "The first page" },
+      "lines": [{ "vi": "Bà đã ra biển. Út đẩy xe theo.", "en": "She went to the sea. Út pushes the cart after her." }],
+      "reward": { "recipePage": 1 }
+    }
+  ],
+  "keepsakes": [
+    { "id": "street.k.notice", "level": "street-014", "kind": "date", "art": "notice-wall", "lines": [{ "vi": "Thông báo giải tỏa dán trên tường nhà Cô Sáu.", "en": "A clearance notice on Cô Sáu’s wall." }] },
+    { "id": "street.k.photo-cart", "level": "street-019", "kind": "photo", "art": "photo-cart", "lines": [{ "vi": "Ảnh cũ: Bà Năm bên xe nướng, tóc còn đen.", "en": "An old photo: Bà Năm at the cart, her hair still black." }] },
+    { "id": "street.k.coal", "level": "street-006", "kind": "note", "art": "margin-coal", "lines": [{ "vi": "Ghi chú bên lề: than tổ ong, chờ hết khói.", "en": "A margin note: honeycomb coal, wait for the smoke to clear." }] },
+    { "id": "street.k.postcard-1", "level": "street-024", "kind": "postcard", "art": "postcard-bus", "lines": [{ "vi": "Bưu thiếp: “Bà khỏe. Nhớ ăn cơm đúng bữa.”", "en": "A postcard: “I’m well. Eat your meals on time.”" }] },
+    { "id": "street.k.photo-school", "level": "street-028", "kind": "photo", "art": "photo-school", "lines": [{ "vi": "Út hồi đi học, ngồi ghế nhựa đỏ bên xe.", "en": "Út after school, on a red plastic stool by the cart." }] },
+    { "id": "street.k.scallion", "level": "street-031", "kind": "note", "art": "margin-scallion", "lines": [{ "vi": "Ghi chú bên lề: mỡ hành, đừng để cháy.", "en": "A margin note: scallion oil, never let it burn." }] },
+    { "id": "street.k.notice-2", "level": "street-010", "kind": "date", "art": "notice-second", "lines": [{ "vi": "Tờ thông báo thứ hai, mực còn mới.", "en": "A second notice, the ink still fresh." }] },
+    { "id": "street.k.postcard-2", "level": "street-013", "kind": "postcard", "art": "postcard-coast", "lines": [{ "vi": "Bưu thiếp có mùi biển: “Đừng lo cho bà.”", "en": "A postcard that smells of the sea: “Don’t worry about me.”" }] },
+    { "id": "street.k.photo-friends", "level": "street-039", "kind": "photo", "art": "photo-two-carts", "lines": [{ "vi": "Bà Năm và Cô Sáu, hai xe cạnh nhau, ngày đầu.", "en": "Bà Năm and Cô Sáu, two carts side by side, day one." }] },
+    { "id": "street.k.date", "level": "street-049", "kind": "date", "art": "calendar-circled", "lines": [{ "vi": "Ngày giải tỏa đã có, khoanh đỏ trên lịch.", "en": "The clearance date, circled red on the calendar." }] },
+    { "id": "street.k.margin-ut", "level": "street-048", "kind": "note", "art": "margin-ut", "lines": [{ "vi": "Ghi chú bên lề, nét chữ của Út: “Mình làm được.”", "en": "A margin note in Út’s hand: “I can do this.”" }] }
+  ]
+}

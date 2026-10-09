@@ -37,6 +37,14 @@ export function loadThemes() {
   return out;
 }
 
+export const STORY_DIR = join(ROOT, 'content', 'story');
+
+/** Story files (content/story/<pack>.json, format: client/game/story.js), each with its `file` path. */
+export function loadStory() {
+  if (!existsSync(STORY_DIR)) return [];
+  return readdirSync(STORY_DIR).filter((f) => f.endsWith('.json')).sort().map((f) => ({ ...JSON.parse(readFileSync(join(STORY_DIR, f), 'utf8')), file: join(STORY_DIR, f) }));
+}
+
 export function allLevels() {
   return loadPacks().flatMap((p) => p.levels.map((l) => ({ ...l, pack: p.pack.id })));
 }

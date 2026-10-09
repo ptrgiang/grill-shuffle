@@ -7,13 +7,16 @@
 // Share index (content/levels/share-index.json): every story level listed exactly once, every entry a story level.
 // Content rules (#62, scripts/lib/content-rules.js), against the base revision: packs and the share index are only
 // appended to, and from pack.json `curveFrom` on no level is easier (stored solver difficulty) than one before it.
+// Story (content/story/<pack>.json, client/game/story.js validateStory): beats / keepsakes reference levels and packs
+// that exist, ids unique and append-only (shipped ids keep their order, new ones at the end), text in vi + en.
 //   --fast         skip the solver (structure only; the content rules still run)
 //   --base <ref>   git revision to compare with (default: $GS_CONTENT_BASE, else origin/main when it exists).
 //                  With --base / GS_CONTENT_BASE set (CI), an unreadable base is an error; locally it is skipped.
 import { basename, join, relative } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
-import { loadPacks, loadThemes, parseArgs, LEVELS_DIR } from './lib/content.js';
+import { loadPacks, loadThemes, loadStory, parseArgs, LEVELS_DIR } from './lib/content.js';
+import { validateStory } from '../client/game/story.js';
 import { validateLevel, cellFood, usedModifiers } from '../shared/levels.js';
 import { validateTheme, validateThemeIcon } from '../shared/themes.js';
 import { solveLevel } from '../solver/solver.js';
@@ -75,7 +78,8 @@ for (const t of Object.values(themes)) {
 const levelFoods = (level) => new Set(level.board.grills.flatMap((g) => [...g.slots, ...(g.layers ?? []).flat()]).map(cellFood).filter(Boolean));
 
 const slugs = new Map();
-for (const { pack, packFile, levels } of loadPacks()) {
+const packFiles = loadPacks();
+for (const { pack, packFile, levels } of packFiles) {
   if (!pack.id || !Array.isArray(pack.levels)) errors.push(`${packFile}: pack needs id and levels[]`);
   {
     const c = checkText('name', pack.name, TEXT_LIMITS.pack);
@@ -146,6 +150,16 @@ for (const { pack, packFile, levels } of loadPacks()) {
   }
 }
 
+const story = loadStory();
+errors.push(...validateStory(story, packFiles.map(({ pack }) => ({ id: pack.id, levels: pack.levels })), { checkText }));
+for (const s of story) {
+  const was = atBase(s.file);
+  for (const list of ['beats', 'keepsakes']) {
+    const ids = (f) => (f ? (f[list] ?? []).map((x) => x.id) : null);
+    errors.push(...checkAppendOnly(`content/story/${s.pack}.json ${list}`, ids(was), ids(s)));
+  }
+}
+
 const share = JSON.parse(readFileSync(join(LEVELS_DIR, 'share-index.json'), 'utf8')).levels;
 errors.push(...checkAppendOnly('share-index.json', atBase(join(LEVELS_DIR, 'share-index.json'))?.levels ?? null, share));
 const shareSeen = new Set();
@@ -162,4 +176,5 @@ if (errors.length) {
   process.exit(1);
 }
 if (legacyTexts) console.log(`note: ${legacyTexts} level names / hints are still English-only strings (#90 writes them in vi + en)`);
+console.log(`OK: ${story.reduce((n, s) => n + (s.beats?.length ?? 0), 0)} story beats valid`);
 console.log(`OK: ${count} levels valid${args.fast ? ' (structure only)' : ', solver-verified'}`);
