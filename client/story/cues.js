@@ -42,12 +42,13 @@ export function cuesBetween(B, t0, t1) {
       const prev = keys[i - 1];
       // a key with `move` is the end of a walk: footsteps all the way from the previous key
       if (k.move && prev) for (const t of ticks(prev.t + 0.1, k.t, STEP, t0, t1)) cues.push({ name: 'step', x: prev.x + ((k.x - prev.x) * (t - prev.t)) / (k.t - prev.t), t });
+      // the plate / the card lands a moment after the gesture: its own time decides the window
+      if ((k.pose === 'serve' || k.pose === 'hang') && prev?.pose !== k.pose && inWin(k.t + 0.2, t0, t1)) cues.push({ name: 'clink', x: k.x, t: k.t + 0.2 });
       if (!inWin(k.t, t0, t1)) return;
       const prop = propOf(k), before = prev ? propOf(prev) : null;
       if (prop && prop !== before && PAPER.includes(prop)) cues.push({ name: 'paper', x: k.x, t: k.t });
       if (prop === 'basket' && before !== 'basket') cues.push({ name: 'basket', x: k.x, t: k.t });
       if (k.pose === 'shock' && prev?.pose !== 'shock') cues.push({ name: 'sting', x: k.x, t: k.t });
-      if ((k.pose === 'serve' || k.pose === 'hang') && prev?.pose !== k.pose) cues.push({ name: 'clink', x: k.x, t: k.t + 0.2 });
     });
     // the woven fan: a gust every 0.9 s while a key's pose is fanning (until the next key)
     keys.forEach((k, i) => {

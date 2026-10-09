@@ -90,7 +90,9 @@ test('sound cues: every beat is heard, in order, from its motion', async () => {
     // frame by frame, the windows add up to the whole list (no cue lost or doubled between frames)
     let n = 0, t = -0.001;
     for (let now = 0; now <= B.length; now += 1 / 30) {
-      n += cuesBetween(B, t, now).length;
+      const win = cuesBetween(B, t, now);
+      for (const c of win) assert.ok(c.t > t && c.t <= now, `${id}: ${c.name} at ${c.t} is played in its own frame (${t}, ${now}]`);
+      n += win.length;
       t = now;
     }
     n += cuesBetween(B, t, B.length).length;
