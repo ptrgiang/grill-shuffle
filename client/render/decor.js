@@ -100,8 +100,8 @@ const steel = () =>
     for (let i = 0; i < 8; i++) {
       const x = rng() * W, y = rng() * W, r = 14 + rng() * 30;
       const d = g.createRadialGradient(x - r * 0.3, y - r * 0.3, 1, x, y, r);
-      d.addColorStop(0, 'rgba(255,255,255,.25)');
-      d.addColorStop(0.6, 'rgba(30,30,40,.18)');
+      d.addColorStop(0, 'rgba(255,255,255,.1)');
+      d.addColorStop(0.6, 'rgba(30,30,40,.08)');
       d.addColorStop(1, 'rgba(30,30,40,0)');
       g.fillStyle = d;
       g.fillRect(x - r, y - r, r * 2, r * 2);
