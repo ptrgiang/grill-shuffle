@@ -146,6 +146,22 @@ export const BEATS = {
   },
 };
 
+// Fishing Village, level 20 (style: past): Chú Tư remembers a girl selling her father's catch at dawn
+BEATS['beach.fish-seller'] = {
+  length: 9,
+  beach: true,
+  cart: false,
+  panels: [2, 5.4, 7.6],
+  cam: [{ t: 0, x: 225, y: 185, z: 1.2 }, { t: 5, x: 220, y: 190, z: 1.3 }],
+  actors: [{ who: 'ba-nam-young', keys: [
+    { t: 0, x: 440, face: -1, pose: 'carry' },
+    { t: 5, x: 272, face: -1, pose: 'carry', move: true, walk: 'carryWalk' },
+    { t: 6.6, x: 272, face: 1, pose: 'carry' },
+  ] }],
+  cat: () => null,
+  scene: () => ({}),
+};
+
 /** A still for beats without staging yet: the cart in the alley, Út beside it. */
 export const FALLBACK = {
   length: 4,

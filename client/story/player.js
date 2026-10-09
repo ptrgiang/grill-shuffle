@@ -31,7 +31,7 @@ export function paintBeat(ctx, id, t, w, h, { style = 'present' } = {}) {
   ctx.scale(s, s);
   if (B.beach) {
     drawBeach(ctx, t);
-    drawCart(ctx, opts.cartX ?? 196, STAGE.ground, t, opts.glow ?? 0.3);
+    if (B.cart !== false) drawCart(ctx, opts.cartX ?? 196, STAGE.ground, t, opts.glow ?? 0.3);
   } else drawScene(ctx, t, s, opts);
   for (const a of B.actors) {
     const p = actorAt(a.keys, t);

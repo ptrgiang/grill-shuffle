@@ -134,6 +134,7 @@ Beats are data, `content/story/<pack>.json` (one file per pack, bundled with the
   **id**), `{ pack, on: "unlock" | "complete" }` (this pack opens / every level has a star; never `unlock` on the
   first pack). `cast` from the cast list (`CAST` in `client/game/story.js`), `scene` an id the presentation draws.
 - `reward` (optional): `{ recipePage: n }`, `{ keepsake: id }` or `{ booster: id }`.
+- `style` (optional): `present` (default) or `past`: a flashback into Bà Năm's life, drawn as a Đông Hồ print (#106).
 - Keepsakes (meso layer): `kind` postcard | photo | note | date, `art` an id, 1–3 caption lines; unlocked by the first
   win of `level`.
 - Text: `title` ≤ 28 characters, at most one line per beat, lines ≤ 80, always `{ vi, en }`.
@@ -171,8 +172,9 @@ first time a beat is due; the main bundle only carries the wiring in `main.js`.
   staging for every shipped beat.
 - **Art** (#106, owner pick A): the present is drawn flat (`style: 'present'`), Bà Năm's past as a Đông Hồ woodblock
   print on điệp paper (`style: 'past'`).
-- **Production**: off until #106 finishes the art (`STORY_DEFAULT_ON` in `client/game/story.js`); `?story=on` plays the
-  beats for a visit. `/sandbox/story?beat=<id>&t=<s>` shows one frame (also in `npm run shot -- --set`).
+- **Production**: on since #106 (`STORY_DEFAULT_ON` in `client/game/story.js`); `?story=off` / `?story=on` override it
+  for a visit. Headless tools start without it (`launchChrome({ story })`, `window.__gsNoStory`), so a fresh profile
+  does not open on the cold open. `/sandbox/story?beat=<id>&t=<s>` shows one frame (also in `npm run shot -- --set`).
 
 ## Motion grammar: pantomime
 

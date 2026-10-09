@@ -2,7 +2,8 @@
 // Beats never touch the simulation; they play after a win or at app start, never during play.
 //
 // content/story/<pack>.json   { pack, beats: [...], keepsakes: [...] }  (bundled: client/game/content.js STORY_FILES)
-//   beat      { id, at, cast, scene, title, lines, reward? }
+//   beat      { id, at, cast, scene, title, lines, style?, reward? }
+//             style: 'present' (default) | 'past': Bà Năm's past, drawn as a Đông Hồ print (client/story/style.js)
 //             at: { on: 'firstLaunch' }               the cold open (first pack only)
 //                 { level, on: 'firstWin' }           the first win of a level of this pack
 //                 { pack, on: 'unlock' | 'complete' } this pack opens (arrival) / every level of it has a star
@@ -23,12 +24,13 @@ import { packStatus } from './unlock.js';
 import { BOOSTERS } from '../../shared/boosters.js';
 
 export const RECAP_ID = 'recap';
-/** Story beats play by default? Off until the art direction (#106) is finished; `?story=on` previews them. */
-export const STORY_DEFAULT_ON = false;
+/** Story beats play by default (on since the art direction, #106, was finished; `?story=off` for a visit). */
+export const STORY_DEFAULT_ON = true;
 export const KEEPSAKE_KINDS = Object.freeze(['postcard', 'photo', 'note', 'date']);
 // the recurring cast (docs/STORY.md "Cast"); page keepers join with their stop
 export const CAST = Object.freeze(['ut', 'ba-nam', 'muc', 'co-sau', 'khang', 'chu-tu']);
 export const STORY_LIMITS = Object.freeze({ title: 28, line: 80, beatLines: 1, keepsakeLines: 3 });
+export const STORY_STYLES = Object.freeze(['present', 'past']);
 
 const starred = (progress, id) => (progress?.[id]?.stars ?? 0) > 0;
 
@@ -146,6 +148,7 @@ export function validateStory(story, packs, { checkText }) {
       if (!Array.isArray(b.cast) || !b.cast.length) errors.push(`${at}: cast needs at least one character`);
       else for (const c of b.cast) if (!CAST.includes(c)) errors.push(`${at}: unknown cast member ${c} (${CAST.join(', ')})`);
       if (!idOk(b.scene)) errors.push(`${at}: scene must be an id`);
+      if (b.style !== undefined && !STORY_STYLES.includes(b.style)) errors.push(`${at}: style must be one of ${STORY_STYLES.join(', ')}`);
       errors.push(...checkStoryText(`${at}: title`, b.title, STORY_LIMITS.title, checkText, true));
       texts(at, b.lines, STORY_LIMITS.beatLines);
     }

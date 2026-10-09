@@ -97,11 +97,11 @@ const frames = new FrameMonitor();
 const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
 const urlLang = new URLSearchParams(location.search).get('lang'); // ?lang=vi: this visit only (screenshots, tests)
 const stats = new URLSearchParams(location.search).get('stats') === '1' ? new StatsOverlay(document.getElementById('app')) : null;
-// Story beats (#80 engine, #81 player, client/story/ lazy-loaded). Off in production until the art is finished (#106
-// flips STORY_DEFAULT_ON); ?story=on turns it on for a visit. ?story=log only prints what a launch / win would
-// trigger (nothing plays, nothing is marked seen).
+// Story beats (#80 engine, #81 player, client/story/ lazy-loaded), on by default since #106. ?story=off / on overrides it
+// for a visit; headless tools set window.__gsNoStory (scripts/lib/browser.js) so a fresh profile does not open on the
+// cold open. ?story=log only prints what a launch / win would trigger (nothing plays, nothing is marked seen).
 const storyParam = new URLSearchParams(location.search).get('story');
-const STORY_ON = storyParam === 'on' || STORY_DEFAULT_ON;
+const STORY_ON = storyParam === 'on' || (STORY_DEFAULT_ON && storyParam !== 'off' && !globalThis.__gsNoStory);
 const reducedMotion = () => !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const beatPack = new Map(STORY_FILES.flatMap((f) => (f.beats ?? []).map((b) => [b.id, f.pack])));
 const transitionOf = (beat) => THEMES[PACKS.find((p) => p.id === beatPack.get(beat.id))?.theme]?.story?.transition ?? 'lights';

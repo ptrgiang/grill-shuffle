@@ -35,7 +35,7 @@ const FOLK = {
 
 export const STYLES = {
   present: {
-    id: 'present', outline: { color: '#2a1a22', width: 2 }, head: 1.05, eyesWhite: true, cheeks: true, paper: 0.035,
+    id: 'present', outline: { color: '#2a1a22', width: 2 }, head: 1.05, eyesWhite: true, cheeks: true, paper: 0.035, cel: true, shine: true,
     palette: { ...BASE, wallA: '#6e4a40', wallB: '#5a3a3e', sky1: '#2e1e30', sky2: '#5a3438', sign: '#e8b84a', apron: '#e06a2c', stool: '#c8342a' },
   },
   past: {
@@ -64,6 +64,15 @@ export function shape(ctx, path, key, { line = true } = {}) {
   if (S.shade === 'print') ctx.translate(1.3, 0.9);
   ctx.fillStyle = col(key);
   ctx.fill(path);
+  if (S.cel && line) {
+    // one cel-shadow tone: the shape shifted up-left, so a crescent of shade stays along its lower right edge
+    ctx.clip(path);
+    ctx.fillStyle = 'rgba(40,12,40,.2)';
+    ctx.fill(path);
+    ctx.translate(-2.2, -2.6);
+    ctx.fillStyle = col(key);
+    ctx.fill(path);
+  }
   ctx.restore();
   if (line && S.outline) {
     ctx.strokeStyle = S.outline.color;

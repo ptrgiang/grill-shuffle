@@ -161,6 +161,7 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     }
     shape(ctx, circle(bx, by, 3.4), on ? 'bulbOn' : 'bulbOff', { line: false });
   }
+  if (backdrop) drawSugarcaneCart(ctx, 362, ground);
   drawStool(ctx, 300, ground);
   drawStove(ctx, 262, ground, t, glow);
   drawCart(ctx, cartX, ground, t, glow, postcardOnCart);
@@ -171,6 +172,28 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     shape(ctx, new Path2D('M-6 -2 h12 v4 h-12 Z'), 'phone');
     if (phone === 'buzz' && Math.sin(t * 40) > 0) shape(ctx, circle(6, -3, 2.2), 'badge', { line: false });
     ctx.restore();
+  }
+}
+
+/** Cô Sáu's sugarcane-juice cart next door: a glass case, cane stalks standing in it, the press wheel. */
+function drawSugarcaneCart(ctx, x, y) {
+  shape(ctx, rect(x - 26, y - 58, 52, 40, 3), 'window');
+  ctx.fillStyle = 'rgba(255,255,255,.18)';
+  ctx.fillRect(x - 22, y - 54, 44, 32);
+  for (const sx of [-16, -10, -4]) {
+    const cane = new Path2D();
+    cane.moveTo(x + sx, y - 22);
+    cane.lineTo(x + sx + 2, y - 76);
+    stroke(ctx, cane, 'plant', 3.2);
+    ctx.fillStyle = col('signDark');
+    for (let k = 0; k < 4; k++) ctx.fillRect(x + sx - 1, y - 32 - k * 12, 3.6, 1.2); // cane nodes
+  }
+  shape(ctx, circle(x + 12, y - 38, 9), 'cartDark');
+  shape(ctx, circle(x + 12, y - 38, 3), 'hub', { line: false });
+  shape(ctx, rect(x - 28, y - 20, 56, 6, 2), 'sign');
+  for (const wx of [-18, 18]) {
+    shape(ctx, circle(x + wx, y - 8, 8), 'wheel');
+    shape(ctx, circle(x + wx, y - 8, 2.5), 'hub', { line: false });
   }
 }
 

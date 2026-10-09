@@ -82,7 +82,11 @@ function limb(ctx, x, y, a1, a2, l1, l2, w, key, end) {
   p.lineTo(ex, ey);
   p.lineTo(hx, hy);
   stroke(ctx, p, key, w);
-  if (end) shape(ctx, circle(hx, hy, w * 0.62), end);
+  if (end === 'shoe') {
+    const shoe = new Path2D();
+    shoe.ellipse(hx + w * 0.35, hy + w * 0.12, w * 0.78, w * 0.46, 0, 0, Math.PI * 2);
+    shape(ctx, shoe, 'shoe');
+  } else if (end) shape(ctx, circle(hx, hy, w * 0.62), end);
   return [hx, hy];
 }
 
@@ -276,6 +280,14 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   hair.closePath();
   shape(ctx, hair, L.hair);
+  if (S.shine) {
+    ctx.strokeStyle = 'rgba(255,255,255,.22)';
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(0, -1, 9.5, Math.PI * 1.3, Math.PI * 1.55);
+    ctx.stroke();
+  }
   if (L.chef) shape(ctx, rrect(-10, -26, 20, 15, 6), 'chef');
   if (L.cap) {
     const cap = new Path2D();
@@ -303,9 +315,22 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
     ctx.ellipse(5, 4, 3, 2, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  // face: eyes (white + pupil in the cartoon styles), a line when closed / happy, big when shocked
+  // face: eyebrows carry the mood (raised in shock, slanted when sad), eyes (white + pupil in the cartoon style, a line
+  // when closed / happy, big when shocked), a small nose, the mouth
   ctx.fillStyle = col('ink');
   ctx.strokeStyle = col('ink');
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 1.3;
+  const browUp = p.eyes > 1.2 ? 2.2 : 0, sad = p.mouth < -0.5 ? 1.6 : 0;
+  ctx.beginPath();
+  ctx.moveTo(3.6, -5.6 - browUp + sad);
+  ctx.lineTo(9, -6.2 - browUp - sad * 0.4);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(11.2, 0.5);
+  ctx.quadraticCurveTo(12.6, 2.4, 10.8, 3);
+  ctx.stroke();
   ctx.lineWidth = 1.4;
   if (p.eyes > 0.8) {
     if (S.eyesWhite) {
@@ -418,6 +443,22 @@ export function drawCat(ctx, x, y, s, face, pose, t = 0) {
       head.closePath();
     }
     shape(ctx, head, 'cat');
+    ctx.fillStyle = 'rgba(240,140,160,.75)';
+    for (const ex of [4, 11]) {
+      ctx.beginPath();
+      ctx.moveTo(ex - 1.6, hy - 4);
+      ctx.lineTo(ex, hy - 8.4);
+      ctx.lineTo(ex + 1.6, hy - 4);
+      ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,.55)';
+    ctx.lineWidth = 0.5;
+    for (const dy of [-0.8, 1.2]) {
+      ctx.beginPath();
+      ctx.moveTo(13, hy + 2);
+      ctx.lineTo(19, hy + 1 + dy * 1.6);
+      ctx.stroke();
+    }
     ctx.fillStyle = col('catEye');
     ctx.beginPath();
     ctx.arc(11, hy - 1, 1.7, 0, Math.PI * 2);
