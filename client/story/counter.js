@@ -18,6 +18,13 @@ const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const CARRY = { ...POSES.walk, armF: [1.45, 0.1], prop: 'plate' };
 const CASTS = { beach_grill: ['chu-tu', 'regular-a', 'regular-b'], default: ['regular-a', 'regular-b', 'co-sau'] };
 
+/** Items per food still on a simulation state's board (slots hold items, stacked layers hold cells). */
+export function stateFoods(state) {
+  const n = {};
+  for (const g of state.grills) for (const cell of [...g.slots.map((it) => it?.food ?? null), ...(g.layers ?? []).flat().map(cellFood)]) if (cell) n[cell] = (n[cell] ?? 0) + 1;
+  return n;
+}
+
 /** Items per food on a level's board (slots and stacked layers). */
 export function boardFoods(level) {
   const n = {};
@@ -36,7 +43,8 @@ export function mountCounter(hud, { level, theme = 'street_bbq', reduced = false
   cv.className = 'counter-canvas';
   hud.prepend(cv);
   const wide = () => strip.getBoundingClientRect().width > 620;
-  const c = createCounter({ foods: boardFoods(level), seats: wide() ? 4 : 3, seed: hash(level.id), cast: CASTS[theme] ?? CASTS.default, carry: !reduced });
+  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: CASTS[theme] ?? CASTS.default, carry: !reduced });
+  let c = make(boardFoods(level));
   const beach = theme === 'beach_grill';
   let last = performance.now(), running = false, t = 0;
   const from = new Map(); // plate -> screen point it started from (the matched grill)
@@ -238,8 +246,16 @@ export function mountCounter(hud, { level, theme = 'street_bbq', reduced = false
       else return;
       wake();
     },
+    /** Restart / undo: seat the counter again for what is on the board now (no plates in flight, no old cheer). */
+    reset(state) {
+      c = make(stateFoods(state));
+      from.clear();
+      requestAnimationFrame(draw);
+    },
     /** Draw once (screenshots, a resize). */
     redraw: () => draw(),
-    model: c,
+    get model() {
+      return c;
+    },
   };
 }

@@ -76,3 +76,14 @@ test('counter: board foods count every slot and stacked layer of a shipped level
   const total = level.board.grills.reduce((n, g) => n + g.slots.filter(Boolean).length + (g.layers ?? []).flat().filter(Boolean).length, 0);
   assert.equal(Object.values(counts).reduce((a, b) => a + b, 0), total);
 });
+
+test('counter: after a restart / undo the counter is seated from the board as it is now', async () => {
+  const { stateFoods } = await import('../../client/story/counter.js');
+  const { createState } = await import('../../shared/state.js');
+  const level = loadPacks()[0].levels.find((l) => l.level.board.grills.some((g) => g.layers)).level;
+  assert.deepEqual(stateFoods(createState(level)), boardFoods(level), 'a fresh state holds the whole board');
+  const s = createState(level);
+  s.grills[0].slots[0] = null; // an item gone (a match undone later puts it back)
+  const left = stateFoods(s);
+  assert.equal(Object.values(left).reduce((a, b) => a + b, 0), Object.values(boardFoods(level)).reduce((a, b) => a + b, 0) - 1);
+});

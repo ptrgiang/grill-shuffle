@@ -690,6 +690,7 @@ function restart() {
   app.session.restart();
   view.setState(app.session.state);
   app.hud.update(app.session.state, { immediate: true });
+  app.hud.counter?.reset(app.session.state);
   closeModal();
 }
 
@@ -708,6 +709,7 @@ function undo() {
   app.session.undo();
   view.setState(app.session.state);
   app.hud.update(app.session.state, { immediate: true });
+  app.hud.counter?.reset(app.session.state);
   closeModal();
 }
 
@@ -789,7 +791,7 @@ class Hud {
       this.el.classList.add('has-counter');
       this.el.append(h('div.counter-strip', { 'aria-hidden': 'true' }));
       import('./story/counter.js').then((m) => {
-        if (!this.el.isConnected && app.hud !== this) return;
+        if (!this.el.isConnected || app.hud !== this) return; // a newer HUD replaced this one
         this.counter = m.mountCounter(this.el, { level, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
       });
     }
