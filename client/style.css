@@ -378,3 +378,10 @@ body.in-game .landing { display: none; }
   .story-canvas.shown, .story-panel .story-canvas { opacity: 1; }
   .story-card { transition: opacity .5s; transform: translate(-50%, 0) rotate(-1deg); }
 }
+
+/* #116 variants (prototype, removed after the owner's pick) */
+.inplay-strip { position: absolute; left: calc(10px + var(--safe-left)); right: calc(10px + var(--safe-right)); pointer-events: none; }
+.inplay-strip-1, .inplay-strip-4 { top: calc(112px + var(--safe-top)); height: 118px; }
+.inplay-strip-5 { top: calc(112px + var(--safe-top)); height: 92px; }
+.inplay-strip-2, .inplay-strip-3 { bottom: calc(96px + var(--safe-bottom)); height: 104px; }
+html[data-variant] .hud .tip { display: none; }

@@ -35,7 +35,7 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant } from './ui/variant.js';
+import { initVariant, variant } from './ui/variant.js';
 import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
@@ -782,6 +782,17 @@ class Hud {
       this.tipEl,
       footer,
     );
+    // #116 variants (prototype): the story inside the level screen; a strip the board makes room for
+    if (variant() && app.mode === 'story' && !replay) {
+      const v = variant();
+      this.el.append(h(`div.inplay-strip.inplay-strip-${v}`, { 'data-side': v === 2 || v === 3 ? 'bottom' : 'top' }));
+      const serve = new URLSearchParams(location.search).get('serve');
+      const boardRect = () => {
+        const m = this.margins(), { w: W, h: H } = stage.size;
+        return { x: m.marginLeft, y: m.marginTop, w: W - m.marginLeft - m.marginRight, h: H - m.marginTop - m.marginBottom };
+      };
+      import('./story/inplay-proto.js').then((m) => m.mountInplay(this.el, v, { serve: serve == null ? null : Number(serve), boardRect }));
+    }
     if (this.boosters.length) footer.classList.add('has-boosters');
     this.goalEls = [];
   }
@@ -793,7 +804,7 @@ class Hud {
     const base = baseMargins();
     return isShortLandscape()
       ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
-      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal')], bottom: q('.tool') }, base, 6);
+      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.inplay-strip[data-side=top]')], bottom: [...q('.tool'), ...q('.inplay-strip[data-side=bottom]')] }, base, 6);
   }
 
   update(s, { immediate = false } = {}) {
