@@ -117,16 +117,28 @@ async function runStory(event) {
   }
   if (!r.seen.length) return;
   storyRunning = (async () => {
+    let seen = r.seen;
     if (r.beats.length && app.settings.story !== false) {
-      const { playStory } = await import('./story/player.js');
-      await playStory(r.beats, { reduced: reducedMotion(), transitionFor: transitionOf });
+      try {
+        const { playStory } = await import('./story/player.js');
+        await playStory(r.beats, { reduced: reducedMotion(), transitionFor: transitionOf });
+      } catch (e) {
+        // the player could not load or crashed: the game goes on, the beats stay due (the keepsakes were given)
+        console.warn('story beats not shown', e);
+        seen = r.keepsakes.map((k) => k.id);
+      }
     }
     // a beat skipped (or the story turned off) counts as seen: it never comes back as a backlog
-    await db.markStorySeen(r.seen);
-    pushProgressSoon();
+    if (seen.length) {
+      await db.markStorySeen(seen);
+      pushProgressSoon();
+    }
   })();
-  await storyRunning;
-  storyRunning = null;
+  try {
+    await storyRunning;
+  } finally {
+    storyRunning = null;
+  }
 }
 for (const ev of ['pointerdown', 'pointermove', 'wheel']) canvas.addEventListener(ev, () => idle.wake(), { passive: true });
 

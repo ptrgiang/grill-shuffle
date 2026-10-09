@@ -4,8 +4,7 @@
 // Offline: what could not be sent waits in IndexedDB and goes out on the next `online` event or app start
 // (flushOutbox): 'syncPending' (the progress push) and 'outbox' (daily / challenge results; the server re-plays
 // them, accepts past dates, and keeps each player's best).
-import { get, set, playerId, mergeProgress } from './db.js';
-import { addSeen } from '../game/story.js';
+import { get, set, playerId, mergeProgress, markStorySeen } from './db.js';
 
 const OUTBOX_MAX = 50;
 const OUTBOX_MAX_AGE = 14 * 24 * 3600_000; // a result that still fails after two weeks is dropped
@@ -33,7 +32,7 @@ export async function pullProgress() {
     const { progress, story } = await api('/api/progress');
     const merged = mergeProgress(await get('progress', {}), progress ?? {});
     await set('progress', merged);
-    if (Array.isArray(story) && story.length) await set('storySeen', addSeen(await get('storySeen', []), story.filter((id) => typeof id === 'string')));
+    if (Array.isArray(story) && story.length) await markStorySeen(story.filter((id) => typeof id === 'string'));
     return merged;
   } catch {
     return null;

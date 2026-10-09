@@ -156,7 +156,7 @@ function playBeat(root, beat, { transition, reduced, still = null, style }) {
 }
 
 /** The memories page: one panel per beat the player passed before seeing it. Resolves when they continue. */
-function playRecap(root, beats, { still = false, style }) {
+function playRecap(root, beats, { still = false }) {
   const page = el('div', 'story-recap');
   page.append(el('h2', 'story-recap-title', tr('story.memories')), el('p', 'story-recap-sub', tr('story.memoriesSub')));
   const grid = el('div', 'story-recap-grid');
@@ -172,7 +172,7 @@ function playRecap(root, beats, { still = false, style }) {
   root.replaceChildren(page);
   requestAnimationFrame(() => panels.forEach(({ b, cv }) => {
     const { ctx, w, h } = fitCanvas(cv);
-    paintBeat(ctx, b.id, stagingFor(b.id).panels[1], w, h, { style });
+    paintBeat(ctx, b.id, stagingFor(b.id).panels[1], w, h, { style: b.style ?? 'present' });
   }));
   if (still) return new Promise(() => {});
   return new Promise((resolve) => go.addEventListener('click', () => resolve('done'), { once: true }));

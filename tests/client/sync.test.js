@@ -66,3 +66,11 @@ test('seen story beats: marked locally, pushed with the progress, merged from th
   await pullProgress();
   assert.deepEqual(await get('storySeen'), ['street.cold-open', 'street.fan', 'street.notebook']);
 });
+
+test('seen story beats: a cloud merge and a local mark at the same time keep both', async () => {
+  await set('storySeen', []);
+  mode = 'online';
+  pulled = { progress: {}, story: ['street.fan'] };
+  await Promise.all([pullProgress(), markStorySeen(['street.notebook'])]);
+  assert.deepEqual(await get('storySeen'), ['street.fan', 'street.notebook']);
+});
