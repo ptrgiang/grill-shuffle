@@ -32,7 +32,8 @@
     "visual": "node scripts/visual.js",
     "visual:accept": "node scripts/visual-accept.js",
     "pr-shots": "node scripts/pr-shots.js",
-    "variant-shots": "node scripts/variant-shots.js"
+    "variant-shots": "node scripts/variant-shots.js",
+    "story-audio": "node scripts/story-audio.js"
   },
   "dependencies": {
     "three": "^0.186.1"

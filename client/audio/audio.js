@@ -23,6 +23,25 @@ export const WARM_ORDER = [
   ['ambience', 0],
 ];
 
+// story cue -> level and variation (footsteps and bulbs vary so a walk or a row of lights does not sound mechanical)
+export const STORY_SOUNDS = {
+  step: { gain: 0.45, variants: 3, jitter: 0.12 },
+  paper: { gain: 0.6, variants: 2 },
+  buzz: { gain: 0.5 },
+  bulb: { gain: 0.35, variants: 3, jitter: 0.2 },
+  fan: { gain: 0.55, jitter: 0.1 },
+  coals: { gain: 0.6 },
+  wave: { gain: 0.7 },
+  rain: { gain: 0.55 },
+  meow: { gain: 0.55 },
+  chime: { gain: 0.5 },
+  sting: { gain: 0.55 },
+  basket: { gain: 0.6 },
+  clink: { gain: 0.5, variants: 2 },
+  moto: { gain: 0.4 },
+  surf: { gain: 0.25, jitter: 0.1 },
+};
+
 const clamp01 = (v) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1);
 
 export class Audio {
@@ -254,5 +273,12 @@ export class Audio {
       case 'booster':
         return this.play(BOOSTER_SOUNDS[ev.booster] ?? 'tongs', { gain: 0.75, pan });
     }
+  }
+
+  /** A story beat's cue (client/story/cues.js): footsteps, paper, the phone, bulbs, waves… pan -1..1. */
+  story(name, { pan = 0 } = {}) {
+    const S = STORY_SOUNDS[name];
+    if (!S) return;
+    this.play(`story_${name}`, { gain: S.gain, pan: pan * 0.7, variant: S.variants ? Math.floor(Math.random() * S.variants) : 0, rate: S.jitter ? 1 + (Math.random() - 0.5) * S.jitter : 1 });
   }
 }

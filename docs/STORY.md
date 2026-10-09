@@ -165,6 +165,11 @@ first time a beat is due; the main bundle only carries the wiring in `main.js`.
 - **Skip**: a tap skips the beat, Escape skips the rest. A skipped beat counts as seen. Settings → Story: Off turns
   beats off (they are still marked seen, so turning it on later never replays a backlog).
 - **Reduced motion**: no camera or character motion; the beat's three key moments (`panels`) as stills, cross-faded.
+- **Sound** (#113): no voice-over; the motion is heard. `client/story/cues.js` derives the cues from the staging
+  (footsteps, paper, the phone, bulbs, the fan, the coals, a passing motorbike, surf, rain, Mực's meow, a sting on a
+  shock, a clink), the player adds the caption chime and the wave transition; the sounds are procedural
+  (`client/audio/synth.js` `story_*`), and mute / the effects volume apply. `npm run story-audio` writes each beat's
+  mix to `shots/story-audio/<id>.wav`; `/sandbox/story?beat=<id>&sound=1` plays it after a tap.
 - **Transitions**: the theme's `story.transition` (`lights`: the string lights flick on, Street; `wave`: a wave wipes
   across, Beach; `fade`).
 - **Staging** lives in `client/story/beats.js` (positions, poses, props, camera, scene state per beat); the text stays

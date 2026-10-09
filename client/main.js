@@ -121,7 +121,7 @@ async function runStory(event) {
     if (r.beats.length && app.settings.story !== false) {
       try {
         const { playStory } = await import('./story/player.js');
-        await playStory(r.beats, { reduced: reducedMotion(), transitionFor: transitionOf });
+        await playStory(r.beats, { reduced: reducedMotion(), transitionFor: transitionOf, sound: (name, o) => audio.story(name, o) });
       } catch (e) {
         // the player could not load or crashed: the game goes on, the beats stay due (the keepsakes were given)
         console.warn('story beats not shown', e);
