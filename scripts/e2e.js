@@ -539,7 +539,7 @@ async function runLang(name, { w, h }) {
 async function runStoryBeats(name, { w, h }) {
   const levelId = STORY[0];
   const lvl = level(levelId);
-  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000, story: true });
   const errors = [];
   collectPageErrors(page, errors);
   const seen = () => page.evaluate(() => new Promise((res) => {
@@ -554,7 +554,7 @@ async function runStoryBeats(name, { w, h }) {
     await page.waitForFunction(() => !document.querySelector('.story-root'), { timeout: 10000 }).catch(() => {});
   };
   try {
-    await page.goto(`${vite.url}/play/${levelId}?story=on`, { waitUntil: 'load' });
+    await page.goto(`${vite.url}/play/${levelId}`, { waitUntil: 'load' }); // the story is on by default
     await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
     const cold = await page.waitForFunction(() => document.querySelector('.story-root .story-beat'), { timeout: 15000 }).then(() => true, () => false);
     check(cold, `${name}: the cold open plays on first launch`);

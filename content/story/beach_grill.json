@@ -8,6 +8,15 @@
       "scene": "fishing-village",
       "title": { "vi": "Làng Chài", "en": "Fishing Village" },
       "lines": [{ "vi": "“Bà ghé đây hồi tuần trước.”", "en": "“She was here just last week.”" }]
+    },
+    {
+      "id": "beach.fish-seller",
+      "at": { "level": "beach-020", "on": "firstWin" },
+      "style": "past",
+      "cast": ["ba-nam"],
+      "scene": "fishing-village-dawn",
+      "title": { "vi": "Cô bé bán cá", "en": "The fish seller" },
+      "lines": [{ "vi": "Ngày xưa, bà gánh cá của cha đi bán lúc rạng sáng.", "en": "Long ago, she sold her father’s catch at dawn." }]
     }
   ],
   "keepsakes": []
