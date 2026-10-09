@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-011",
-  "name": "Sizzle",
+  "name": {"vi":"Lửa quá to","en":"Too Much Heat"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 11,
@@ -16,7 +16,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter"],
   "boosters": {"torch":1,"cooler":1},
-  "hint": "The number on that shrimp is how many moves it can stay on the heat. Anything that chars ends the level, so serve it first!",
+  "hint": {"vi":"Út đang rối trí. Con số trên con tôm là số lượt nó còn chịu được trên lửa. Món nào cháy là thua: dọn nó ra trước!","en":"Út’s mind is elsewhere. The number on that shrimp is how many moves it can stay on the heat. If anything chars, the level ends!"},
   "solver": {
     "minMoves": 6,
     "difficulty": 33,

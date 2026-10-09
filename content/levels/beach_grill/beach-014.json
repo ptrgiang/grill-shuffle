@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-014",
-  "name": "Boardwalk",
+  "name": {"vi":"Phơi mực","en":"Drying Squid"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "A lock and a hidden plate. Open the lock with the matches you can see.",
+  "hint": {"vi":"Một vỉ khoá và một khay chồng. Mở khoá bằng những bộ ba đang thấy.","en":"A lock and a hidden plate. Open the lock with the matches you can see."},
   "solver": {
     "minMoves": 5,
     "difficulty": 48,

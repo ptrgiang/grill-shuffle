@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-041",
-  "name": "Full House",
+  "name": {"vi":"Đứng bếp cả ngày","en":"Full-Time Cook"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Every grill counts. Think three moves ahead.",
+  "hint": {"vi":"Không còn giờ hành chính. Vỉ nào cũng quan trọng: tính trước ba nước.","en":"No more office hours. Every grill counts: think three moves ahead."},
   "solver": {
     "minMoves": 7,
     "difficulty": 49,

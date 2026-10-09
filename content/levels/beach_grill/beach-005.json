@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-005",
-  "name": "Cooler Box",
+  "name": {"vi":"Thùng đá","en":"The Ice Box"},
   "theme": "beach_grill",
   "tier": "normal",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "The blue board is a prep tray: it holds food but never matches.",
+  "hint": {"vi":"Tấm ván xanh là khay để tạm: giữ đồ nhưng không bao giờ ghép.","en":"The blue board is a prep tray: it holds food but never matches."},
   "solver": {
     "minMoves": 6,
     "difficulty": 29,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-021",
-  "name": "Sea Glass",
+  "name": {"vi":"Thuỷ tinh biển","en":"Sea Glass"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 5,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "A short one. Watch what the plate hides.",
+  "hint": {"vi":"Màn ngắn. Để ý khay chồng giấu gì.","en":"A short one. Watch what the plate hides."},
   "solver": {
     "minMoves": 4,
     "difficulty": 52,

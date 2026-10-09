@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-035",
-  "name": "Heatwave",
+  "name": {"vi":"Nắng gắt","en":"Heatwave"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Ten moves. Patience beats speed.",
+  "hint": {"vi":"Mười lượt. Kiên nhẫn hơn nhanh tay.","en":"Ten moves. Patience beats speed."},
   "solver": {
     "minMoves": 10,
     "difficulty": 58,

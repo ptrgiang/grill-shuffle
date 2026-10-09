@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-045",
-  "name": "Golden Hour",
+  "name": {"vi":"Nắng chiều","en":"Golden Hour"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 13,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Pineapple, peppers and a lock. Keep calm.",
+  "hint": {"vi":"Thơm, ớt chuông và một vỉ khoá. Bình tĩnh.","en":"Pineapple, peppers and a lock. Keep calm."},
   "solver": {
     "minMoves": 12,
     "difficulty": 69,

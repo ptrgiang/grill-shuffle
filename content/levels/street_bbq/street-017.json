@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-017",
-  "name": "Fish Fry",
+  "name": {"vi":"Thông báo đỏ","en":"Red Badges"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Salmon, corn and beef: line up one trio at a time.",
+  "hint": {"vi":"Điện thoại rung liên hồi. Cá hồi, bắp, bò: xếp xong từng bộ ba một.","en":"The phone keeps buzzing. Salmon, corn and beef: line up one trio at a time."},
   "solver": {
     "minMoves": 5,
     "difficulty": 18,

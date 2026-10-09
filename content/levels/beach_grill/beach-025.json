@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-025",
-  "name": "Fishing Net",
+  "name": {"vi":"Quăng lưới","en":"Casting the Net"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 10,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Five grills and a lock. Think two matches ahead.",
+  "hint": {"vi":"Năm vỉ và một vỉ khoá. Tính trước hai lần ghép.","en":"Five grills and a lock. Think two matches ahead."},
   "solver": {
     "minMoves": 8,
     "difficulty": 54,

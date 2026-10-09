@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-037",
-  "name": "Night Shift",
+  "name": {"vi":"Ca đêm","en":"Night Shift"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 10,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "The lock needs two matches before that grill opens.",
+  "hint": {"vi":"Vỉ khoá cần hai lần ghép mới mở.","en":"The lock needs two matches before that grill opens."},
   "solver": {
     "minMoves": 8,
     "difficulty": 45,

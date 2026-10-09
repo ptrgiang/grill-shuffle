@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-044",
-  "name": "Storm Clouds",
+  "name": {"vi":"Mây đen","en":"Dark Clouds"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "The lock hides the key food. Open it early.",
+  "hint": {"vi":"Vỉ khoá giấu món then chốt. Mở nó sớm.","en":"The lock hides the key food. Open it early."},
   "solver": {
     "minMoves": 11,
     "difficulty": 69,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-010",
-  "name": "Grand Grill",
+  "name": {"vi":"Khẩu hiệu của Út","en":"Út’s Own Slogan"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 14,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "Five foods, two stacks and a lock: everything so far at once.",
+  "hint": {"vi":"Năm món, hai khay chồng và một vỉ khoá: mọi thứ từ đầu tới giờ cùng lúc.","en":"Five foods, two stacks and a lock: everything so far at once."},
   "solver": {
     "minMoves": 11,
     "difficulty": 52,

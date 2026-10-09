@@ -34,7 +34,6 @@ const errors = [];
 const ids = new Map();
 const sigs = new Map();
 let count = 0;
-let legacyTexts = 0; // English-only name / hint strings (#89 accepts them until #90)
 const themes = loadThemes();
 
 // the base revision's copy of a content file (null: the file does not exist there, e.g. a new pack)
@@ -84,7 +83,6 @@ for (const { pack, packFile, levels } of packFiles) {
   {
     const c = checkText('name', pack.name, TEXT_LIMITS.pack);
     for (const e of c.errors) errors.push(`${packFile}: ${e}`);
-    if (c.legacy) legacyTexts++;
   }
   // URLs /<slug>/<n> (#63, #92): one slug per language in pack.json `slugs`, lowercase-dashed ASCII, unique across
   // every pack and language, never a page / file / API path
@@ -118,7 +116,6 @@ for (const { pack, packFile, levels } of packFiles) {
     for (const [k, max] of [['name', TEXT_LIMITS.name], ['hint', TEXT_LIMITS.hint]]) {
       const c = checkText(k, level[k], max);
       for (const e of c.errors) err(e);
-      if (c.legacy) legacyTexts++;
     }
     const v = validateLevel(level);
     for (const e of v.errors) err(e);
@@ -175,6 +172,5 @@ if (errors.length) {
   console.log(`\n${errors.length} error(s) in ${count} levels`);
   process.exit(1);
 }
-if (legacyTexts) console.log(`note: ${legacyTexts} level names / hints are still English-only strings (#90 writes them in vi + en)`);
 console.log(`OK: ${story.reduce((n, s) => n + (s.beats?.length ?? 0), 0)} story beats valid`);
 console.log(`OK: ${count} levels valid${args.fast ? ' (structure only)' : ', solver-verified'}`);

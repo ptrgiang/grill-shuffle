@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-020",
-  "name": "Rip Current",
+  "name": {"vi":"Cô bé bán cá","en":"The Fish Seller"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "The lock comes first. Then everything else falls into place.",
+  "hint": {"vi":"Chú Tư nhớ một cô bé bán cá lúc rạng sáng. Mở khoá trước, rồi mọi thứ sẽ vào chỗ.","en":"Chú Tư remembers a girl selling fish at dawn. The lock comes first; then everything falls into place."},
   "solver": {
     "minMoves": 5,
     "difficulty": 50,

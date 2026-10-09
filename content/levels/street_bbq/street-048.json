@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-048",
-  "name": "Closing Time",
+  "name": {"vi":"Mình làm được","en":"I Can Do This"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Two stacks, two locks, five foods.",
+  "hint": {"vi":"Hai khay chồng, hai vỉ khoá, năm món.","en":"Two stacks, two locks, five foods."},
   "solver": {
     "minMoves": 9,
     "difficulty": 56,

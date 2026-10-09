@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-020",
-  "name": "Carrot Cake Walk",
+  "name": {"vi":"Tay đã quen","en":"Steady Hands"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 11,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Four foods, three empty slots. Finish one trio before starting the next.",
+  "hint": {"vi":"Bốn món, ba ô trống. Xong một bộ ba rồi mới làm bộ kế.","en":"Four foods, three empty slots. Finish one trio before starting the next."},
   "solver": {
     "minMoves": 6,
     "difficulty": 18,

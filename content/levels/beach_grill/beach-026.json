@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-026",
-  "name": "Coral Reef",
+  "name": {"vi":"Rạn san hô","en":"Coral Reef"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "No lock, but nine moves. Do not waste the empty slots.",
+  "hint": {"vi":"Không có khoá, nhưng chín lượt. Đừng phí ô trống.","en":"No lock, but nine moves. Do not waste the empty slots."},
   "solver": {
     "minMoves": 9,
     "difficulty": 54,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-041",
-  "name": "Mixed Grill",
+  "name": {"vi":"Nhìn kỹ lần nữa","en":"Look Twice"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 10,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Two seafoods, two shellfish lookalikes. Look twice.",
+  "hint": {"vi":"Hai loại hải sản, hai loại vỏ trông na ná. Nhìn kỹ.","en":"Two seafoods, two shellfish lookalikes. Look twice."},
   "solver": {
     "minMoves": 9,
     "difficulty": 68,

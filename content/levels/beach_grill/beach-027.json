@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-027",
-  "name": "High Water",
+  "name": {"vi":"Nước lớn","en":"High Water"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Ten moves with a lock. Keep the scallops together.",
+  "hint": {"vi":"Mười lượt và một vỉ khoá. Giữ sò điệp đi chung.","en":"Ten moves with a lock. Keep the scallops together."},
   "solver": {
     "minMoves": 10,
     "difficulty": 54,

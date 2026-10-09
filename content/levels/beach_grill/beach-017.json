@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-017",
-  "name": "Tide Pools",
+  "name": {"vi":"Vũng nước triều","en":"Tide Pools"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Keep one grill free while you dig the plate out.",
+  "hint": {"vi":"Chừa một vỉ trống trong lúc đào khay chồng lên.","en":"Keep one grill free while you dig the plate out."},
   "solver": {
     "minMoves": 8,
     "difficulty": 48,

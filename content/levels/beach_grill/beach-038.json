@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-038",
-  "name": "Seafood Platter",
+  "name": {"vi":"Mâm hải sản","en":"Seafood Platter"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 10,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Squid, scallops and a lock. Plan the order.",
+  "hint": {"vi":"Mực, sò điệp và một vỉ khoá. Tính thứ tự.","en":"Squid, scallops and a lock. Plan the order."},
   "solver": {
     "minMoves": 9,
     "difficulty": 66,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-004",
-  "name": "Side Tray",
+  "name": {"vi":"Cái khay bên hông","en":"The Side Tray"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 13,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["prep_tray"],
-  "hint": "Every grill is full. The prep tray holds food but never cooks it: park something there.",
+  "hint": {"vi":"Vỉ nào cũng kín. Khay của bà giữ đồ nhưng không nướng: để tạm một món lên đó.","en":"Every grill is full. Bà Năm’s prep tray holds food but never cooks it: park something there."},
   "solver": {
     "minMoves": 9,
     "difficulty": 25,

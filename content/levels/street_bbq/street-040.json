@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-040",
-  "name": "Breather Bites",
+  "name": {"vi":"Sợi dây đeo thẻ","en":"The Lanyard"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 10,
@@ -16,7 +16,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "A lighter one: two stacks and a single lock.",
+  "hint": {"vi":"Út để điện thoại reo cho tới khi tắt. Màn nhẹ hơn: hai khay chồng và một vỉ khoá.","en":"Út lets the phone ring out. A lighter one: two stacks and a single lock."},
   "solver": {
     "minMoves": 8,
     "difficulty": 46,

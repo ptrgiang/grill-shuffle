@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-014",
-  "name": "Salmon Slab",
+  "name": {"vi":"Cá hồi ngoài chợ","en":"Market Salmon"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 11,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "Salmon joins the grill: a pink fillet with a dark skin edge.",
+  "hint": {"vi":"Cô Sáu mua cá hồi ngoài chợ về: miếng cá màu hồng, viền da sẫm.","en":"Cô Sáu brings salmon from the market: a pink fillet with a dark skin edge."},
   "solver": {
     "minMoves": 6,
     "difficulty": 19,

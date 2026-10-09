@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-039",
-  "name": "Slow Cook",
+  "name": {"vi":"Hai xe, ngày đầu","en":"Two Carts, Day One"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "The lock needs two matches. Plan them before you dig.",
+  "hint": {"vi":"Vỉ khoá cần hai lần ghép. Tính trước rồi hãy đào.","en":"The lock needs two matches. Plan them before you dig."},
   "solver": {
     "minMoves": 7,
     "difficulty": 48,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-037",
-  "name": "Beach Party",
+  "name": {"vi":"Tiệc cả làng","en":"Village Feast"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 9,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Five foods now. Keep one grill free as workspace.",
+  "hint": {"vi":"Giờ có năm món. Chừa một vỉ trống để xoay xở.","en":"Five foods now. Keep one grill free as workspace."},
   "solver": {
     "minMoves": 8,
     "difficulty": 66,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-034",
-  "name": "Surf and Turf",
+  "name": {"vi":"Tờ rơi","en":"The Flyer"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 8,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","prep_tray","stacked_tray"],
-  "hint": "Tray, stack and lock together. Use the tray as a bridge.",
+  "hint": {"vi":"Khang để lại tờ rơi trên xe. Khay, khay chồng và vỉ khoá cùng lúc: dùng khay làm cầu nối.","en":"Khang leaves a flyer on the cart. Tray, stack and lock together: use the tray as a bridge."},
   "solver": {
     "minMoves": 6,
     "difficulty": 46,

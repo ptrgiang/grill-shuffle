@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-033",
-  "name": "Coconut Shy",
+  "name": {"vi":"Sau cơn bão","en":"After the Storm"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "No lock this time. Use every gap.",
+  "hint": {"vi":"Lần này không có khoá. Tận dụng mọi ô trống.","en":"No lock this time. Use every gap."},
   "solver": {
     "minMoves": 5,
     "difficulty": 58,

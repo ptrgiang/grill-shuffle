@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-012",
-  "name": "Two Timers",
+  "name": {"vi":"Hai hạn chót","en":"Two Deadlines"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 9,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["burn_counter"],
   "boosters": {"torch":1,"cooler":1},
-  "hint": "Two clocks are ticking. The salmon runs out first: plan the order before you move.",
+  "hint": {"vi":"Hai bộ đếm đang chạy. Cá hồi hết giờ trước: tính thứ tự rồi hãy đi.","en":"Two clocks are ticking. The salmon runs out first: plan the order before you move."},
   "solver": {
     "minMoves": 6,
     "difficulty": 49,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-024",
-  "name": "Half Shell",
+  "name": {"vi":"Nửa vỏ sò","en":"Half Shell"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Scallops behind a lock. Unlock it before you need the space.",
+  "hint": {"vi":"Sò điệp nằm sau vỉ khoá. Mở khoá trước khi cần chỗ.","en":"Scallops behind a lock. Unlock it before you need the space."},
   "solver": {
     "minMoves": 5,
     "difficulty": 54,

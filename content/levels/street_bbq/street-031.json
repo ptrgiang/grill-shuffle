@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-031",
-  "name": "Root Cellar",
+  "name": {"vi":"Mỡ hành","en":"Scallion Oil"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Carrot, bread and corn wait below. Dig where it helps most.",
+  "hint": {"vi":"Cà rốt, bánh mì và bắp nằm bên dưới. Đào chỗ nào có lợi nhất.","en":"Carrot, bread and corn wait below. Dig where it helps most."},
   "solver": {
     "minMoves": 7,
     "difficulty": 46,

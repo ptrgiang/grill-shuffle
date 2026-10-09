@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-019",
-  "name": "Undertow",
+  "name": {"vi":"Sóng ngầm","en":"Undertow"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Few moves, one lock. Plan the opening matches.",
+  "hint": {"vi":"Ít lượt, một vỉ khoá. Tính trước mấy lần ghép đầu.","en":"Few moves, one lock. Plan the opening matches."},
   "solver": {
     "minMoves": 5,
     "difficulty": 49,

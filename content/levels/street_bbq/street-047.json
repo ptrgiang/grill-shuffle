@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-047",
-  "name": "Chef Special",
+  "name": {"vi":"Món của Cô Sáu","en":"Cô Sáu’s Recipe"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Ten moves through stacks and a triple lock.",
+  "hint": {"vi":"Mười lượt qua khay chồng và một vỉ khoá cần ba lần ghép.","en":"Ten moves through stacks and a triple lock."},
   "solver": {
     "minMoves": 10,
     "difficulty": 54,

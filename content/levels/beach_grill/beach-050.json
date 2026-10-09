@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-050",
-  "name": "Moonlit Grill",
+  "name": {"vi":"Trang thứ hai","en":"The Second Page"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 14,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "The final grill on the beach. Everything you learned.",
+  "hint": {"vi":"Chú Tư trao trang sổ của bà. Vỉ cuối cùng trên bãi biển: mọi thứ bạn đã học.","en":"Chú Tư hands over Bà Năm’s page. The final grill on the beach: everything you learned."},
   "solver": {
     "minMoves": 13,
     "difficulty": 72,

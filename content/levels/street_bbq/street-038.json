@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-038",
-  "name": "Five Spice",
+  "name": {"vi":"Email tăng ca","en":"Overtime Email"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 11,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1},
-  "hint": "Five foods and a lock. Keep one grill free as workspace.",
+  "hint": {"vi":"Năm món và một vỉ khoá. Chừa một vỉ trống để xoay xở.","en":"Five foods and a lock. Keep one grill free as workspace."},
   "solver": {
     "minMoves": 9,
     "difficulty": 50,

@@ -61,9 +61,10 @@ test('i18n: the landing HTML is the English dictionary text (what crawlers read)
   assert.ok(n >= 25, `found ${n} tagged elements`);
 });
 
-test('content text: { vi, en } or a legacy string', () => {
+test('content text: always { vi, en }, never an English-only string', () => {
   assert.deepEqual(checkText('name', { vi: 'Nước ròng', en: 'Low Tide' }, 28), { errors: [], legacy: false });
-  assert.deepEqual(checkText('name', 'Low Tide', 28), { errors: [], legacy: true });
+  assert.equal(checkText('name', 'Low Tide', 28).legacy, true);
+  assert.match(checkText('name', 'Low Tide', 28).errors[0], /English-only/);
   assert.deepEqual(checkText('name', undefined, 28), { errors: [], legacy: false });
   assert.match(checkText('name', { en: 'Low Tide' }, 28).errors[0], /missing vi/);
   assert.match(checkText('name', { vi: 'x'.repeat(29), en: 'ok' }, 28).errors[0], /vi text longer than 28/);

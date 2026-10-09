@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-009",
-  "name": "Lifeguard Tower",
+  "name": {"vi":"Ghe chưa về","en":"Boats Still Out"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "A locked grill opens after the number of matches on its lock.",
+  "hint": {"vi":"Vỉ khoá mở sau đúng số lần ghép ghi trên ổ khoá, như chờ ghe về.","en":"A locked grill opens after the number of matches on its lock, like waiting for the boats."},
   "solver": {
     "minMoves": 7,
     "difficulty": 44,

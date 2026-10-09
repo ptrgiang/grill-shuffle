@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-022",
-  "name": "Peek Under",
+  "name": {"vi":"Nhìn xuống dưới","en":"A Peek Below"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "Clear the top of the stacked grill to see what is hiding.",
+  "hint": {"vi":"Dọn sạch phía trên vỉ có khay chồng để xem bên dưới có gì.","en":"Clear the top of the stacked grill to see what is hiding."},
   "solver": {
     "minMoves": 7,
     "difficulty": 29,

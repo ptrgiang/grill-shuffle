@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-039",
-  "name": "Catch of the Day",
+  "name": {"vi":"Mẻ cá hôm nay","en":"Catch of the Day"},
   "theme": "beach_grill",
   "tier": "expert",
   "moves": 10,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"fan":1},
-  "hint": "Five foods, hidden plates. Reveal before you commit.",
+  "hint": {"vi":"Năm món, khay chồng. Lật ra xem trước khi quyết.","en":"Five foods, hidden plates. Reveal before you commit."},
   "solver": {
     "minMoves": 9,
     "difficulty": 67,

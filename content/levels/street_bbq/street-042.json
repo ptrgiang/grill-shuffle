@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-042",
-  "name": "Market Rush",
+  "name": {"vi":"Chợ đông","en":"Market Rush"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "Five foods, two stacks, two locks.",
+  "hint": {"vi":"Năm món, hai khay chồng, hai vỉ khoá.","en":"Five foods, two stacks, two locks."},
   "solver": {
     "minMoves": 7,
     "difficulty": 51,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-026",
-  "name": "Locked Pantry",
+  "name": {"vi":"Khách quen","en":"The Regulars"},
   "theme": "street_bbq",
   "tier": "normal",
   "moves": 10,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill"],
-  "hint": "Three different foods wait behind the lock. Make your first match early.",
+  "hint": {"vi":"Khách quen của bà quay lại, ngồi chờ. Ba món nằm sau vỉ khoá: ghép lần đầu càng sớm càng tốt.","en":"Bà Năm’s regulars are back, waiting. Three foods wait behind the lock: make your first match early."},
   "solver": {
     "minMoves": 7,
     "difficulty": 29,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-050",
-  "name": "Street Legend",
+  "name": {"vi":"Bình minh trong hẻm","en":"Dawn in the Alley"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 12,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"tongs":1,"tray_swap":1},
-  "hint": "The finale. Two stacks, a lock and four foods everywhere.",
+  "hint": {"vi":"Đêm cuối trước khi lên đường. Hai khay chồng, một vỉ khoá và bốn món ở khắp nơi.","en":"The last night before the road. Two stacks, a lock and four foods everywhere."},
   "solver": {
     "minMoves": 10,
     "difficulty": 58,

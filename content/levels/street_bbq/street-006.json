@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-006",
-  "name": "Under the Lid",
+  "name": {"vi":"Dưới vỉ của bà","en":"Under Bà’s Grill"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 12,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
-  "hint": "A stacked tray waits under the first grill. Empty that grill to flip the next tray up.",
+  "hint": {"vi":"Bà Năm để khay chồng dưới vỉ đầu tiên. Dọn trống vỉ đó để lật khay kế lên.","en":"Bà Năm kept stacked trays under the first grill. Empty that grill to flip the next tray up."},
   "solver": {
     "minMoves": 7,
     "difficulty": 21,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-033",
-  "name": "Triple Lock",
+  "name": {"vi":"Đầu bếp ghé ăn","en":"A Chef Sits Down"},
   "theme": "street_bbq",
   "tier": "hard",
   "moves": 9,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Three matches open the lock, and two stacks hide the rest.",
+  "hint": {"vi":"Ba lần ghép thì vỉ khoá mở, hai khay chồng giấu phần còn lại.","en":"Three matches open the lock, and two stacks hide the rest."},
   "solver": {
     "minMoves": 7,
     "difficulty": 46,

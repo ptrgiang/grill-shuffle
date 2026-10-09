@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-010",
-  "name": "Rising Tide",
+  "name": {"vi":"Chiếc ghe của cha bà","en":"Her Father’s Boat"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 10,
@@ -15,7 +15,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
-  "hint": "Plan the matches that open the lock first.",
+  "hint": {"vi":"Chú Tư chỉ chiếc ghe cũ trên bãi. Tính trước những lần ghép để mở khoá.","en":"Chú Tư shows an old boat on the sand. Plan the matches that open the lock first."},
   "solver": {
     "minMoves": 8,
     "difficulty": 44,

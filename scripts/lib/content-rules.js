@@ -72,12 +72,12 @@ export const packMaxDifficulty = (levels) => Math.max(...levels.map((l) => l.dif
 export const TEXT_LIMITS = Object.freeze({ name: 28, hint: 160, pack: 24 });
 
 /**
- * Checks one text field. A plain string is the legacy English-only form: accepted until #90 converts the shipped
- * levels (`legacy: true`, reported as a count), never for new fields.
+ * Checks one text field: always `{ vi, en }`. The legacy English-only plain string is an error since #90 wrote every
+ * shipped name and hint in both languages (`legacy: true` marks it).
  */
 export function checkText(what, value, max) {
   if (value == null) return { errors: [], legacy: false };
-  if (typeof value === 'string') return { errors: value.length > max ? [`${what}: longer than ${max} characters`] : [], legacy: true };
+  if (typeof value === 'string') return { errors: [`${what}: must be { "vi": …, "en": … } (English-only text is not allowed)`], legacy: true };
   const errors = [];
   if (typeof value !== 'object' || Array.isArray(value)) return { errors: [`${what}: must be { "vi": …, "en": … }`], legacy: false };
   for (const l of ['vi', 'en']) {

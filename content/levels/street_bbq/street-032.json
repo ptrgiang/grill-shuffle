@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "street-032",
-  "name": "Sunday Grill",
+  "name": {"vi":"Chủ nhật trong hẻm","en":"Sunday in the Alley"},
   "theme": "street_bbq",
   "tier": "easy",
   "moves": 9,
@@ -16,7 +16,7 @@
   },
   "goals": [{"type":"clear_all"}],
   "modifiers": [],
-  "hint": "An easy one between the hard ones.",
+  "hint": {"vi":"Một màn dễ giữa những màn khó.","en":"An easy one between the hard ones."},
   "solver": {
     "minMoves": 5,
     "difficulty": 18,

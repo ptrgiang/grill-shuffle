@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-029",
-  "name": "Golden Ring",
+  "name": {"vi":"Khoanh thơm","en":"Pineapple Rings"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["locked_grill","stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "New catch: pineapple, the golden ring. Three of a kind clear it.",
+  "hint": {"vi":"Món mới ngoài chợ: thơm, khoanh vàng óng. Ghép ba là dọn được.","en":"New from the market: pineapple, the golden ring. Three of a kind clear it."},
   "solver": {
     "minMoves": 5,
     "difficulty": 56,

@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "id": "beach-030",
-  "name": "Tropical Mix",
+  "name": {"vi":"Bão tới","en":"Storm Coming"},
   "theme": "beach_grill",
   "tier": "hard",
   "moves": 6,
@@ -17,7 +17,7 @@
   "goals": [{"type":"clear_all"}],
   "modifiers": ["stacked_tray"],
   "boosters": {"torch":1,"tray_swap":1},
-  "hint": "Four foods and a deep plate. Count before you fill.",
+  "hint": {"vi":"Ghe về sớm tránh bão. Bốn món và một khay chồng sâu: đếm trước rồi hãy lấp.","en":"The boats come home early. Four foods and a deep plate: count before you fill."},
   "solver": {
     "minMoves": 5,
     "difficulty": 57,
