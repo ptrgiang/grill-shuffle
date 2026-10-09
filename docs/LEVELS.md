@@ -248,6 +248,7 @@ the reference.
 | `backdrop` | `preset` (`bokeh` sprites at the far edge, or `none`), `colors`, `count`, `opacity`, `size`, `height` | `Stage.setTheme` |
 | `ambience` | `preset` (`grill`), `hiss`, `rumble`, `crackle` (pops / s), `seed` | `synth.ambienceLoop`, `Audio.setAmbience` |
 | `unlock` | `{ "stars": N }`: story stars needed to open the pack (after the previous pack, see Unlocks) | `game/unlock.js` |
+| `story` | `{ "transition": "lights" \| "wave" \| "fade" }`: the stop's signature transition at the start of its beats (`docs/STORY.md`) | `story/player.js` |
 | icon (`<id>.svg`) | separate file next to the theme: the theme's own picture (Street BBQ: grill under string lights; Beach Grill: beach umbrella, sun and waves). One `<svg>`, `viewBox="0 0 48 48"`, drawn on its own tile, readable at 30 px; no scripts, handlers, links or images; ≤ 8 KB (`validateThemeIcon`). Required for every theme a pack uses | level select tab |
 
 The game applies the theme of the level being played (and of the menu's demo board): `Stage.setTheme` recolours the

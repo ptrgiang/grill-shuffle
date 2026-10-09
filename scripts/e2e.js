@@ -7,6 +7,8 @@
 //   burn-*: the burn levels (rules v3) won through tap / drag, the tray level included
 //   burn-char: lets an item char on purpose and expects the level lost with the "Burnt!" screen
 //   mobile-360: a full tap win on the smallest supported phone, 360 x 640 at DPR 3
+//   story-390: with ?story=on, the cold open plays on first launch and a tap skips it; winning level 1 plays its beat
+//              (the notebook) before the results; a tap skips it, the beats are saved as seen, "Next" opens level 2
 //   landscape: tap play on a phone held sideways (844 x 390, HUD in side columns, asymmetric camera frustum)
 //   layout-*: at 360x640, 390x844, 430x932, 844x390 and 1280x800 the game HUD and the menu never cover the board, the
 //             board stays on screen, and every control is a tap target of at least 44 x 44 px
@@ -534,6 +536,63 @@ async function runLang(name, { w, h }) {
   }
 }
 
+async function runStoryBeats(name, { w, h }) {
+  const levelId = STORY[0];
+  const lvl = level(levelId);
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
+  const errors = [];
+  collectPageErrors(page, errors);
+  const seen = () => page.evaluate(() => new Promise((res) => {
+    const r = indexedDB.open('grill-shuffle');
+    r.onsuccess = () => {
+      const q = r.result.transaction('kv').objectStore('kv').get('storySeen');
+      q.onsuccess = () => res(q.result ?? []);
+    };
+  }));
+  const tapStory = async () => {
+    await page.touchscreen.tap(w / 2, h / 3);
+    await page.waitForFunction(() => !document.querySelector('.story-root'), { timeout: 10000 }).catch(() => {});
+  };
+  try {
+    await page.goto(`${vite.url}/play/${levelId}?story=on`, { waitUntil: 'load' });
+    await page.waitForFunction('window.__gameReady === true', { timeout: 30000 });
+    const cold = await page.waitForFunction(() => document.querySelector('.story-root .story-beat'), { timeout: 15000 }).then(() => true, () => false);
+    check(cold, `${name}: the cold open plays on first launch`);
+    await sleep(1500);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-cold-open.png`) });
+    await tapStory();
+    check(!(await page.$('.story-root')), `${name}: a tap skips the cold open`);
+    await sleep(500);
+    check((await seen()).includes('street.cold-open'), `${name}: the cold open is saved as seen`);
+    await settle(page, 600);
+    for (const m of decodeActions(lvl.solver.solution)) {
+      const a = await slotXY(page, m.from.grill, m.from.slot, 0.4);
+      const b = await slotXY(page, m.to.grill, m.to.slot);
+      await page.touchscreen.tap(a.x, a.y);
+      await sleep(120);
+      await page.touchscreen.tap(b.x, b.y);
+      await settle(page, 450);
+    }
+    const beat = await page.waitForFunction(() => document.querySelector('.story-root .story-beat'), { timeout: 30000 }).then(() => true, () => false);
+    check(beat, `${name}: winning level 1 plays its beat before the results`);
+    check(!(await page.$('.modal .stars.big')), `${name}: the results wait for the beat`);
+    await sleep(1200);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-beat.png`) });
+    await tapStory();
+    await page.waitForFunction(() => document.querySelectorAll('.stars.big .star.on').length > 0, { timeout: 30000 }).catch(() => {});
+    check((await page.$$('.stars.big .star.on')).length === 3, `${name}: the results follow the beat`);
+    check((await seen()).includes('street.notebook'), `${name}: the beat is saved as seen`);
+    await page.evaluate(() => document.querySelector('.modal .btn.primary')?.click());
+    await page.waitForFunction(() => location.pathname === '/saigon-alley/2' && window.__gameReady === true, { timeout: 30000 }).catch(() => {});
+    const path = await page.evaluate(() => location.pathname);
+    check(path === '/saigon-alley/2', `${name}: "Next" goes straight on to level 2 (${path})`);
+    check(!(await page.$('.story-root')), `${name}: nothing replays on level 2`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 // `npm run test:e2e -- --only replay,boosters`: just the groups whose name starts with one of those
 const onlyAt = process.argv.indexOf('--only');
@@ -549,6 +608,7 @@ try {
     ['burn-tray', () => run('burn-tray', { w: 390, h: 844, mobile: true, levelId: 'street-013', mode: 'tap' })],
     ['burn-char', () => runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' })],
     ['mobile-360', () => run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' })],
+    ['story-390', () => runStoryBeats('story-390', { w: 390, h: 844 })],
     ['landscape', () => run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' })],
     ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].map(([w, h]) => [`layout-${w}x${h}`, () => runLayout(w, h)]),
     ['quality', () => runQuality('quality', { w: 390, h: 844 })],

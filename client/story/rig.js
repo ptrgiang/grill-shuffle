@@ -18,6 +18,16 @@ export const POSES = {
   fan: { lean: 0.12, head: 0.2, armB: [0.25, 0.4], armF: [1.0, 0.9], legB: -0.08, legF: 0.1, mouth: 1, eyes: 1, prop: 'fan', fanning: 1 },
   point: { lean: 0.05, head: 0.05, armB: [0.1, 0.1], armF: [1.6, 0.05], legB: 0, legF: 0, mouth: 1, eyes: 1, prop: 'fan' },
   smile: { lean: -0.04, head: -0.12, armB: [0.15, 0.3], armF: [0.15, 0.3], legB: 0, legF: 0, mouth: 1, eyes: 0.5 },
+  sit: { lean: 0.05, head: 0, armB: [0.6, 1.2], armF: [0.7, 1.3], legB: 1.45, legF: 1.5, knee: -1.45, mouth: 0, eyes: 1, sit: 1 },
+  eat: { lean: 0.12, head: 0.12, armB: [0.6, 1.2], armF: [0.8, 2.1], legB: 1.45, legF: 1.5, knee: -1.45, mouth: 1, eyes: 0.5, sit: 1 },
+  serve: { lean: 0.1, head: 0.05, armB: [0.2, 0.3], armF: [1.45, 0.1], legB: -0.08, legF: 0.1, mouth: 1, eyes: 1, prop: 'plate' },
+  give: { lean: 0.08, head: 0.05, armB: [0.1, 0.1], armF: [1.4, 0.2], legB: 0, legF: 0.08, mouth: 1, eyes: 1 },
+  take: { lean: 0.1, head: 0.1, armB: [0.1, 0.1], armF: [1.3, 0.3], legB: 0, legF: 0.08, mouth: 0, eyes: 1 },
+  hang: { lean: -0.05, head: -0.3, armB: [0.1, 0.1], armF: [2.7, 0.2], legB: 0, legF: 0, mouth: 0, eyes: 1, prop: 'lanyard' },
+  wave: { lean: 0, head: -0.05, armB: [0.1, 0.1], armF: [2.6, 0.5], legB: 0, legF: 0, mouth: 1, eyes: 0.5, waving: 1 },
+  push: { lean: 0.25, head: -0.05, armB: [1.25, 0.15], armF: [1.3, 0.15], legB: -0.25, legF: 0.3, mouth: 0, eyes: 1 },
+  pushWalk: { lean: 0.25, head: -0.05, armB: [1.25, 0.15], armF: [1.3, 0.15], legB: 0, legF: 0, mouth: 1, eyes: 1, walk: 1 },
+  nod: { lean: 0.04, head: 0.25, armB: [0.1, 0.1], armF: [0.1, 0.1], legB: 0, legF: 0, mouth: 1, eyes: 0.5 },
   carry: { lean: 0.06, head: -0.05, armB: [2.5, 0.6], armF: [0.9, 1.7], legB: 0, legF: 0, mouth: 1, eyes: 0.5, pole: 1 },
   carryWalk: { lean: 0.1, head: 0, armB: [2.5, 0.6], armF: [0.9, 1.7], legB: 0, legF: 0, mouth: 0, eyes: 1, pole: 1, walk: 1 },
 };
@@ -26,6 +36,11 @@ export const POSES = {
 const LOOKS = {
   ut: { skin: 'skinUt', hair: 'hairUt', shirt: 'shirtUt', pants: 'pantsUt', apron: true, lanyard: true, height: 1 },
   'co-sau': { skin: 'skinSau', hair: 'hairSau', shirt: 'shirtSau', pattern: 'patternSau', pants: 'pantsSau', bun: true, height: 0.94 },
+  khang: { skin: 'skinKhang', hair: 'hairKhang', shirt: 'chef', pants: 'pantsKhang', chef: true, height: 1.06 },
+  'chu-tu': { skin: 'skinTu', hair: 'hairTu', shirt: 'shirtTu', pants: 'pantsTu', cap: true, height: 0.98 },
+  // two regulars of the alley: an uncle in a white singlet, a student
+  'regular-a': { skin: 'skinA', hair: 'hairA', shirt: 'shirtA', pants: 'pantsA', short: true, height: 0.96 },
+  'regular-b': { skin: 'skinB', hair: 'hairB', shirt: 'shirtB', pants: 'pantsB', braid: true, height: 0.92 },
   // flashback: Bà Năm as a girl selling her father's catch (a headscarf, a long braid, a shoulder pole)
   'ba-nam-young': { skin: 'skinBa', hair: 'hairBa', shirt: 'shirtBa', pants: 'pantsBa', braid: true, scarf: true, height: 0.9 },
 };
@@ -36,7 +51,7 @@ const lerp = (a, b, k) => a + (b - a) * k;
 export function blendPose(a, b, k) {
   if (k >= 1 || a === b) return b;
   const out = { ...(k < 0.5 ? a : b) };
-  for (const key of ['lean', 'head', 'legB', 'legF', 'mouth', 'eyes']) out[key] = lerp(a[key] ?? 0, b[key] ?? 0, k);
+  for (const key of ['lean', 'head', 'legB', 'legF', 'knee', 'mouth', 'eyes']) out[key] = lerp(a[key] ?? 0, b[key] ?? 0, k);
   for (const key of ['armB', 'armF']) out[key] = [lerp(a[key][0], b[key][0], k), lerp(a[key][1], b[key][1], k)];
   return out;
 }
@@ -90,6 +105,42 @@ function prop(ctx, kind, x, y, t, p) {
       ctx.lineTo(1, ly);
       ctx.stroke();
     }
+  } else if (kind === 'notebook' || kind === 'page' || kind === 'flyer') {
+    ctx.rotate(-0.2);
+    if (kind === 'notebook') {
+      // open notebook; the right page torn out (a ragged stub)
+      shape(ctx, rrect(-15, -16, 30, 18, 1.5), 'notebook');
+      shape(ctx, rrect(-13, -15, 12.5, 16, 0.5), 'page', { line: false });
+      shape(ctx, new Path2D('M1 -15 L4 -12 L2 -9 L5 -6 L2 -3 L4 0 L1 1 Z'), 'page', { line: false });
+      ctx.strokeStyle = col('postLine');
+      ctx.lineWidth = 0.7;
+      for (const ly of [-12, -9, -6, -3]) {
+        ctx.beginPath();
+        ctx.moveTo(-11, ly);
+        ctx.lineTo(-3, ly);
+        ctx.stroke();
+      }
+    } else {
+      shape(ctx, rrect(-8, -18, 16, 20, 1), kind);
+      ctx.fillStyle = col(kind === 'flyer' ? 'flyerBlue' : 'postLine');
+      if (kind === 'flyer') {
+        ctx.fillRect(-6, -16, 12, 7); // the tower, in Út's company colours
+        ctx.fillRect(-6, -6, 9, 1.5);
+        ctx.fillRect(-6, -3, 12, 1.5);
+      } else for (const ly of [-14, -10, -6, -2]) ctx.fillRect(-6, ly, 11, 0.9);
+    }
+  } else if (kind === 'plate') {
+    shape(ctx, new Path2D('M-12 -2 Q0 4 12 -2 Z'), 'plate');
+    for (const fx of [-6, 0, 6]) shape(ctx, rrect(fx - 2.5, -9, 5, 7, 2), 'apron');
+  } else if (kind === 'lanyard') {
+    ctx.strokeStyle = col('lanyard');
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(-4, 0);
+    ctx.lineTo(0, 14);
+    ctx.lineTo(4, 0);
+    ctx.stroke();
+    shape(ctx, rrect(-4, 14, 8, 10, 1), 'card');
   } else if (kind === 'fan') {
     // quạt nan: woven bamboo, a short handle
     ctx.rotate(p.fanning ? Math.sin(t * 14) * 0.5 : -0.3);
@@ -122,7 +173,6 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(s * face * L.height, s * L.height);
-  if (S.wobble) ctx.rotate(Math.sin(Math.floor(t * 4) * 2.1) * 0.015); // paper puppets: stepped wobble
   // contact shadow
   ctx.fillStyle = 'rgba(0,0,0,.28)';
   ctx.beginPath();
@@ -131,10 +181,10 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   const swing = p.walk ? Math.sin(t * 9) * 0.45 : 0;
   const bob = p.walk ? Math.abs(Math.cos(t * 9)) * 2 : 0;
   const hip = -42 * legs;
-  ctx.translate(0, -bob);
+  ctx.translate(0, -bob + (p.sit ? 16 : 0));
   const lw = S.limbs ?? 1;
-  limb(ctx, -3.5, hip, p.legB + swing, 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
-  limb(ctx, 3.5, hip, p.legF - swing, 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
+  limb(ctx, -3.5, hip, p.legB + swing, p.knee ?? 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
+  limb(ctx, 3.5, hip, p.legF - swing, p.knee ?? 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
   ctx.save();
   ctx.translate(0, hip);
   ctx.rotate(p.lean);
@@ -167,7 +217,21 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
     shape(ctx, poly(-8, -30, 8, -30, 13, -16, 15, 20, -15, 20, -13, -16), 'apron');
     shape(ctx, rrect(-6, -2, 12, 7, 1), 'apronDark', { line: false });
   }
-  if (L.lanyard) {
+  if (L.chef) {
+    ctx.fillStyle = col('ink');
+    for (const by of [-30, -21, -12]) for (const bx of [-4, 4]) {
+      ctx.beginPath();
+      ctx.arc(bx, by, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (L.short) {
+    // áo ba lỗ: the singlet shows the shoulders; a towel over one of them
+    shape(ctx, rrect(-12, -40, 7, 6, 2), L.skin, { line: false });
+    shape(ctx, rrect(5, -40, 7, 6, 2), L.skin, { line: false });
+    shape(ctx, rrect(4, -40, 6, 18, 2), 'notice');
+  }
+  if (L.lanyard && !p.noLanyard && p.prop !== 'lanyard') {
     ctx.strokeStyle = col('lanyard');
     ctx.lineWidth = 1.6;
     ctx.beginPath();
@@ -212,6 +276,15 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   hair.closePath();
   shape(ctx, hair, L.hair);
+  if (L.chef) shape(ctx, rrect(-10, -26, 20, 15, 6), 'chef');
+  if (L.cap) {
+    const cap = new Path2D();
+    cap.arc(0, -3, 13, Math.PI, Math.PI * 2);
+    cap.lineTo(19, -3);
+    cap.lineTo(13, -1);
+    cap.closePath();
+    shape(ctx, cap, 'boatTrim');
+  }
   if (L.scarf) {
     const scarf = new Path2D();
     scarf.moveTo(-13, 2);
@@ -243,15 +316,8 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
       ctx.fillStyle = col('ink');
     }
     ctx.beginPath();
-    ctx.arc(6.6, -1.2, 1.5 * Math.min(p.eyes, 1.5) * (S.eyeShine ? 1.3 : 1), 0, Math.PI * 2);
+    ctx.arc(6.6, -1.2, 1.5 * Math.min(p.eyes, 1.5), 0, Math.PI * 2);
     ctx.fill();
-    if (S.eyeShine) {
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(7.3, -2.2, 0.7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = col('ink');
-    }
   } else {
     ctx.beginPath();
     ctx.arc(6, p.eyes > 0.3 ? 0 : -1, 2.2, Math.PI * 1.1, Math.PI * 1.9);
@@ -267,7 +333,8 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   p.mouth > 1.5 ? ctx.fill() : ctx.stroke();
   ctx.restore();
-  const [hx, hy] = limb(ctx, 3, -34, p.armF[0] + swing * 0.6, p.armF[1], 17 * (2 - lw) * 0.95, 15 * (2 - lw), 8.5 * lw, L.shirt, L.skin);
+  const wave = p.waving ? Math.sin(t * 10) * 0.35 : 0;
+  const [hx, hy] = limb(ctx, 3, -34, p.armF[0] + swing * 0.6, p.armF[1] + wave, 17 * (2 - lw) * 0.95, 15 * (2 - lw), 8.5 * lw, L.shirt, L.skin);
   if (p.prop) prop(ctx, p.prop, hx, hy, t, p);
   ctx.restore();
   if (p.smoke) smoke(ctx, 26, -100, t);

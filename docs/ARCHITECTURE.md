@@ -69,6 +69,10 @@ client/        browser game (Vite root)
                  n = position inside the pack; pack.json `slugs` { vi, en }: either opens it, links and the address bar
                  use the current language's),
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
+  story/         the story beats (#81, docs/STORY.md "Story player"), lazy-loaded when a beat is due: player.js (full-screen
+                 beat, memories panels, skip, reduced motion), beats.js (the staging of each beat), timeline.js (pure:
+                 tracks, pose snap, camera), rig.js (the code-drawn cast), scene.js (alley, fishing village), style.js
+                 (present = flat cartoon, past = Đông Hồ print; #106)
   render/        stage.js (renderer, camera, lights, backdrop, theme, quality tier, rAF loop), quality.js (pure: tiers,
                  frame monitor, idle gate), layout.js (pure board layout + hit test),
                  board.js (BoardView: state + events -> animation), grill.js, foods.js, materials.js,
@@ -81,7 +85,8 @@ client/        browser game (Vite root)
   public/        fonts/ (self-hosted Baloo 2 with Vietnamese, OFL), favicon.svg + icons/ + og.png (all from the
                  Bà Năm badge in ui/brand.js: node scripts/make-icons.js; og.png from /sandbox/brand?og=1),
                  manifest.webmanifest (installed app: "Bà Năm’s Grill")
-  sandbox/       /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes),
+  sandbox/       /sandbox/story (?beat=<id>&t=<s> a still, ?recap=1 the memories page, ?style=past),
+                 /sandbox/food, /sandbox/board (both take ?theme=<id>: content themes + tests/fixtures/themes),
                  /sandbox/brand (the badge big and at icon sizes; ?og=1 the share card)
 content/       levels/<pack>/*.json + pack.json, themes/*.json (look, sound, foods, mechanics, unlock: docs/LEVELS.md),
                story/<pack>.json (beats + keepsakes: docs/STORY.md)

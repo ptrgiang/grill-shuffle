@@ -23,6 +23,8 @@ import { packStatus } from './unlock.js';
 import { BOOSTERS } from '../../shared/boosters.js';
 
 export const RECAP_ID = 'recap';
+/** Story beats play by default? Off until the art direction (#106) is finished; `?story=on` previews them. */
+export const STORY_DEFAULT_ON = false;
 export const KEEPSAKE_KINDS = Object.freeze(['postcard', 'photo', 'note', 'date']);
 // the recurring cast (docs/STORY.md "Cast"); page keepers join with their stop
 export const CAST = Object.freeze(['ut', 'ba-nam', 'muc', 'co-sau', 'khang', 'chu-tu']);

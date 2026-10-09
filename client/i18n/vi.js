@@ -24,8 +24,12 @@ export default {
 
   // chung
   'story.skip': 'Chạm để bỏ qua',
-  'story.protoFlashTitle': 'Cô bé bán cá',
-  'story.protoFlashLine': 'Ngày xưa, có cô bé gánh cá của cha đi bán lúc rạng sáng.',
+  'story.memories': 'Ký ức',
+  'story.memoriesSub': 'Chuyện đã qua',
+  'story.continue': 'Tiếp tục',
+  'settings.story': 'Truyện',
+  'common.on': 'Bật',
+  'common.off': 'Tắt',
   'common.close': 'Đóng',
   'common.back': 'Quay lại',
   'common.menu': 'Menu',

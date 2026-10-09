@@ -17,5 +17,6 @@
   "table": { "color": "#e8d6b8", "hue": 36, "saturation": 30, "lightness": 62, "planks": 7, "seed": 23 },
   "backdrop": { "preset": "bokeh", "colors": ["#ffffff", "#d8f6ff", "#fff3c4"], "count": 18, "opacity": 0.3, "size": 0.7, "height": 1.4 },
   "ambience": { "hiss": 0.1, "rumble": 1.4, "crackle": 4, "seed": 33 },
-  "unlock": { "stars": 75 }
+  "unlock": { "stars": 75 },
+  "story": { "transition": "wave" }
 }

@@ -105,20 +105,39 @@ function motorbike(ctx, x, y) {
   ctx.restore();
 }
 
-export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false } = {}) {
+/**
+ * The alley. Options: `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
+ * `postcardOnCart`, `dawn` (a pale morning sky, lights off), `cartX` (the cart rolls), `lanyardOnNail`,
+ * `phone` ('buzz' | 'dark': Út's phone lying on the cart).
+ */
+export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null } = {}) {
   const { w, ground } = STAGE;
   if (backdrop) {
     const sky = ctx.createLinearGradient(0, -100, 0, ground);
-    sky.addColorStop(0, col('sky1'));
-    sky.addColorStop(1, col('sky2'));
+    sky.addColorStop(0, col(dawn ? 'dawnSky2' : 'sky1'));
+    sky.addColorStop(1, col(dawn ? 'dawnSky1' : 'sky2'));
     ctx.fillStyle = sky;
     if (style().flatSky) ctx.fillStyle = col('sky1');
-    ctx.fillRect(-200, -100, w + 400, ground + 100);
+    ctx.fillRect(-200, -400, w + 400, ground + 400); // tall phone screens see far above the stage
     houses(ctx);
-    shape(ctx, rect(-200, ground, w + 400, 120), 'ground', { line: false });
+    shape(ctx, rect(-200, ground, w + 400, 400), 'ground', { line: false });
     ctx.fillStyle = col('groundLine');
     for (let i = -6; i < 16; i++) ctx.fillRect(i * 34, ground + 8 + (i % 2) * 14, 22, 3);
     motorbike(ctx, 40, ground);
+    if (lanyardOnNail) {
+      // Cô Sáu's nail, beside the notice: the lanyard left hanging
+      shape(ctx, circle(126, 128, 1.6), 'ink', { line: false });
+      ctx.strokeStyle = col('lanyard');
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(122, 130);
+      ctx.lineTo(126, 128);
+      ctx.lineTo(130, 130);
+      ctx.lineTo(126, 146);
+      ctx.closePath();
+      ctx.stroke();
+      shape(ctx, new Path2D('M122 146 h8 v10 h-8 Z'), 'card');
+    }
   }
   wires(ctx);
   // string lights across the alley
@@ -132,7 +151,7 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     const k = (i + 0.5) / BULBS;
     const bx = -10 + k * (w + 20);
     const by = (1 - k) * (1 - k) * 40 + 2 * (1 - k) * k * 90 + k * k * 36 + 6;
-    const on = bulb(i, t, lightsFrom);
+    const on = lightsFrom == null || dawn ? 0 : bulb(i, t, lightsFrom);
     if (on) {
       const g = ctx.createRadialGradient(bx, by, 0, bx, by, 24);
       g.addColorStop(0, `rgba(${col('glow')},${0.55 * on})`);
@@ -144,7 +163,15 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
   }
   drawStool(ctx, 300, ground);
   drawStove(ctx, 262, ground, t, glow);
-  drawCart(ctx, 196, ground, t, glow, postcardOnCart);
+  drawCart(ctx, cartX, ground, t, glow, postcardOnCart);
+  if (phone) {
+    // Út's phone on the cart: face up and buzzing, or face down and dark
+    ctx.save();
+    ctx.translate(cartX - 30, ground - 70);
+    shape(ctx, new Path2D('M-6 -2 h12 v4 h-12 Z'), 'phone');
+    if (phone === 'buzz' && Math.sin(t * 40) > 0) shape(ctx, circle(6, -3, 2.2), 'badge', { line: false });
+    ctx.restore();
+  }
 }
 
 function drawStool(ctx, x, y) {
@@ -242,7 +269,7 @@ export function drawBeach(ctx, t) {
   sky.addColorStop(1, col('dawn2'));
   ctx.fillStyle = sky;
   if (style().flatSky) ctx.fillStyle = col('dawn2');
-  ctx.fillRect(-200, -100, w + 400, 280);
+  ctx.fillRect(-200, -400, w + 400, 580);
   shape(ctx, circle(176, 128, 24), 'sun', { line: false });
   shape(ctx, rect(-200, 165, w + 400, 50), 'sea', { line: false });
   ctx.strokeStyle = col('seaLight');
@@ -254,7 +281,7 @@ export function drawBeach(ctx, t) {
     ctx.quadraticCurveTo(x + 9, y - 4, x + 18, y);
     ctx.stroke();
   }
-  shape(ctx, rect(-200, 212, w + 400, 160), 'sand', { line: false });
+  shape(ctx, rect(-200, 212, w + 400, 400), 'sand', { line: false });
   // nets on poles
   for (const nx of [96]) {
     const p = new Path2D();

@@ -351,3 +351,28 @@ body.in-game .landing { display: none; }
 .badge-art svg { display: block; width: 100%; height: auto; }
 @media (max-height: 760px) { .badge-art { width: 92px; } }
 @media (max-height: 660px) { .badge-art { width: 64px; } }
+
+/* story beats (client/story/player.js, #81): full-screen vignette, caption card, memories panels */
+.story-root { position: fixed; inset: 0; z-index: 80; background: #120a12; color: var(--ink); font-family: var(--font); }
+.story-beat { position: absolute; inset: 0; cursor: pointer; }
+.story-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.story-beat::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(10,4,12,.85)); pointer-events: none; }
+.story-card { position: absolute; left: 50%; bottom: max(28px, env(safe-area-inset-bottom)); z-index: 1; width: min(86vw, 420px); box-sizing: border-box; transform: translate(-50%, 8px) rotate(-1deg); opacity: 0; transition: opacity .5s, transform .5s; background: #fbf1dc; color: #3a2630; border-radius: 6px; padding: 14px 18px; box-shadow: 0 8px 24px rgba(0,0,0,.45); pointer-events: none; }
+.story-card.on { opacity: 1; transform: translate(-50%, 0) rotate(-1deg); }
+.story-title { font-size: 22px; font-weight: 800; color: #b5482a; }
+.story-line { font-size: 16px; margin-top: 4px; }
+.story-skip { position: absolute; top: max(12px, env(safe-area-inset-top)); right: 12px; z-index: 2; font-size: 13px; padding: 6px 12px; border-radius: 99px; background: rgba(0,0,0,.45); color: #fff3e3cc; pointer-events: none; }
+.story-recap { position: absolute; inset: 0; overflow-y: auto; padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.story-recap-title { margin: 8px 0 0; color: var(--accent); }
+.story-recap-sub { margin: 0; color: var(--muted); text-align: center; }
+.story-recap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; width: min(100%, 960px); }
+.story-panel { position: relative; margin: 0; background: #fbf1dc; padding: 6px 6px 8px; border-radius: 4px; transform: rotate(-.6deg); box-shadow: 0 4px 0 rgba(0,0,0,.4); }
+.story-panel:nth-child(even) { transform: rotate(.8deg); }
+.story-panel .story-canvas { position: relative; aspect-ratio: 4 / 3; height: auto; }
+.story-panel figcaption { color: #3a2630; font-size: 14px; font-weight: 700; margin-top: 6px; text-align: center; }
+.story-continue { margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  .story-canvas { opacity: 0; transition: opacity .6s; }
+  .story-canvas.shown, .story-panel .story-canvas { opacity: 1; }
+  .story-card { transition: opacity .5s; transform: translate(-50%, 0) rotate(-1deg); }
+}

@@ -16,7 +16,7 @@ import { Session } from './game/session.js';
 import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-player.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, levelsPath } from './game/routes.js';
 import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, STORY_FILES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
-import { storyFor } from './game/story.js';
+import { storyFor, STORY_DEFAULT_ON } from './game/story.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
@@ -41,7 +41,7 @@ import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from '
 import { applyStatic } from './i18n/dom.js';
 
 // quality: 'auto' | 'high' | 'medium' | 'low'; autoTier: where auto mode settled on this device
-const DEFAULT_SETTINGS = { lang: null, muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null };
+const DEFAULT_SETTINGS = { lang: null, muted: false, sfxVolume: 1, ambienceVolume: 1, haptics: true, quality: 'auto', autoTier: null, story: true };
 
 const ui = document.getElementById('ui');
 const canvas = document.getElementById('stage');
@@ -97,13 +97,36 @@ const frames = new FrameMonitor();
 const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
 const urlLang = new URLSearchParams(location.search).get('lang'); // ?lang=vi: this visit only (screenshots, tests)
 const stats = new URLSearchParams(location.search).get('stats') === '1' ? new StatsOverlay(document.getElementById('app')) : null;
-// ?story=log: print the story beats / keepsakes an app start or a story win would trigger (#80). Nothing plays and
-// nothing is marked seen yet: the beats get their presentation in later story issues.
-const storyLog = new URLSearchParams(location.search).get('story') === 'log';
-async function logStory(event) {
-  if (!storyLog) return;
+// Story beats (#80 engine, #81 player, client/story/ lazy-loaded). Off in production until the art is finished (#106
+// flips STORY_DEFAULT_ON); ?story=on turns it on for a visit. ?story=log only prints what a launch / win would
+// trigger (nothing plays, nothing is marked seen).
+const storyParam = new URLSearchParams(location.search).get('story');
+const STORY_ON = storyParam === 'on' || STORY_DEFAULT_ON;
+const reducedMotion = () => !!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const beatPack = new Map(STORY_FILES.flatMap((f) => (f.beats ?? []).map((b) => [b.id, f.pack])));
+const transitionOf = (beat) => THEMES[PACKS.find((p) => p.id === beatPack.get(beat.id))?.theme]?.story?.transition ?? 'lights';
+let storyRunning = null;
+/** Play what `event` triggers (unless the player turned the story off), then mark it all seen. */
+async function runStory(event) {
+  if (!STORY_ON && storyParam !== 'log') return;
+  await storyRunning;
   const r = storyFor(event, { progress: app.progress, seen: await db.get('storySeen', []) }, STORY_FILES, { packs: PACKS, themes: THEMES });
-  console.info('[story]', event, { beats: r.beats.map((b) => (b.recap ? `recap(${b.beats.map((m) => m.id).join(', ')})` : b.id)), keepsakes: r.keepsakes.map((k) => k.id) });
+  if (storyParam === 'log') {
+    console.info('[story]', event, { beats: r.beats.map((b) => (b.recap ? `recap(${b.beats.map((m) => m.id).join(', ')})` : b.id)), keepsakes: r.keepsakes.map((k) => k.id) });
+    return;
+  }
+  if (!r.seen.length) return;
+  storyRunning = (async () => {
+    if (r.beats.length && app.settings.story !== false) {
+      const { playStory } = await import('./story/player.js');
+      await playStory(r.beats, { reduced: reducedMotion(), transitionFor: transitionOf });
+    }
+    // a beat skipped (or the story turned off) counts as seen: it never comes back as a backlog
+    await db.markStorySeen(r.seen);
+    pushProgressSoon();
+  })();
+  await storyRunning;
+  storyRunning = null;
 }
 for (const ev of ['pointerdown', 'pointermove', 'wheel']) canvas.addEventListener(ev, () => idle.wake(), { passive: true });
 
@@ -422,6 +445,19 @@ function qualityPicker() {
     } } }, t(`quality.${q}`)),
   );
   return h('div.volume', h('span', t('settings.graphics')), h('div.seg', { role: 'group', 'aria-label': t('settings.graphicsQuality') }, ...buttons));
+}
+
+/** Story beats on / off ("skip story"): off still marks them seen, so turning it on later never replays a backlog. */
+function storyPicker() {
+  const buttons = [true, false].map((on) =>
+    h('button.seg-btn', { 'aria-pressed': String((app.settings.story !== false) === on), on: { click: () => {
+      audio.onEvent({ type: 'button' });
+      app.settings.story = on;
+      buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === (on ? 0 : 1))));
+      db.set('settings', app.settings);
+    } } }, t(on ? 'common.on' : 'common.off')),
+  );
+  return h('div.volume', h('span', t('settings.story')), h('div.seg', { role: 'group', 'aria-label': t('settings.story') }, ...buttons));
 }
 
 function challengePicker() {
@@ -848,7 +884,7 @@ function pauseMenu() {
       h('a.btn', { href: '/levels', 'data-nav': true }, t('menu.levels')),
       h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.menu')),
     ),
-    h('div.volumes', volumeSlider(t('settings.effects'), 'sfxVolume'), volumeSlider(t('settings.ambience'), 'ambienceVolume'), qualityPicker(), h('div.volume', h('span', t('lang.label')), langSwitch())),
+    h('div.volumes', volumeSlider(t('settings.effects'), 'sfxVolume'), volumeSlider(t('settings.ambience'), 'ambienceVolume'), qualityPicker(), STORY_ON ? storyPicker() : null, h('div.volume', h('span', t('lang.label')), langSwitch())),
     h('div.modal-foot', soundToggle()),
   );
   app.modal.dataset.kind = 'pause';
@@ -875,7 +911,7 @@ async function showResult(won, reason) {
   const { improved } = await db.recordResult(key, { stars, moves: s.movesUsed, score: s.score });
   app.progress = await db.get('progress', {});
   pushProgressSoon();
-  if (app.mode === 'story') logStory({ on: 'win', level: level.id });
+  if (app.mode === 'story') await runStory({ on: 'win', level: level.id }); // the beats first, then "Next" goes on
   const submitted = app.mode !== 'story' && app.code
     ? submitResult(app.mode === 'daily' ? 'daily' : 'challenge', app.code, { code: app.code, date: app.mode === 'daily' ? level.id.slice(6) : undefined, moves: app.session.replayString(), hash: app.session.finalHash(), versions: VERSIONS })
     : null;
@@ -1046,23 +1082,16 @@ async function boot() {
   render();
   applyQuality();
   stage.start((dt) => view.update(dt * (app.replay?.speed ?? 1)), { gate: (dt) => idle.tick(dt, view.busy), onRendered });
-  syncNow();
+  // the cold open (first launch) and the memories recap, once the cloud's seen list is merged (or after 3 s offline)
+  Promise.race([syncNow(), new Promise((r) => setTimeout(r, 3000))]).then(() => runStory({ on: 'launch' }));
   registerServiceWorker();
 }
 // pull cloud progress, then send whatever waited while offline
 function syncNow() {
-  pullProgress().then((p) => {
+  return pullProgress().then((p) => {
     if (p) app.progress = p;
     flushOutbox();
-    logStory({ on: 'launch' });
   });
-  // #81 design variants: ?beat=<id>[&t=<s>] plays (or freezes) a beat over the page (client/story/proto.js)
-  const q = new URLSearchParams(location.search);
-  if (q.get('beat') && !syncNow.proto) {
-    syncNow.proto = true;
-    const still = q.has('t') ? Number(q.get('t')) : null;
-    setTimeout(() => import('./story/proto.js').then((m) => m.mountProto(q.get('beat'), still, STORY_FILES)), 300);
-  }
 }
 window.addEventListener('online', syncNow);
 boot();
