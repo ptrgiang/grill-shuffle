@@ -844,8 +844,11 @@ class Hud {
     const { w: W, h: H } = stage.size;
     const q = (sel) => rects(this.el, sel);
     const base = baseMargins();
+    // #91 prototype (?variant=2..5): a counter on a sideways phone sits in the left column, above or below the board
+    const strip = q('.counter-strip').filter((r) => r.width > 0);
+    const side = strip.filter((r) => r.width < W * 0.4), band = strip.filter((r) => r.width >= W * 0.4);
     return isShortLandscape()
-      ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
+      ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal'), ...side], right: q('.tool'), top: band.filter((r) => r.top < H / 2), bottom: band.filter((r) => r.top >= H / 2) }, base)
       : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.counter-strip')], bottom: q('.tool') }, base, 6);
   }
 

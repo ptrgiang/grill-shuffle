@@ -57,10 +57,18 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
   // strip layout (screen px): Út's home by the cart on the left, the stools spread to the right
   const geo = () => {
     const r = strip.getBoundingClientRect();
-    const sc = (r.height - 12) / 118;
     const n = c.seats.length;
+    const ground = r.y + r.height - 6;
+    if (r.width < r.height * 2.4) {
+      // a narrow card (a sideways phone's left column): everything packed on a 240-unit row
+      const sc = Math.min((r.height - 12) / 118, r.width / 240);
+      const cart = r.x + 70 * sc;
+      const shelf = (k) => ({ x: cart + (10 + (k % 3) * 14) * sc * 0.8, y: ground - (78 + Math.floor(k / 3) * 7) * sc * 0.8 });
+      return { r, sc, ground, home: r.x + 16 * sc, cart, seatX: (i) => r.x + (152 + i * 54) * sc, shelf };
+    }
+    const sc = (r.height - 12) / 118;
     const seatX = (i) => r.x + r.width * (0.36 + (0.6 * (i + 0.5)) / n);
-    const ground = r.y + r.height - 6, cart = r.x + r.width * 0.19;
+    const cart = r.x + r.width * 0.19;
     // where plates wait: on the grate of the cart, side by side, then stacked
     const shelf = (k) => ({ x: cart + (10 + (k % 3) * 14) * sc * 0.8, y: ground - (78 + Math.floor(k / 3) * 7) * sc * 0.8 });
     return { r, sc, ground, home: r.x + r.width * 0.08, cart, seatX, shelf };
