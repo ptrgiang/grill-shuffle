@@ -169,15 +169,17 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
   drawCart(ctx, cartX, ground, t, glow, postcardOnCart);
   if (tarp != null) drawTarp(ctx, cartX, ground, tarp);
   if (laptopBag != null) {
-    // the office bag, dark grey with a strap, left on the ground (Mực likes it)
-    shape(ctx, rect(laptopBag - 17, ground - 9, 34, 9, 2), '#3c4048');
-    shape(ctx, rect(laptopBag - 6, ground - 8, 12, 3, 1), '#5c6470', { line: false });
-    ctx.strokeStyle = '#2a2d33';
-    ctx.lineWidth = 1.6;
+    // the office laptop bag standing on the ground, a flap, the company's tag (the lanyard's blue); Mực likes it
+    const bx = laptopBag;
+    ctx.strokeStyle = '#26324a';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(laptopBag - 14, ground - 8);
-    ctx.quadraticCurveTo(laptopBag + 8, ground - 26, laptopBag + 24, ground - 2);
+    ctx.moveTo(bx - 10, ground - 24);
+    ctx.quadraticCurveTo(bx, ground - 38, bx + 10, ground - 24);
     ctx.stroke();
+    shape(ctx, rect(bx - 19, ground - 25, 38, 25, 3), '#34466a');
+    shape(ctx, rect(bx - 19, ground - 25, 38, 11, 3), '#46597f');
+    shape(ctx, rect(bx + 6, ground - 12, 8, 6, 1), 'lanyard');
   }
   if (phone) {
     // Út's phone on the cart: face up and buzzing, or face down and dark

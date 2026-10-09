@@ -99,8 +99,8 @@ export const BEATS = {
       { who: 'regular-b', keys: [{ t: 0.5, x: 440, face: -1, pose: 'stand' }, { t: 2.5, x: 318, face: -1, pose: 'wave', move: true }, { t: 4, x: 318, face: -1, pose: 'smile' }] },
       { who: 'ut', keys: [{ t: 0, x: 150, face: 1, pose: 'stand' }, { t: 1.2, x: 150, face: 1, pose: 'serve' }, { t: 3, x: 150, face: 1, pose: 'smile' }, { t: 5.5, x: 150, face: 1, pose: 'nod' }] },
     ],
-    cat: () => ({ x: 262, y: G - 7, pose: 'sleep', face: -1 }), // asleep on Út's laptop bag, left on the ground all evening
-    scene: () => ({ lightsFrom: -5, glow: 0.6, phone: 'dark', laptopBag: 262 }),
+    cat: () => ({ x: 236, y: G - 25, pose: 'sleep', face: -1 }), // asleep on Út's laptop bag, left on the ground all evening
+    scene: () => ({ lightsFrom: -5, glow: 0.6, phone: 'dark', laptopBag: 236 }),
   },
   // level 30: Khang's tasting visit; his flyer carries Út's own slogan
   'street.flyer': {
