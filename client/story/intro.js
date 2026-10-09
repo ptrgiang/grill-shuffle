@@ -6,6 +6,7 @@
 import { drawPerson, POSES } from './rig.js';
 import { drawScene, drawBeach } from './scene.js';
 import { setStyle, overlay } from './style.js';
+import { t as tr } from '../i18n/index.js';
 
 const CPS = 34; // characters per second
 const el = (tag, cls, text) => {
@@ -38,7 +39,7 @@ export function paintNarrator(ctx, w, h, { who, place, t, talking }) {
   overlay(ctx, w, h, t);
 }
 
-export function playIntro({ who = 'co-sau', place = 'alley', title = '', text = '', serveLabel = 'Serve', saysLabel = '', reduced = false, sound = () => {} } = {}) {
+export function playIntro({ who = 'co-sau', place = 'alley', title = '', text = '', serveLabel = tr('intro.serve'), saysLabel = '', reduced = false, sound = () => {} } = {}) {
   const root = el('div', 'level-intro');
   const card = el('div', 'intro-card');
   const cv = el('canvas', 'intro-scene');
@@ -88,13 +89,13 @@ export function playIntro({ who = 'co-sau', place = 'alley', title = '', text = 
       if (e.target === go) return;
       if (!typed()) complete();
     });
-    go.addEventListener('click', finish);
+    go.addEventListener('click', () => (typed() ? finish() : complete())); // an early tap shows the whole text first
     if (reduced) complete();
     const frame = (now) => {
       if (done) return;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      t += dt;
+      if (!reduced) t += dt; // reduced motion: a still scene
       if (!typed()) {
         const before = Math.floor(shown);
         shown = Math.min(text.length, shown + dt * CPS);

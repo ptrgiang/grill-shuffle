@@ -38,14 +38,14 @@ export function boardFoods(level) {
 
 const hash = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
-export function mountCounter(hud, { level, theme = 'street_bbq', reduced = false, sound = () => {} } = {}) {
+export function mountCounter(hud, { level, state = null, theme = 'street_bbq', reduced = false, sound = () => {} } = {}) {
   const strip = hud.querySelector('.counter-strip');
   const cv = document.createElement('canvas');
   cv.className = 'counter-canvas';
   hud.prepend(cv);
   const wide = () => strip.getBoundingClientRect().width > 620;
   const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: GUESTS, carry: !reduced });
-  let c = make(boardFoods(level));
+  let c = make(state ? stateFoods(state) : boardFoods(level)); // mounted late: the board as it is now
   const beach = theme === 'beach_grill';
   let last = performance.now(), running = false, t = 0;
   const from = new Map(); // plate -> screen point it started from (the matched grill)

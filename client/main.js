@@ -79,7 +79,7 @@ const app = {
 
 const view = new BoardView(stage, { onFx: (ev, at) => onFx(ev, at) });
 const input = new Input(canvas, () => app.session, view, {
-  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal && !app.replay,
+  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal && !app.replay && !app.introOpen,
   onGesture: () => audio.unlock(),
   haptics: () => app.settings.haptics !== false,
   onSelect: () => (audio.onEvent({ type: 'select' }), app.coach?.phase('drop')),
@@ -481,9 +481,13 @@ function levelIntro(level) {
   const who = beach ? 'chu-tu' : 'co-sau';
   const name = beach ? 'Chú Tư' : 'Cô Sáu';
   const hud = app.hud;
+  app.introOpen = true; // no move before the opening (it loads lazily)
+  const release = () => {
+    if (app.hud === hud) app.introOpen = false;
+  };
   import('./story/intro.js').then((m) => {
     if (app.hud !== hud) return; // the player left the level meanwhile
-    m.playIntro({
+    return m.playIntro({
       who,
       place: beach ? 'beach' : 'alley',
       title: `${t('level.label', { n: at?.n ?? '' })} · ${pick(level.name)}`,
@@ -493,6 +497,10 @@ function levelIntro(level) {
       reduced: reducedMotion(),
       sound: (n, o) => audio.story(n, o),
     });
+  }).then(release, () => {
+    // the opening could not load (offline before it was cached): the note on the band instead
+    release();
+    if (app.hud === hud) hud.tip(pick(level.hint));
   });
 }
 
@@ -604,6 +612,7 @@ async function startCode(code, { mode }) {
 }
 
 function startLevel(level, { mode, code = null }) {
+  app.introOpen = false;
   app.route = 'game';
   app.mode = mode;
   app.level = level;
@@ -818,7 +827,7 @@ class Hud {
       this.el.append(h('div.counter-strip', { 'aria-hidden': 'true' }));
       import('./story/counter.js').then((m) => {
         if (!this.el.isConnected || app.hud !== this) return; // a newer HUD replaced this one
-        this.counter = m.mountCounter(this.el, { level, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
+        this.counter = m.mountCounter(this.el, { level, state: app.session?.state, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
       });
     }
     if (this.boosters.length) footer.classList.add('has-boosters');
