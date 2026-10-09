@@ -69,3 +69,47 @@ test('staging: the level-50 carts do not jump when Út takes the handle', () => 
     for (let t = 0; t < B.length; t += 0.05) assert.ok(Math.abs(x(t + 0.05) - x(t)) < 12, `${id}: cart moves smoothly at ${t.toFixed(2)} s (${x(t)} -> ${x(t + 0.05)})`);
   }
 });
+
+test('sound cues: every beat is heard, in order, from its motion', async () => {
+  const { allCues, cuesBetween } = await import('../../client/story/cues.js');
+  const names = (id) => new Set(allCues(BEATS[id]).map((c) => c.name));
+  const has = (id, ...want) => want.forEach((n) => assert.ok(names(id).has(n), `${id}: ${n} (${[...names(id)].join(', ')})`));
+  has('street.cold-open', 'step', 'paper', 'bulb', 'meow', 'sting');
+  has('street.fan', 'step', 'fan', 'coals');
+  has('street.flyer', 'step', 'paper', 'sting', 'buzz');
+  has('street.first-page', 'paper', 'step');
+  has('beach.storm', 'rain', 'step');
+  has('beach.khang', 'basket', 'surf');
+  has('street.regulars', 'clink', 'moto');
+  has('street.lanyard', 'clink', 'buzz');
+  has('beach.second-page', 'paper', 'step');
+  for (const [id, B] of Object.entries(BEATS)) {
+    const all = allCues(B);
+    assert.ok(all.length > 0, `${id}: has cues`);
+    for (let i = 1; i < all.length; i++) assert.ok(all[i].t >= all[i - 1].t, `${id}: cues in time order`);
+    // frame by frame, the windows add up to the whole list (no cue lost or doubled between frames)
+    let n = 0, t = -0.001;
+    for (let now = 0; now <= B.length; now += 1 / 30) {
+      const win = cuesBetween(B, t, now);
+      for (const c of win) assert.ok(c.t > t && c.t <= now, `${id}: ${c.name} at ${c.t} is played in its own frame (${t}, ${now}]`);
+      n += win.length;
+      t = now;
+    }
+    n += cuesBetween(B, t, B.length).length;
+    assert.equal(n, all.length, `${id}: per-frame cues = all cues`);
+  }
+});
+
+test('sound: every story cue has a generator that is short, finite and soft', async () => {
+  const { SOUNDS } = await import('../../client/audio/synth.js');
+  for (const name of ['step', 'paper', 'buzz', 'bulb', 'fan', 'coals', 'wave', 'rain', 'meow', 'chime', 'sting', 'basket', 'clink', 'moto', 'surf']) {
+    const a = SOUNDS[`story_${name}`](8000);
+    assert.ok(a.length > 0 && a.length <= 8000 * 8, `${name}: length`);
+    let peak = 0;
+    for (const v of a) {
+      assert.ok(Number.isFinite(v), `${name}: finite`);
+      peak = Math.max(peak, Math.abs(v));
+    }
+    assert.ok(peak > 0.05 && peak <= 0.9, `${name}: peak ${peak}`);
+  }
+});

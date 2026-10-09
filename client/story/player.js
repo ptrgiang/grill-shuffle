@@ -1,7 +1,8 @@
 // Story player (#81, owner pick: full-screen vignette for every beat, comic panels for the "memories" recap).
 // Lazy-loaded by main.js only when a beat is due, so the story code stays out of the main bundle.
 //
-//   playStory(items, opts)   plays beats in order (an item with `recap` is the memories page); resolves when done
+//   playStory(items, opts)   plays beats in order (an item with `recap` is the memories page); resolves when done.
+//                            opts.sound(name, { pan }): the beat's sound cues (client/story/cues.js, #113)
 //   paintBeat(...)           one frame of a beat into a canvas region (also the sandbox's stills)
 //
 // Every beat is skippable by a tap (Escape skips the rest). Reduced motion: no camera or character motion, the three
@@ -13,6 +14,7 @@ import { drawScene, drawBeach, drawCart, STAGE } from './scene.js';
 import { overlay, setStyle } from './style.js';
 import { stagingFor, actorAt } from './beats.js';
 import { camAt, clamp } from './timeline.js';
+import { cuesBetween, panFor } from './cues.js';
 
 const CARD_IN = 0.6; // the caption card fades in after the first moment of the scene
 
@@ -92,7 +94,7 @@ function fitCanvas(cv) {
 /**
  * One beat full screen. Resolves 'done' | 'skip' | 'skipAll'. `still`: a fixed time (sandbox), never resolves.
  */
-function playBeat(root, beat, { transition, reduced, still = null, style }) {
+function playBeat(root, beat, { transition, reduced, still = null, style, sound = () => {} }) {
   const B = stagingFor(beat.id);
   const view = el('div', 'story-beat');
   const cv = el('canvas', 'story-canvas');
@@ -101,11 +103,16 @@ function playBeat(root, beat, { transition, reduced, still = null, style }) {
   const skip = el('div', 'story-skip', tr('story.skip'));
   view.append(cv, card, skip);
   root.replaceChildren(view);
+  let cardShown = false;
   const frame = (t) => {
     const { ctx, w, h } = fitCanvas(cv);
     paintBeat(ctx, beat.id, t, w, h, { style });
     if (!reduced) drawTransition(ctx, transition, t, w, h);
     card.classList.toggle('on', t >= CARD_IN);
+    if (t >= CARD_IN && !cardShown && still == null) {
+      cardShown = true;
+      sound('chime');
+    }
   };
   if (still != null) {
     frame(still);
@@ -128,6 +135,7 @@ function playBeat(root, beat, { transition, reduced, still = null, style }) {
     view.addEventListener('pointerup', onTap);
     window.addEventListener('keydown', onKey);
     const t0 = performance.now();
+    if (transition === 'wave' && !reduced) sound('wave');
     if (reduced) {
       // stills of the three key moments, cross-faded by CSS (no motion)
       let i = 0;
@@ -144,10 +152,15 @@ function playBeat(root, beat, { transition, reduced, still = null, style }) {
       show();
       return;
     }
+    let heard = -0.001; // cues up to this time were played
     const loop = () => {
       if (done) return;
       const t = (performance.now() - t0) / 1000;
-      frame(Math.min(t, B.length));
+      const now = Math.min(t, B.length);
+      const camX = camAt(B.cam, now).x;
+      for (const c of cuesBetween(B, heard, now)) sound(c.name, { pan: panFor(c.x, camX) });
+      heard = now;
+      frame(now);
       if (t >= B.length + 0.8) finish('done');
       else requestAnimationFrame(loop);
     };
@@ -156,7 +169,7 @@ function playBeat(root, beat, { transition, reduced, still = null, style }) {
 }
 
 /** The memories page: one panel per beat the player passed before seeing it. Resolves when they continue. */
-function playRecap(root, beats, { still = false }) {
+function playRecap(root, beats, { still = false, sound = () => {} }) {
   const page = el('div', 'story-recap');
   page.append(el('h2', 'story-recap-title', tr('story.memories')), el('p', 'story-recap-sub', tr('story.memoriesSub')));
   const grid = el('div', 'story-recap-grid');
@@ -175,6 +188,7 @@ function playRecap(root, beats, { still = false }) {
     paintBeat(ctx, b.id, stagingFor(b.id).panels[1], w, h, { style: b.style ?? 'present' });
   }));
   if (still) return new Promise(() => {});
+  sound('chime');
   return new Promise((resolve) => go.addEventListener('click', () => resolve('done'), { once: true }));
 }
 
@@ -182,14 +196,14 @@ function playRecap(root, beats, { still = false }) {
  * Play story items (from client/game/story.js storyFor): beats and at most one recap. `transitionFor(beat)`: the
  * theme's transition for the beat's pack. Resolves when every item was shown or skipped.
  */
-export async function playStory(items, { transitionFor = () => 'lights', reduced = false, still = null, onShown } = {}) {
+export async function playStory(items, { transitionFor = () => 'lights', reduced = false, still = null, onShown, sound } = {}) {
   const root = el('div', 'story-root');
   document.body.append(root);
   try {
     for (const item of items) {
       const how = item.recap
-        ? await playRecap(root, item.beats, { still: still != null })
-        : await playBeat(root, item, { transition: transitionFor(item), reduced, still, style: item.style ?? 'present' });
+        ? await playRecap(root, item.beats, { still: still != null, sound })
+        : await playBeat(root, item, { transition: transitionFor(item), reduced, still, style: item.style ?? 'present', sound });
       onShown?.(item);
       if (how === 'skipAll') break;
     }

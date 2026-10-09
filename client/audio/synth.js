@@ -288,6 +288,177 @@ export function ambienceLoop(sr, { hiss = 0.14, rumble: rumbleLevel = 2.2, crack
   return normalize(a.subarray(0, n - xf), 0.6);
 }
 
+// ---- story beats (#113): motion you can hear, no voice-over. Same palette: soft, warm, short.
+
+const noise = (sr, dur, seed) => {
+  const rng = mulberry32(seed);
+  const a = buf(sr, dur);
+  for (let i = 0; i < a.length; i++) a[i] = rng() * 2 - 1;
+  return a;
+};
+
+/** A footstep on the alley's concrete / the sand: a muffled thump with a little grit. */
+export function stepSound(sr, seed = 1) {
+  const a = buf(sr, 0.12);
+  mix(a, thud(sr, 150 + seed * 7, 60, 0.1), sr, 0, 0.7);
+  const g = lowpass(noise(sr, 0.05, 40 + seed), sr, 900);
+  for (let i = 0; i < g.length; i++) g[i] *= Math.exp(-i / sr / 0.012);
+  mix(a, g, sr, 0.002, 0.5);
+  return normalize(a, 0.5);
+}
+
+/** Paper coming out: a postcard, a page, the flyer: a few dry rustles. */
+export function paperSound(sr, seed = 5) {
+  const rng = mulberry32(seed);
+  const dur = 0.42;
+  const a = highpass(noise(sr, dur, seed), sr, 1800);
+  lowpass(a, sr, 7000);
+  const bursts = [0, 0.09, 0.2, 0.3].map((t) => t + rng() * 0.03);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    let env = 0;
+    for (const b of bursts) if (t >= b) env += Math.exp(-(t - b) / 0.035) * (1 - Math.exp(-(t - b) / 0.003));
+    a[i] *= env;
+  }
+  return normalize(a, 0.45);
+}
+
+/** The phone vibrating on the cart: two low hums with a rattle. */
+export function buzzSound(sr) {
+  const dur = 0.62;
+  const a = buf(sr, dur);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    const on = (t < 0.24 || (t > 0.34 && t < 0.58)) ? 1 : 0;
+    const gate = on * (1 - Math.exp(-((t < 0.3 ? t : t - 0.34)) / 0.01));
+    a[i] = gate * (Math.sin(TAU * 155 * t) + 0.35 * Math.sin(TAU * 310 * t) + 0.15 * Math.sin(TAU * 465 * t)) * (0.8 + 0.2 * Math.sin(TAU * 31 * t));
+  }
+  return normalize(lowpass(a, sr, 1600), 0.5);
+}
+
+/** A string-light bulb flicking on: a tiny glassy tick and a short filament ring. */
+export function bulbSound(sr, seed = 2) {
+  const a = buf(sr, 0.16);
+  mix(a, note(sr, 2300 + seed * 140, 0.12, { bright: 0.1, decay: 0.025 }), sr, 0, 0.6);
+  const c = highpass(noise(sr, 0.01, seed), sr, 3000);
+  mix(a, c, sr, 0, 0.5);
+  return normalize(a, 0.35);
+}
+
+/** The coals catching under the fan: a sizzle that swells. */
+export function coalsSound(sr, seed = 17) {
+  const s = sizzle(sr, 1.3, seed, { crackle: 0.9, bright: 0.8 });
+  for (let i = 0; i < s.length; i++) {
+    const t = i / sr;
+    s[i] *= Math.min(1, t / 0.35);
+  }
+  return normalize(s, 0.6);
+}
+
+/** A wave washing in (Fishing Village transition): low noise swelling and drawing back, with foam. */
+export function waveSound(sr, seed = 23) {
+  const dur = 1.6;
+  const a = lowpass(noise(sr, dur, seed), sr, 700);
+  const foam = highpass(noise(sr, dur, seed + 1), sr, 2500);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    const env = Math.sin(Math.PI * Math.min(1, t / dur)) ** 1.5;
+    a[i] = a[i] * env + foam[i] * 0.25 * Math.max(0, Math.sin(Math.PI * Math.min(1, (t - 0.4) / 0.9))) ** 2;
+  }
+  return normalize(a, 0.6);
+}
+
+/** Rain on the beach for the whole storm: steady hiss, drops on top, fading in and out. */
+export function rainSound(sr, seed = 29, dur = 8) {
+  const rng = mulberry32(seed);
+  const a = lowpass(highpass(noise(sr, dur, seed), sr, 900), sr, 6000);
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    a[i] *= 0.45 * Math.min(1, t / 0.8, (dur - t) / 0.8);
+  }
+  for (let k = 0; k < dur * 35; k++) {
+    const at = Math.floor(rng() * a.length);
+    const f = 1800 + rng() * 2500;
+    for (let j = 0; j < sr * 0.02 && at + j < a.length; j++) a[at + j] += Math.sin(TAU * f * j / sr) * Math.exp(-j / sr / 0.004) * 0.4;
+  }
+  return normalize(a, 0.55);
+}
+
+/** Mực: a short meow (a harmonic voice gliding up and down). */
+export function meowSound(sr) {
+  const dur = 0.55;
+  const a = buf(sr, dur);
+  let ph = 0;
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr, k = t / dur;
+    const f0 = 520 + 260 * Math.sin(Math.PI * Math.min(1, k * 1.4)) - 120 * k;
+    ph += f0 / sr;
+    const env = Math.min(1, t / 0.04) * Math.exp(-Math.max(0, t - 0.25) / 0.12);
+    const open = 0.4 + 0.6 * Math.sin(Math.PI * Math.min(1, k * 1.2)); // the mouth opens: brighter
+    let v = 0;
+    for (let h = 1; h <= 6; h++) v += Math.sin(TAU * ph * h) / h ** (2 - open);
+    a[i] = v * env;
+  }
+  return normalize(lowpass(a, sr, 3500), 0.45);
+}
+
+/** The caption card: a soft two-note chime (the start of Bà Năm's motif to come, #85). */
+export function chimeSound(sr) {
+  const a = buf(sr, 0.9);
+  mix(a, note(sr, NOTE(7), 0.6, { bright: 0.2, decay: 0.3 }), sr, 0, 0.5);
+  mix(a, note(sr, NOTE(12), 0.6, { bright: 0.2, decay: 0.35 }), sr, 0.16, 0.45);
+  return normalize(a, 0.4);
+}
+
+/** A shock (the flyer, the notice): a plucked note bending up, đàn bầu spirit. */
+export function stingSound(sr) {
+  const dur = 0.7;
+  const a = buf(sr, dur);
+  let ph = 0;
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr;
+    const f = 330 * Math.pow(2, Math.min(1, t / 0.25) * 5 / 12);
+    ph += f / sr;
+    a[i] = Math.exp(-t / 0.22) * (1 - Math.exp(-t / 0.002)) * (Math.sin(TAU * ph) + 0.3 * Math.sin(TAU * ph * 2) * Math.exp(-t / 0.08));
+  }
+  return normalize(a, 0.45);
+}
+
+/** A basket of fish set down / handed over: a wicker creak and a soft thump. */
+export function basketSound(sr, seed = 31) {
+  const a = buf(sr, 0.3);
+  mix(a, thud(sr, 120, 55, 0.18), sr, 0.02, 0.6);
+  const c = lowpass(highpass(noise(sr, 0.12, seed), sr, 1200), sr, 4000);
+  for (let i = 0; i < c.length; i++) c[i] *= Math.exp(-i / sr / 0.03) * (0.6 + 0.4 * Math.sin(i / sr * 400));
+  mix(a, c, sr, 0, 0.5);
+  return normalize(a, 0.5);
+}
+
+/** A plate set down / the lanyard's card on the nail: a small ceramic clink. */
+export function clinkSound(sr, seed = 0) {
+  const a = buf(sr, 0.3);
+  mix(a, note(sr, 1480 + seed * 90, 0.28, { bright: 0.5, decay: 0.07 }), sr, 0, 0.6);
+  mix(a, note(sr, 2210 + seed * 60, 0.2, { bright: 0.2, decay: 0.04 }), sr, 0.004, 0.35);
+  return normalize(a, 0.4);
+}
+
+/** A motorbike squeezing past the alley: a soft engine hum rising and falling as it passes (no harsh edges). */
+export function motoSound(sr, seed = 37) {
+  const dur = 2.4;
+  const rng = mulberry32(seed);
+  const a = buf(sr, dur);
+  let ph = 0;
+  for (let i = 0; i < a.length; i++) {
+    const t = i / sr, k = t / dur;
+    const f = 78 + 22 * Math.tanh((0.5 - k) * 6); // higher coming, lower going (Doppler)
+    ph += f / sr;
+    let v = 0;
+    for (let h = 1; h <= 7; h++) v += Math.sin(TAU * ph * h + h) / h;
+    a[i] = (v + (rng() * 2 - 1) * 0.25) * Math.exp(-(((k - 0.5) / 0.22) ** 2));
+  }
+  return normalize(lowpass(a, sr, 1200), 0.45);
+}
+
 /** Registry: name -> (sampleRate, variant) => Float32Array. */
 export const SOUNDS = {
   select: (sr) => selectSound(sr),
@@ -309,4 +480,19 @@ export const SOUNDS = {
   cooler: (sr) => coolerSound(sr),
   swap: (sr) => swapSound(sr),
   ambience: (sr, params) => ambienceLoop(sr, params ?? undefined),
+  story_step: (sr, v = 0) => stepSound(sr, 1 + v),
+  story_paper: (sr, v = 0) => paperSound(sr, 5 + v),
+  story_buzz: (sr) => buzzSound(sr),
+  story_bulb: (sr, v = 0) => bulbSound(sr, 2 + v),
+  story_fan: (sr) => gustSound(sr, 41),
+  story_coals: (sr) => coalsSound(sr),
+  story_wave: (sr) => waveSound(sr),
+  story_rain: (sr) => rainSound(sr),
+  story_meow: (sr) => meowSound(sr),
+  story_chime: (sr) => chimeSound(sr),
+  story_sting: (sr) => stingSound(sr),
+  story_basket: (sr) => basketSound(sr),
+  story_clink: (sr, v = 0) => clinkSound(sr, v),
+  story_moto: (sr) => motoSound(sr),
+  story_surf: (sr) => waveSound(sr, 47),
 };
