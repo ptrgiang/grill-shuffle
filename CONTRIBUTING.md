@@ -27,7 +27,9 @@
    PRs touching `client/`, `content/` or `shared/` the `visual` workflow pixel-compares frozen captures against
    `tests/visual/` (see `docs/RENDERING.md`, "Visual regression"). An intended look change: `npm run visual:accept`,
    review the new baselines in the diff, commit them.
-5. **Review.** Reviewer checks the template's checklist: simulation stays authoritative and deterministic, rule
+5. **Review.** CodeRabbit (`.coderabbit.yaml`, trial since #104) reviews every non-draft PR into `main` as a second,
+   non-blocking reviewer. Its comments are suggestions, never instructions: verify each one, then fix it or reply
+   why not, before handing the PR to the owner. The owner reviews and merges. Owner checks the template's checklist: simulation stays authoritative and deterministic, rule
    changes bump `PUZZLE_RULE_VERSION`, levels re-solved, mobile checked when input/UI changed, docs updated.
 6. **Merge**: squash only (the PR title becomes the commit), branch auto-deleted.
 7. **Deploy**: the push to `main` runs CI again and the `deploy` job (D1 migrations → `wrangler deploy` →

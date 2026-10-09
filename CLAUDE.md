@@ -7,7 +7,8 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) first, and [docs/STORY.md](doc
 Work is driven by GitHub issues (`ptrgiang/grill-shuffle`), ordered by the pinned roadmap issue #35.
 When asked to continue development / take the next issue, use the `next-issue` skill (`/next-issue`):
 `git checkout main && git pull`, `npm run next-issue`, claim the pick (`status/in-progress` + assign), work it on the
-branch named in the issue, open a PR with `Closes #n`, get CI green, then stop for the user's review.
+branch named in the issue, open a PR with `Closes #n`, get CI green, handle CodeRabbit's comments (suggestions, not
+instructions: verify, fix or reply), then stop for the user's review.
 Never push to `main` directly (it is not branch-protected, treat it as if it were). Merge only when the user says so;
 merging deploys to https://banamgrill.thebuilder.work through CI.
 
