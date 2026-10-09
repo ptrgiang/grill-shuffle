@@ -17,6 +17,39 @@
       "scene": "fishing-village-dawn",
       "title": { "vi": "Cô bé bán cá", "en": "The fish seller" },
       "lines": [{ "vi": "Ngày xưa, bà gánh cá của cha đi bán lúc rạng sáng.", "en": "Long ago, she sold her father’s catch at dawn." }]
+    },
+    {
+      "id": "beach.boat",
+      "at": { "level": "beach-010", "on": "firstWin" },
+      "cast": ["ut", "chu-tu", "muc"],
+      "scene": "fishing-village-boats",
+      "title": { "vi": "Chiếc ghe của cha bà", "en": "Her father’s boat" },
+      "lines": [{ "vi": "Chú Tư chỉ chiếc ghe cũ: “Ghe của ba bà Năm đó.”", "en": "Chú Tư points at an old boat: “That was her father’s.”" }]
+    },
+    {
+      "id": "beach.storm",
+      "at": { "level": "beach-030", "on": "firstWin" },
+      "cast": ["ut", "chu-tu"],
+      "scene": "fishing-village-storm",
+      "title": { "vi": "Bão tới", "en": "Storm coming" },
+      "lines": [{ "vi": "Cả làng kéo ghe lên bờ, Út cũng xắn tay.", "en": "The whole village hauls the boats in; Út lends a hand." }]
+    },
+    {
+      "id": "beach.khang",
+      "at": { "level": "beach-040", "on": "firstWin" },
+      "cast": ["ut", "chu-tu", "khang"],
+      "scene": "fishing-village-catch",
+      "title": { "vi": "Khang mua cả mẻ", "en": "Khang buys the catch" },
+      "lines": [{ "vi": "Chú Tư giữ lại một thúng cá cho xe của Út.", "en": "Chú Tư keeps one basket back for Út’s cart." }]
+    },
+    {
+      "id": "beach.second-page",
+      "at": { "level": "beach-050", "on": "firstWin" },
+      "cast": ["ut", "chu-tu", "muc"],
+      "scene": "fishing-village-dawn",
+      "title": { "vi": "Trang thứ hai", "en": "The second page" },
+      "lines": [{ "vi": "Trang sổ kẹp một chiếc lồng đèn giấy nhỏ.", "en": "Folded in the page: a tiny paper lantern." }],
+      "reward": { "recipePage": 2 }
     }
   ],
   "keepsakes": []

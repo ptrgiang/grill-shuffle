@@ -162,6 +162,73 @@ BEATS['beach.fish-seller'] = {
   scene: () => ({}),
 };
 
+// Fishing Village, level 10: Chú Tư points out the old boat with painted eyes
+BEATS['beach.boat'] = {
+  length: 7,
+  beach: true,
+  panels: [1.6, 3.2, 5.4],
+  cam: [{ t: 0, x: 225, y: 188, z: 1.3 }],
+  actors: [
+    { who: 'chu-tu', keys: [{ t: 0, x: 258, face: -1, pose: 'stand' }, { t: 1.2, x: 258, face: -1, pose: 'point', prop: null }, { t: 3.8, x: 258, face: 1, pose: 'nod' }] },
+    { who: 'ut', keys: [{ t: 0, x: 304, face: -1, pose: 'stand' }, { t: 2, x: 304, face: -1, pose: 'shock', prop: null }, { t: 4.4, x: 304, face: -1, pose: 'smile' }] },
+  ],
+  cat: () => ({ x: 150, y: 208, pose: 'sit', face: 1 }),
+  scene: () => ({ cartX: 420 }),
+};
+
+// level 30: the storm; Út helps haul the boat up the sand
+const STORM_BOAT = (t) => -Math.min(1, Math.max(0, (t - 1.2) / 4.4)) * 34;
+BEATS['beach.storm'] = {
+  length: 8,
+  beach: true,
+  panels: [1.2, 3.6, 6.4],
+  cam: [{ t: 0, x: 215, y: 185, z: 1.25 }],
+  actors: [
+    { who: 'chu-tu', keys: [{ t: 0, x: 252, face: -1, pose: 'push' }, { t: 6, x: 252, face: -1, pose: 'nod' }] },
+    { who: 'ut', keys: [{ t: 0, x: 300, face: -1, pose: 'stand' }, { t: 0.8, x: 290, face: -1, pose: 'push', move: true }, { t: 6.2, x: 290, face: -1, pose: 'smile' }] },
+  ],
+  cat: () => null,
+  scene: (t) => ({ storm: true, boatX: STORM_BOAT(t), cartX: 460 }),
+};
+
+// level 40: Khang wants the whole catch for the tower; Chú Tư waves him off and keeps a basket for Út
+BEATS['beach.khang'] = {
+  length: 8,
+  beach: true,
+  panels: [2, 4.4, 6.4],
+  cam: [{ t: 0, x: 220, y: 188, z: 1.25 }],
+  actors: [
+    { who: 'khang', keys: [{ t: 0, x: 440, face: -1, pose: 'stand' }, { t: 2, x: 306, face: -1, pose: 'give', prop: null, move: true }, { t: 4, x: 306, face: -1, pose: 'stand' }] },
+    { who: 'chu-tu', keys: [{ t: 0, x: 240, face: 1, pose: 'stand' }, { t: 2.6, x: 240, face: 1, pose: 'wave' }, { t: 4, x: 240, face: -1, pose: 'give', prop: 'basket' }, { t: 5, x: 240, face: -1, pose: 'nod' }] },
+    { who: 'ut', keys: [{ t: 0, x: 168, face: 1, pose: 'stand' }, { t: 4.6, x: 168, face: 1, pose: 'take', prop: 'basket' }, { t: 5.6, x: 168, face: 1, pose: 'smile', prop: 'basket' }] },
+  ],
+  cat: () => onCart(90),
+  scene: () => ({ cartX: 90 }),
+};
+
+// level 50: the second page, a tiny paper lantern folded in it; Út pushes the cart on toward Lantern Town
+const PAGE2_UT = [
+  { t: 0, x: 170, face: 1, pose: 'stand' },
+  { t: 1.8, x: 170, face: 1, pose: 'take', prop: 'lanternPage' },
+  { t: 2.6, x: 170, face: 1, pose: 'read', prop: 'lanternPage' },
+  { t: 4.6, x: 170, face: 1, pose: 'smile' },
+  { t: 6, x: 64, face: 1, pose: 'push', move: true }, // walks back to the cart's handle (cart at 120 = 64 + 56)
+  { t: 11, x: 470, face: 1, pose: 'push', move: true, walk: 'pushWalk' },
+];
+const page2Cart = (t) => (t < 6 ? 120 : at(PAGE2_UT, t).x + 56);
+BEATS['beach.second-page'] = {
+  length: 11,
+  beach: true,
+  panels: [1.4, 3.4, 8.6],
+  cam: [{ t: 0, x: 215, y: 188, z: 1.3 }, { t: 6.6, x: 290, y: 180, z: 1.1 }],
+  actors: [
+    { who: 'chu-tu', keys: [{ t: 0, x: 262, face: -1, pose: 'stand' }, { t: 1, x: 262, face: -1, pose: 'give', prop: 'lanternPage' }, { t: 2.6, x: 262, face: -1, pose: 'nod' }, { t: 7, x: 262, face: 1, pose: 'wave' }] },
+    { who: 'ut', keys: PAGE2_UT },
+  ],
+  cat: (t) => onCart(page2Cart(t)),
+  scene: (t) => ({ cartX: page2Cart(t) }),
+};
+
 /** A still for beats without staging yet: the cart in the alley, Út beside it. */
 export const FALLBACK = {
   length: 4,

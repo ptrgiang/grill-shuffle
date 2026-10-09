@@ -19,6 +19,7 @@ const BASE = {
   skinKhang: '#e2b48c', hairKhang: '#141014', chef: '#fafafa', pantsKhang: '#1c1c22', skinTu: '#b8784a', hairTu: '#5a5450', shirtTu: '#5a86a0', pantsTu: '#6a5a44',
   skinA: '#c89068', hairA: '#9a9490', shirtA: '#f4f1ec', pantsA: '#4a4a5a', skinB: '#f0c8a0', hairB: '#2a1a1a', shirtB: '#e9e2f0', pantsB: '#3a4a7a',
   notebook: '#c8a070', page: '#fbf3e0', flyer: '#ffffff', flyerBlue: '#2f6fd6', plate: '#f4f1ec', dawnSky1: '#f2b880', dawnSky2: '#9ab0c8',
+  stormSky1: '#3e4652', stormSky2: '#7a8490', stormSea: '#2a3e4e', rain: 'rgba(210,225,235,.45)', lantern: '#c8302a', lanternCap: '#d9a521',
   dawn1: '#f2b880', dawn2: '#f6dcb0', sun: '#f6e27a', sea: '#3d6e8a', seaLight: '#8ab8c8', sand: '#e2c48e', boat: '#6a8a5a', boatTrim: '#c0483a',
   boatEye: '#f4efe2', basket: '#b8864a', basketLine: '#7a5428', fish: '#9ab0b8', pole: '#8a6a3a', skinBa: '#e2b07c', hairBa: '#1c1418', shirtBa: '#e9e2d0', pantsBa: '#1e1a1c', scarf: '#b8382c',
 };

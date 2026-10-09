@@ -133,6 +133,24 @@ function prop(ctx, kind, x, y, t, p) {
         ctx.fillRect(-6, -3, 12, 1.5);
       } else for (const ly of [-14, -10, -6, -2]) ctx.fillRect(-6, ly, 11, 0.9);
     }
+  } else if (kind === 'basket') {
+    for (const fx of [-5, 0, 5]) {
+      const fish = new Path2D();
+      fish.ellipse(fx, -12, 5, 2.2, fx * 0.12 - 0.5, 0, Math.PI * 2);
+      shape(ctx, fish, 'fish');
+    }
+    shape(ctx, new Path2D('M-11 -10 L11 -10 Q10 4 0 4 Q-10 4 -11 -10 Z'), 'basket');
+  } else if (kind === 'lanternPage') {
+    ctx.rotate(-0.2);
+    shape(ctx, rrect(-8, -18, 16, 20, 1), 'page');
+    ctx.fillStyle = col('postLine');
+    for (const ly of [-14, -10]) ctx.fillRect(-6, ly, 11, 0.9);
+    // a tiny paper lantern tucked in the page: the clue to the next stop
+    const l = new Path2D();
+    l.ellipse(2, -2, 4.5, 5.5, 0, 0, Math.PI * 2);
+    shape(ctx, l, 'lantern');
+    shape(ctx, rrect(-1, -8.5, 6, 2, 0.5), 'lanternCap', { line: false });
+    shape(ctx, rrect(-1, 3, 6, 2, 0.5), 'lanternCap', { line: false });
   } else if (kind === 'plate') {
     shape(ctx, new Path2D('M-12 -2 Q0 4 12 -2 Z'), 'plate');
     for (const fx of [-6, 0, 6]) shape(ctx, rrect(fx - 2.5, -9, 5, 7, 2), 'apron');
