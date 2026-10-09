@@ -6,6 +6,7 @@ import { resolveTheme } from '../../shared/themes.js';
 import { TIERS } from './quality.js';
 import { CAMERA_ELEVATION } from './layout.js';
 import { softDot } from './textures.js';
+import { createDecor, decorTheme } from './decor.js';
 
 const urlFlag = (name) => typeof location !== 'undefined' && new URLSearchParams(location.search).get(name) === '1';
 
@@ -79,7 +80,7 @@ export class Stage {
    */
   setTheme(theme = {}) {
     if (this.theme && theme.id && this.theme.id === theme.id) return;
-    const t = resolveTheme(theme);
+    const t = decorTheme(resolveTheme(theme)); // ?variant= theme art prototypes (#95)
     this.theme = t;
     this.scene.background.set(t.palette.background);
     this.renderer.toneMappingExposure = t.lights.exposure;
@@ -91,6 +92,7 @@ export class Stage {
     this.rim.color.set(t.lights.rim);
     this.rim.intensity = t.lights.rimIntensity;
     applyMaterialTheme(t);
+    this.#decor(t);
     this.#vignetteTexture(t.palette.vignette);
     this.#bulbs(t.backdrop);
     if (this.size) this.#fit();
@@ -138,6 +140,21 @@ export class Stage {
     this.vignette.position.y = -0.34;
     this.vignette.renderOrder = -1;
     this.scene.add(this.vignette);
+  }
+
+  #decor(t) {
+    if (this.decor) {
+      this.scene.remove(this.decor.group);
+      this.decor.dispose();
+    }
+    this.decor = createDecor(this, t);
+    this.scene.add(this.decor.group);
+    if (this.decor.surface) {
+      const m = materials();
+      m.table.map = this.decor.surface;
+      m.table.color.set('#ffffff');
+      m.table.needsUpdate = true;
+    }
   }
 
   #vignetteTexture(color) {
@@ -200,6 +217,8 @@ export class Stage {
     this.camera.lookAt(this.focus);
     this.camera.updateProjectionMatrix();
     // backdrop pieces follow the frame
+    const zOf = (v) => this.focus.z - v / s; // a screen offset (world units) -> z on the table
+    this.decor?.fit({ x0: this.focus.x + this.camera.left, x1: this.focus.x + this.camera.right, z0: zOf(this.camera.top), z1: zOf(this.camera.bottom), w: width, d: depth });
     const span = Math.max(W, H) * wpp * 1.6;
     this.vignette.scale.set(span, span * 1.2, 1);
     const farZ = -depth / 2 - 1.6 - (marginTop * wpp) / s;
