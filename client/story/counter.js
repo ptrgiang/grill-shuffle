@@ -187,8 +187,9 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
       if (st.phase === 'arriving') return person(ctx, g, st.who, edge + (x - edge) * ease(clamp(st.t / T.arrive)), -1, POSES.walk);
       if (st.phase === 'leaving') return person(ctx, g, st.who, x + (edge - x) * ease(clamp(st.t / T.leave)), 1, POSES.walk);
       const cheering = c.mood.phase === 'cheer' || c.mood.phase === 'won';
-      // a booster: everyone looks up, eyes wide (#91)
-      const pose = st.phase === 'eating' ? POSES.eat : cheering ? { ...POSES.sit, armF: [2.6, 0.5], waving: 1, mouth: 1 } : c.mood.phase === 'wow' ? { ...POSES.sit, head: -0.22, mouth: 2, eyes: 1.5 } : POSES.sit;
+      // a booster: everyone looks up, eyes wide; who is eating keeps the plate (#91)
+      const wowed = c.mood.phase === 'wow';
+      const pose = st.phase === 'eating' ? (wowed ? { ...POSES.eat, head: -0.1, eyes: 1.5 } : POSES.eat) : cheering ? { ...POSES.sit, armF: [2.6, 0.5], waving: 1, mouth: 1 } : wowed ? { ...POSES.sit, head: -0.22, mouth: 2, eyes: 1.5 } : POSES.sit;
       person(ctx, g, st.who, x, -1, pose);
       if (st.phase === 'eating') plate(ctx, x - 10 * g.sc, g.ground - 50 * g.sc, st.eating, 7 * g.sc + 3);
       if (st.phase === 'waiting' || (st.phase === 'eating' && st.t < 1)) bubble(ctx, x + 6 * g.sc, g.r.y + 22, st.order, g.sc, st.phase === 'eating');
