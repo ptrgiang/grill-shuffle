@@ -2,15 +2,17 @@
 // (4xx) is dropped, a progress push that failed is retried. db.js falls back to memory here (no IndexedDB in node).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { submitResult, flushOutbox } from '../../client/storage/sync.js';
-import { get, set } from '../../client/storage/db.js';
+import { submitResult, flushOutbox, pullProgress } from '../../client/storage/sync.js';
+import { get, set, markStorySeen } from '../../client/storage/db.js';
 
 const calls = [];
 let mode = 'offline';
+let pulled = null;
 globalThis.fetch = async (path, init) => {
-  calls.push({ path, method: init.method });
+  calls.push({ path, method: init.method, body: init.body ? JSON.parse(init.body) : undefined });
   if (mode === 'offline') throw new TypeError('Failed to fetch');
   if (mode === 'reject') return new Response('{}', { status: 400 });
+  if (init.method === 'GET' && path === '/api/progress') return new Response(JSON.stringify(pulled), { status: 200 });
   return new Response(JSON.stringify({ ok: true, verified: true }), { status: 200 });
 };
 
@@ -50,4 +52,17 @@ test('results older than two weeks are dropped from the outbox', async () => {
   mode = 'offline';
   await flushOutbox();
   assert.deepEqual(await get('outbox'), []);
+});
+
+test('seen story beats: marked locally, pushed with the progress, merged from the cloud', async () => {
+  await set('storySeen', []);
+  assert.deepEqual(await markStorySeen(['street.notebook', 'street.cold-open']), ['street.cold-open', 'street.notebook']);
+  await set('syncPending', true);
+  mode = 'online';
+  calls.length = 0;
+  await flushOutbox();
+  assert.deepEqual(calls[0].body.story, ['street.cold-open', 'street.notebook']);
+  pulled = { progress: {}, story: ['street.fan', 'street.notebook', 7] };
+  await pullProgress();
+  assert.deepEqual(await get('storySeen'), ['street.cold-open', 'street.fan', 'street.notebook']);
 });

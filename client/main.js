@@ -15,7 +15,8 @@ import { Input } from './game/input.js';
 import { Session } from './game/session.js';
 import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-player.js';
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, levelsPath } from './game/routes.js';
-import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, STORY_FILES, getLevel, storyIndex, shareIndex, themeFor } from './game/content.js';
+import { storyFor } from './game/story.js';
 import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { resolveTheme } from '../shared/themes.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
@@ -96,6 +97,14 @@ const frames = new FrameMonitor();
 const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
 const urlLang = new URLSearchParams(location.search).get('lang'); // ?lang=vi: this visit only (screenshots, tests)
 const stats = new URLSearchParams(location.search).get('stats') === '1' ? new StatsOverlay(document.getElementById('app')) : null;
+// ?story=log: print the story beats / keepsakes an app start or a story win would trigger (#80). Nothing plays and
+// nothing is marked seen yet: the beats get their presentation in later story issues.
+const storyLog = new URLSearchParams(location.search).get('story') === 'log';
+async function logStory(event) {
+  if (!storyLog) return;
+  const r = storyFor(event, { progress: app.progress, seen: await db.get('storySeen', []) }, STORY_FILES, { packs: PACKS, themes: THEMES });
+  console.info('[story]', event, { beats: r.beats.map((b) => (b.recap ? `recap(${b.beats.map((m) => m.id).join(', ')})` : b.id)), keepsakes: r.keepsakes.map((k) => k.id) });
+}
 for (const ev of ['pointerdown', 'pointermove', 'wheel']) canvas.addEventListener(ev, () => idle.wake(), { passive: true });
 
 function applyQuality() {
@@ -866,6 +875,7 @@ async function showResult(won, reason) {
   const { improved } = await db.recordResult(key, { stars, moves: s.movesUsed, score: s.score });
   app.progress = await db.get('progress', {});
   pushProgressSoon();
+  if (app.mode === 'story') logStory({ on: 'win', level: level.id });
   const submitted = app.mode !== 'story' && app.code
     ? submitResult(app.mode === 'daily' ? 'daily' : 'challenge', app.code, { code: app.code, date: app.mode === 'daily' ? level.id.slice(6) : undefined, moves: app.session.replayString(), hash: app.session.finalHash(), versions: VERSIONS })
     : null;
@@ -1044,6 +1054,7 @@ function syncNow() {
   pullProgress().then((p) => {
     if (p) app.progress = p;
     flushOutbox();
+    logStory({ on: 'launch' });
   });
 }
 window.addEventListener('online', syncNow);

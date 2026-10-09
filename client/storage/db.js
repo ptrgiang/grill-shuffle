@@ -10,8 +10,10 @@
 //       'dailyLevel:<date>'  the daily board once built (server or local), so it opens instantly and offline
 //       'syncPending'  true while a progress push waits for the network; 'outbox'  [{ kind, key, payload, at }]
 //                   results not sent yet (storage/sync.js flushOutbox)
+//       'storySeen' [ids]  story beats played and keepsakes given (client/game/story.js); synced with the progress
 //       'meta'      { saveVersion, playerId }
 import { SAVE_VERSION } from '../../shared/version.js';
+import { addSeen } from '../game/story.js';
 
 const DB = 'grill-shuffle';
 const STORE = 'kv';
@@ -98,6 +100,13 @@ export async function recordResult(levelId, { stars, moves, score }) {
   progress[levelId] = rec;
   await set('progress', progress);
   return { record: rec, improved: !old || rec.stars > old.stars || rec.bestMoves < old.bestMoves };
+}
+
+/** Mark story beats / keepsakes as seen (once they were shown). Returns the new seen list. */
+export async function markStorySeen(ids) {
+  const seen = addSeen(await get('storySeen', []), ids);
+  await set('storySeen', seen);
+  return seen;
 }
 
 /** Merge progress from elsewhere (cloud): per level, the best of both. */

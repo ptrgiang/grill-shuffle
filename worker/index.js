@@ -3,9 +3,9 @@
 //
 // The game never needs this to play: it runs locally and syncs here asynchronously. Results are stored as move
 // lists and re-played on the server with the same shared simulation before they count (`verified`).
-import { STORY, SHARE, LEVELS } from './content.gen.js';
+import { STORY, SHARE, LEVELS, STORY_SEEN_IDS } from './content.gen.js';
 import { replay } from '../shared/replay.js';
-import { mergeProgressRecords } from './progress.js';
+import { mergeProgressRecords, cleanSeen } from './progress.js';
 import { decodeCode, encodeDaily, encodeGenerated, dailySeed, dailyBand, todayUTC, dayNumber, dateOfDay, BANDS } from '../shared/challenge.js';
 import { createState } from '../shared/state.js';
 import { hashBoard } from '../shared/hash.js';
@@ -110,13 +110,15 @@ const routes = [
     const { results } = await env.DB.prepare('SELECT level_id, stars, best_moves, best_score, updated_at FROM level_progress WHERE user_id = ?1').bind(id).all();
     const progress = {};
     for (const r of results) progress[r.level_id] = { stars: r.stars, bestMoves: r.best_moves, bestScore: r.best_score, at: r.updated_at };
-    return json({ progress });
+    const seen = await env.DB.prepare('SELECT beat_id FROM story_seen WHERE user_id = ?1 ORDER BY beat_id').bind(id).all();
+    return json({ progress, story: seen.results.map((r) => r.beat_id) });
   }],
 
   ['POST', /^\/api\/progress$/, async (req, env) => {
     const id = await player(req, env);
-    const { progress } = await body(req);
+    const { progress, story = [] } = await body(req);
     if (!progress || typeof progress !== 'object' || Array.isArray(progress)) throw new HttpError(400, 'progress must be an object');
+    if (!Array.isArray(story) || story.length > 2000) throw new HttpError(400, 'story must be a list of beat ids');
     const entries = Object.entries(progress);
     if (entries.length > 500) throw new HttpError(400, 'too many levels');
     // only story levels; stars are capped by what the move count can earn against the solver minimum
@@ -128,8 +130,11 @@ const routes = [
          ON CONFLICT(user_id, level_id) DO UPDATE SET stars = MAX(stars, ?3), best_moves = MIN(COALESCE(best_moves, ?4), ?4), best_score = MAX(best_score, ?5), updated_at = ?6`,
       ).bind(id, levelId, r.stars, r.bestMoves, r.bestScore, now),
     );
+    // seen story beats only ever grow (a beat never replays, client/game/story.js)
+    const seen = cleanSeen(story, STORY_SEEN_IDS);
+    for (const beat of seen) stmts.push(env.DB.prepare('INSERT OR IGNORE INTO story_seen (user_id, beat_id, seen_at) VALUES (?1, ?2, ?3)').bind(id, beat, now));
     if (stmts.length) await env.DB.batch(stmts);
-    return json({ ok: true, stored: stmts.length });
+    return json({ ok: true, stored: clean.length, story: seen.length });
   }],
 
   ['GET', /^\/api\/daily$/, async (req, env) => {

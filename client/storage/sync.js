@@ -5,6 +5,7 @@
 // (flushOutbox): 'syncPending' (the progress push) and 'outbox' (daily / challenge results; the server re-plays
 // them, accepts past dates, and keeps each player's best).
 import { get, set, playerId, mergeProgress } from './db.js';
+import { addSeen } from '../game/story.js';
 
 const OUTBOX_MAX = 50;
 const OUTBOX_MAX_AGE = 14 * 24 * 3600_000; // a result that still fails after two weeks is dropped
@@ -26,12 +27,13 @@ const retryable = (e) => !e?.status || e.status >= 500;
 
 let pushTimer = null;
 
-/** Pull cloud progress and merge it into the local save. */
+/** Pull cloud progress (and the seen story beats) and merge it into the local save. Returns the merged progress. */
 export async function pullProgress() {
   try {
-    const { progress } = await api('/api/progress');
+    const { progress, story } = await api('/api/progress');
     const merged = mergeProgress(await get('progress', {}), progress ?? {});
     await set('progress', merged);
+    if (Array.isArray(story) && story.length) await set('storySeen', addSeen(await get('storySeen', []), story.filter((id) => typeof id === 'string')));
     return merged;
   } catch {
     return null;
@@ -40,7 +42,7 @@ export async function pullProgress() {
 
 async function pushProgress() {
   try {
-    await api('/api/progress', { method: 'POST', body: { progress: await get('progress', {}) } });
+    await api('/api/progress', { method: 'POST', body: { progress: await get('progress', {}), story: await get('storySeen', []) } });
     await set('syncPending', false);
     return true;
   } catch (e) {

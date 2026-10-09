@@ -34,6 +34,10 @@ export const PACKS = packs.map((p) => ({ ...p, levels: p.levels.filter((id) => l
 /** Story order: every pack's levels, in pack order (unlocks, "next level", continue). */
 export const STORY = PACKS.flatMap((p) => p.levels);
 
+/** Story beats and keepsakes (content/story/<pack>.json, client/game/story.js), in pack order. */
+const storyFiles = import.meta.glob('../../content/story/*.json', { eager: true, import: 'default' });
+export const STORY_FILES = PACKS.map((p) => Object.values(storyFiles).find((s) => s.pack === p.id)).filter(Boolean);
+
 export const getLevel = (id) => levels.get(id) ?? null;
 export const getPacks = () => packs;
 export const storyIndex = (id) => STORY.indexOf(id);

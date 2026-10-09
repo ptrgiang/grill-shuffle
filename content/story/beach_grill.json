@@ -1,0 +1,14 @@
+{
+  "pack": "beach_grill",
+  "beats": [
+    {
+      "id": "beach.arrival",
+      "at": { "pack": "beach_grill", "on": "unlock" },
+      "cast": ["ut", "muc", "chu-tu"],
+      "scene": "fishing-village",
+      "title": { "vi": "Làng Chài", "en": "Fishing Village" },
+      "lines": [{ "vi": "“Bà ghé đây hồi tuần trước.”", "en": "“She was here just last week.”" }]
+    }
+  ],
+  "keepsakes": []
+}
