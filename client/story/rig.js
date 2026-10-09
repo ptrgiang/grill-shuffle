@@ -1,8 +1,10 @@
 // Code-drawn story cast (Canvas 2D), pantomime grammar (docs/STORY.md): silhouette-first poses, a few key poses per
-// character, snapped (~0.1 s) and held. A pose is plain numbers so the timeline can blend them.
+// character, snapped (~0.1 s) and held. A pose is plain numbers so the timeline can blend them. Every shape is a
+// Path2D painted through style.js (palette, outline, shading per art direction).
 //
 // Units: a character stands at its feet (0, 0), about 105 units tall; `face` 1 = looking right, -1 = left.
 // Angles are radians from hanging straight down; positive swings toward the facing direction.
+import { shape, stroke, style, col } from './style.js';
 
 export const POSES = {
   stand: { lean: 0, head: 0, armB: [0.08, 0.1], armF: [0.08, 0.1], legB: 0, legF: 0, mouth: 0, eyes: 1 },
@@ -18,10 +20,10 @@ export const POSES = {
   smile: { lean: -0.04, head: -0.12, armB: [0.15, 0.3], armF: [0.15, 0.3], legB: 0, legF: 0, mouth: 1, eyes: 0.5 },
 };
 
+// palette keys per character (style.js)
 const LOOKS = {
-  ut: { skin: '#f0c49c', hair: '#1c1418', shirt: '#f4f1ec', pants: '#2c2f3e', apron: '#e8742c', lanyard: true, height: 1 },
-  'co-sau': { skin: '#d9a47c', hair: '#8d8790', shirt: '#7a4a8c', pattern: '#e9b4d8', pants: '#3a2a30', bun: true, height: 0.94 },
-  khang: { skin: '#e2b48c', hair: '#141014', shirt: '#fafafa', pants: '#1c1c22', chef: true, height: 1.04 },
+  ut: { skin: 'skinUt', hair: 'hairUt', shirt: 'shirtUt', pants: 'pantsUt', apron: true, lanyard: true, height: 1 },
+  'co-sau': { skin: 'skinSau', hair: 'hairSau', shirt: 'shirtSau', pattern: 'patternSau', pants: 'pantsSau', bun: true, height: 0.94 },
 };
 
 const lerp = (a, b, k) => a + (b - a) * k;
@@ -35,24 +37,33 @@ export function blendPose(a, b, k) {
   return out;
 }
 
-function limb(ctx, x, y, a1, a2, l1, l2, w, color, hand) {
+const circle = (x, y, r) => {
+  const p = new Path2D();
+  p.arc(x, y, r, 0, Math.PI * 2);
+  return p;
+};
+const rrect = (x, y, w, h, r) => {
+  const p = new Path2D();
+  p.roundRect(x, y, w, h, r);
+  return p;
+};
+const poly = (...pts) => {
+  const p = new Path2D();
+  p.moveTo(pts[0], pts[1]);
+  for (let i = 2; i < pts.length; i += 2) p.lineTo(pts[i], pts[i + 1]);
+  p.closePath();
+  return p;
+};
+
+function limb(ctx, x, y, a1, a2, l1, l2, w, key, end) {
   const ex = x + Math.sin(a1) * l1, ey = y + Math.cos(a1) * l1;
   const hx = ex + Math.sin(a1 + a2) * l2, hy = ey + Math.cos(a1 + a2) * l2;
-  ctx.strokeStyle = color;
-  ctx.lineWidth = w;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(ex, ey);
-  ctx.lineTo(hx, hy);
-  ctx.stroke();
-  if (hand) {
-    ctx.fillStyle = hand;
-    ctx.beginPath();
-    ctx.arc(hx, hy, w * 0.62, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  const p = new Path2D();
+  p.moveTo(x, y);
+  p.lineTo(ex, ey);
+  p.lineTo(hx, hy);
+  stroke(ctx, p, key, w);
+  if (end) shape(ctx, circle(hx, hy, w * 0.62), end);
   return [hx, hy];
 }
 
@@ -60,162 +71,169 @@ function prop(ctx, kind, x, y, t, p) {
   ctx.save();
   ctx.translate(x, y);
   if (kind === 'phone') {
-    ctx.fillStyle = '#15151c';
-    ctx.fillRect(-4, -11, 8, 14);
-    ctx.fillStyle = '#9fd6ff';
-    ctx.fillRect(-3, -10, 6, 11);
-    ctx.fillStyle = '#ff3b30';
-    ctx.beginPath();
-    ctx.arc(4, -11, 2.6, 0, Math.PI * 2);
-    ctx.fill();
-    if (Math.sin(t * 40) > 0) {
-      ctx.strokeStyle = '#ffffffaa';
-      ctx.lineWidth = 1;
-      for (const s of [-1, 1]) {
-        ctx.beginPath();
-        ctx.moveTo(s * 7, -9);
-        ctx.lineTo(s * 9, -6);
-        ctx.stroke();
-      }
-    }
+    shape(ctx, rrect(-4.5, -12, 9, 15, 1.5), 'phone');
+    shape(ctx, rrect(-3, -10.5, 6, 11, 1), 'screen', { line: false });
+    shape(ctx, circle(4.5, -12, 2.6), 'badge');
   } else if (kind === 'postcard') {
     ctx.rotate(-0.15);
-    ctx.fillStyle = '#fdf3dc';
-    ctx.fillRect(-10, -14, 20, 13);
-    ctx.fillStyle = '#d2483a';
-    ctx.fillRect(4, -12, 4, 4);
-    ctx.strokeStyle = '#7c6a58';
+    shape(ctx, rrect(-11, -15, 22, 14, 1), 'postcard');
+    shape(ctx, rrect(4, -13, 4.5, 4.5, 0.5), 'stamp', { line: false });
+    ctx.strokeStyle = col('postLine');
     ctx.lineWidth = 0.8;
-    for (const ly of [-9, -6, -3]) {
+    for (const ly of [-10, -7, -4]) {
       ctx.beginPath();
       ctx.moveTo(-8, ly);
       ctx.lineTo(1, ly);
       ctx.stroke();
     }
   } else if (kind === 'fan') {
+    // quạt nan: woven bamboo, a short handle
     ctx.rotate(p.fanning ? Math.sin(t * 14) * 0.5 : -0.3);
-    ctx.fillStyle = '#d8b06a';
-    ctx.beginPath();
-    ctx.ellipse(0, -14, 11, 13, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#9c7436';
+    const blade = new Path2D();
+    blade.ellipse(0, -14, 11, 13, 0, 0, Math.PI * 2);
+    shape(ctx, rrect(-1.6, -3, 3.2, 9, 1), 'fanHandle');
+    shape(ctx, blade, 'fan');
+    ctx.save();
+    ctx.clip(blade);
+    ctx.strokeStyle = col('fanLine');
     ctx.lineWidth = 0.7;
-    for (let i = -9; i <= 9; i += 3) {
+    for (let i = -12; i <= 12; i += 3) {
       ctx.beginPath();
-      ctx.moveTo(i, -26);
-      ctx.lineTo(i, -2);
-      ctx.moveTo(-10, -14 + i);
-      ctx.lineTo(10, -14 + i);
+      ctx.moveTo(i - 6, -28);
+      ctx.lineTo(i + 6, 0);
+      ctx.moveTo(i + 6, -28);
+      ctx.lineTo(i - 6, 0);
       ctx.stroke();
     }
-    ctx.fillStyle = '#7a5428';
-    ctx.fillRect(-1.5, -2, 3, 8);
+    ctx.restore();
   }
   ctx.restore();
 }
 
-/** Draw a person. `who`: ut | co-sau | khang; `p`: a pose; `t`: time (walk cycle, buzzing phone). */
+/** Draw a person. `who`: ut | co-sau; `p`: a pose; `t`: time (walk cycle, buzzing phone). */
 export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   const L = LOOKS[who];
+  const S = style();
+  const legs = S.legs ?? 1;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(s * face * L.height, s * L.height);
+  if (S.wobble) ctx.rotate(Math.sin(Math.floor(t * 4) * 2.1) * 0.015); // paper puppets: stepped wobble
+  // contact shadow
+  ctx.fillStyle = 'rgba(0,0,0,.28)';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 18, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
   const swing = p.walk ? Math.sin(t * 9) * 0.45 : 0;
   const bob = p.walk ? Math.abs(Math.cos(t * 9)) * 2 : 0;
+  const hip = -42 * legs;
   ctx.translate(0, -bob);
-  // legs
-  limb(ctx, -3, -42, p.legB + swing, 0, 21, 21, 9, L.pants, '#1a1414');
-  limb(ctx, 3, -42, p.legF - swing, 0, 21, 21, 9, L.pants, '#1a1414');
+  const lw = S.limbs ?? 1;
+  limb(ctx, -3.5, hip, p.legB + swing, 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
+  limb(ctx, 3.5, hip, p.legF - swing, 0, 21 * legs, 21 * legs, 10.5 * lw, L.pants, 'shoe');
   ctx.save();
-  ctx.translate(0, -42);
+  ctx.translate(0, hip);
   ctx.rotate(p.lean);
-  // back arm
-  limb(ctx, -3, -34, p.armB[0] - swing * 0.6, p.armB[1], 17, 15, 7, L.shirt, L.skin);
-  // torso
-  ctx.fillStyle = L.shirt;
-  ctx.beginPath();
-  ctx.roundRect(-12, -38, 24, 40, 7);
-  ctx.fill();
+  limb(ctx, -3, -34, p.armB[0] - swing * 0.6, p.armB[1], 17 * (2 - lw) * 0.95, 15 * (2 - lw), 8.5 * lw, L.shirt, L.skin);
+  // tapered shirt with a collar (rounder in the toy style)
+  const bw = S.body ?? 1;
+  const torso = new Path2D();
+  torso.moveTo(-12 * bw, -36);
+  torso.quadraticCurveTo(-13.5 * bw, -38, -11 * bw, -39);
+  torso.lineTo(11 * bw, -39);
+  torso.quadraticCurveTo(13.5 * bw, -38, 12 * bw, -36);
+  torso.lineTo(13.5 * bw, -2);
+  torso.quadraticCurveTo(14 * bw, 3, 9 * bw, 3);
+  torso.lineTo(-9 * bw, 3);
+  torso.quadraticCurveTo(-14 * bw, 3, -13.5 * bw, -2);
+  torso.closePath();
+  shape(ctx, torso, L.shirt);
+  shape(ctx, poly(-6, -39, 0, -32, 6, -39, 3, -40, 0, -36, -3, -40), L.shirt);
   if (L.pattern) {
-    ctx.fillStyle = L.pattern;
+    ctx.fillStyle = col(L.pattern);
     for (let i = 0; i < 9; i++) {
       ctx.beginPath();
-      ctx.arc(-8 + (i % 3) * 8, -32 + Math.floor(i / 3) * 11, 1.6, 0, Math.PI * 2);
+      ctx.arc(-7 + (i % 3) * 7, -31 + Math.floor(i / 3) * 10, 1.7, 0, Math.PI * 2);
       ctx.fill();
     }
   }
   if (L.apron) {
-    // too big for Út: down to the knees, ties hanging
-    ctx.fillStyle = L.apron;
-    ctx.beginPath();
-    ctx.moveTo(-8, -30);
-    ctx.lineTo(8, -30);
-    ctx.lineTo(13, -16);
-    ctx.lineTo(15, 20);
-    ctx.lineTo(-15, 20);
-    ctx.lineTo(-13, -16);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#c55a1c';
-    ctx.fillRect(-6, -2, 12, 7);
-  }
-  if (L.chef) {
-    ctx.fillStyle = '#d9d9d9';
-    for (const by of [-30, -20, -10]) for (const bx of [-4, 4]) {
-      ctx.beginPath();
-      ctx.arc(bx, by, 1.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // too big for Út: down to the knees
+    shape(ctx, poly(-8, -30, 8, -30, 13, -16, 15, 20, -15, 20, -13, -16), 'apron');
+    shape(ctx, rrect(-6, -2, 12, 7, 1), 'apronDark', { line: false });
   }
   if (L.lanyard) {
-    ctx.strokeStyle = '#2f6fd6';
+    ctx.strokeStyle = col('lanyard');
     ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(-5, -38);
     ctx.lineTo(0, -22);
     ctx.lineTo(5, -38);
     ctx.stroke();
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(-4, -22, 8, 10);
-    ctx.fillStyle = '#2f6fd6';
+    shape(ctx, rrect(-4, -22, 8, 10, 1), 'card');
+    ctx.fillStyle = col('lanyard');
     ctx.fillRect(-4, -22, 8, 3);
   }
-  // head
+  // head (bigger in the toy style)
   ctx.save();
-  ctx.translate(0, -48);
+  ctx.translate(0, -48 - (S.head - 1) * 10);
   ctx.rotate(p.head);
-  ctx.fillStyle = L.skin;
-  ctx.beginPath();
-  ctx.arc(0, 0, 12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = L.hair;
-  ctx.beginPath();
-  ctx.arc(0, -2, 12.6, Math.PI * 1.05, Math.PI * 2.02);
-  ctx.lineTo(10, -3);
-  ctx.quadraticCurveTo(2, -7, -12, 0);
-  ctx.fill();
+  ctx.scale(S.head, S.head);
+  if (L.bun) shape(ctx, circle(-9, -9, 5.5), L.hair);
+  shape(ctx, circle(0, 0, 12), L.skin);
+  const hair = new Path2D();
   if (L.bun) {
+    // Cô Sáu: hair combed back into the bun
+    hair.arc(0, -1, 12.8, Math.PI * 0.95, Math.PI * 1.95);
+    hair.quadraticCurveTo(4, -9, -12.5, 1);
+  } else {
+    // Út: short, tousled, a side fringe falling toward the face
+    hair.moveTo(-12.5, 3);
+    hair.arc(0, -1, 13, Math.PI * 0.92, Math.PI * 1.88);
+    hair.lineTo(13, -3);
+    hair.lineTo(9, -4);
+    hair.lineTo(10, 0);
+    hair.lineTo(5, -5);
+    hair.lineTo(4, -1);
+    hair.lineTo(-1, -6);
+    hair.lineTo(-6, -4);
+    hair.lineTo(-9, 1);
+  }
+  hair.closePath();
+  shape(ctx, hair, L.hair);
+  // ear
+  shape(ctx, circle(-3, 1, 2.6), L.skin, { line: false });
+  if (S.cheeks) {
+    ctx.fillStyle = col('cheek');
     ctx.beginPath();
-    ctx.arc(-9, -9, 5.5, 0, Math.PI * 2);
+    ctx.ellipse(5, 4, 3, 2, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  if (L.chef) {
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.roundRect(-11, -24, 22, 14, 6);
-    ctx.fill();
-  }
-  // face: eyes (a dot, a line when closed / happy, big when shocked) and mouth
-  ctx.fillStyle = '#1a1414';
-  ctx.strokeStyle = '#1a1414';
+  // face: eyes (white + pupil in the cartoon styles), a line when closed / happy, big when shocked
+  ctx.fillStyle = col('ink');
+  ctx.strokeStyle = col('ink');
   ctx.lineWidth = 1.4;
   if (p.eyes > 0.8) {
+    if (S.eyesWhite) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(6, -1.5, 2.6 * Math.min(p.eyes, 1.4), 3 * Math.min(p.eyes, 1.4), 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = col('ink');
+    }
     ctx.beginPath();
-    ctx.arc(6, -1, 1.5 * Math.min(p.eyes, 1.6), 0, Math.PI * 2);
+    ctx.arc(6.6, -1.2, 1.5 * Math.min(p.eyes, 1.5) * (S.eyeShine ? 1.3 : 1), 0, Math.PI * 2);
     ctx.fill();
+    if (S.eyeShine) {
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(7.3, -2.2, 0.7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = col('ink');
+    }
   } else {
     ctx.beginPath();
-    ctx.arc(6, p.eyes > 0.3 ? 0 : -1, 2, Math.PI * 1.1, Math.PI * 1.9);
+    ctx.arc(6, p.eyes > 0.3 ? 0 : -1, 2.2, Math.PI * 1.1, Math.PI * 1.9);
     ctx.stroke();
   }
   ctx.beginPath();
@@ -228,8 +246,7 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   p.mouth > 1.5 ? ctx.fill() : ctx.stroke();
   ctx.restore();
-  // front arm + prop in hand
-  const [hx, hy] = limb(ctx, 3, -34, p.armF[0] + swing * 0.6, p.armF[1], 17, 15, 7, L.shirt, L.skin);
+  const [hx, hy] = limb(ctx, 3, -34, p.armF[0] + swing * 0.6, p.armF[1], 17 * (2 - lw) * 0.95, 15 * (2 - lw), 8.5 * lw, L.shirt, L.skin);
   if (p.prop) prop(ctx, p.prop, hx, hy, t, p);
   ctx.restore();
   if (p.smoke) smoke(ctx, 26, -100, t);
@@ -238,9 +255,10 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
 
 /** A puff of grey smoke, rising. */
 export function smoke(ctx, x, y, t, n = 4) {
+  const rgb = col('smoke');
   for (let i = 0; i < n; i++) {
     const k = (t * 0.7 + i / n) % 1;
-    ctx.fillStyle = `rgba(190,180,175,${0.55 * (1 - k)})`;
+    ctx.fillStyle = `rgba(${rgb},${0.55 * (1 - k)})`;
     ctx.beginPath();
     ctx.arc(x + Math.sin(k * 6 + i) * 6, y - k * 40, 6 + k * 10, 0, Math.PI * 2);
     ctx.fill();
@@ -252,40 +270,34 @@ export function drawCat(ctx, x, y, s, face, pose, t = 0) {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(s * face, s);
-  ctx.fillStyle = '#121014';
   if (pose === 'sleep') {
-    ctx.beginPath();
-    ctx.ellipse(0, -7, 16, 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(12, -9, 6.5, 0, Math.PI * 2);
-    ctx.fill();
+    const body = new Path2D();
+    body.ellipse(0, -7, 16, 8, 0, 0, Math.PI * 2);
+    shape(ctx, body, 'cat');
+    shape(ctx, circle(12, -9, 6.5), 'cat');
   } else {
-    const hop = pose === 'jump' ? -Math.sin(Math.min(1, t) * Math.PI) * 30 : 0;
-    ctx.translate(0, hop);
-    ctx.beginPath();
-    ctx.ellipse(-2, -12, 11, pose === 'sit' ? 12 : 8, pose === 'sit' ? -0.3 : 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(8, pose === 'sit' ? -25 : -20, 7, 0, Math.PI * 2);
-    ctx.fill();
+    const sit = pose === 'sit';
+    ctx.translate(0, pose === 'jump' ? -Math.sin(Math.min(1, t) * Math.PI) * 30 : 0);
+    const tail = new Path2D();
+    tail.moveTo(-12, -10);
+    tail.quadraticCurveTo(-24, -14 + Math.sin(t * 3) * 4, -20, -28);
+    stroke(ctx, tail, 'cat', 3);
+    const body = new Path2D();
+    body.ellipse(-2, -12, 11, sit ? 12 : 8, sit ? -0.3 : 0, 0, Math.PI * 2);
+    shape(ctx, body, 'cat');
+    const hy = sit ? -25 : -20;
+    const head = new Path2D();
+    head.arc(8, hy, 7, 0, Math.PI * 2);
     for (const ex of [4, 11]) {
-      ctx.beginPath();
-      ctx.moveTo(ex - 3, pose === 'sit' ? -29 : -24);
-      ctx.lineTo(ex, pose === 'sit' ? -36 : -31);
-      ctx.lineTo(ex + 3, pose === 'sit' ? -29 : -24);
-      ctx.fill();
+      head.moveTo(ex - 3.5, hy - 3);
+      head.lineTo(ex, hy - 11);
+      head.lineTo(ex + 3.5, hy - 3);
+      head.closePath();
     }
-    ctx.strokeStyle = '#121014';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
+    shape(ctx, head, 'cat');
+    ctx.fillStyle = col('catEye');
     ctx.beginPath();
-    ctx.moveTo(-12, -10);
-    ctx.quadraticCurveTo(-24, -14 + Math.sin(t * 3) * 4, -20, -28);
-    ctx.stroke();
-    ctx.fillStyle = '#ffd23c';
-    ctx.beginPath();
-    ctx.arc(11, pose === 'sit' ? -26 : -21, 1.6, 0, Math.PI * 2);
+    ctx.arc(11, hy - 1, 1.7, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();

@@ -10,6 +10,7 @@ import { variant } from '../ui/variant.js';
 import { pick, t as tr } from '../i18n/index.js';
 import { drawPerson, drawCat, POSES, blendPose } from './rig.js';
 import { drawScene, STAGE } from './scene.js';
+import { overlay } from './style.js';
 
 const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -78,6 +79,7 @@ function paint(ctx, beat, t, w, h, { backdrop = true, cam = true } = {}) {
   const cat = beat.cat(t);
   if (cat) drawCat(ctx, cat.x, cat.y, 0.9, cat.face, cat.pose, cat.pose === 'jump' ? (t - 8.6) / 0.8 : t);
   ctx.restore();
+  overlay(ctx, w, h, t);
 }
 
 const h = (tag, cls, text) => {
