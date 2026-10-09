@@ -285,23 +285,24 @@ export function drawCart(ctx, x, y, t, glow = 0.4, postcard = false) {
  * Flashback (Bà Năm's past, #106): the central-coast fishing village at dawn. Sun on the sea, a wooden boat with
  * painted eyes on its bow (mắt thuyền), a round basket boat (thuyền thúng) and nets drying on poles.
  */
-export function drawBeach(ctx, t) {
+export function drawBeach(ctx, t, { storm = false, boatX = 0 } = {}) {
   const { w, ground } = STAGE;
   const sky = ctx.createLinearGradient(0, -100, 0, 170);
-  sky.addColorStop(0, col('dawn1'));
-  sky.addColorStop(1, col('dawn2'));
+  sky.addColorStop(0, col(storm ? 'stormSky1' : 'dawn1'));
+  sky.addColorStop(1, col(storm ? 'stormSky2' : 'dawn2'));
   ctx.fillStyle = sky;
   if (style().flatSky) ctx.fillStyle = col('dawn2');
   ctx.fillRect(-200, -400, w + 400, 580);
-  shape(ctx, circle(176, 128, 24), 'sun', { line: false });
-  shape(ctx, rect(-200, 165, w + 400, 50), 'sea', { line: false });
+  if (!storm) shape(ctx, circle(176, 128, 24), 'sun', { line: false });
+  shape(ctx, rect(-200, 165, w + 400, 50), storm ? 'stormSea' : 'sea', { line: false });
   ctx.strokeStyle = col('seaLight');
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = storm ? 2.4 : 1.6;
   for (let i = 0; i < 9; i++) {
-    const y = 172 + (i % 3) * 12, x = -40 + i * 52 + Math.sin(t + i) * 6;
+    const y = 172 + (i % 3) * 12, x = -40 + i * 52 + Math.sin(t * (storm ? 3 : 1) + i) * (storm ? 14 : 6);
+    const hgt = storm ? 9 : 4;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.quadraticCurveTo(x + 9, y - 4, x + 18, y);
+    ctx.quadraticCurveTo(x + 9, y - hgt, x + 18, y);
     ctx.stroke();
   }
   shape(ctx, rect(-200, 212, w + 400, 400), 'sand', { line: false });
@@ -330,7 +331,9 @@ export function drawBeach(ctx, t) {
     }
     ctx.globalAlpha = 1;
   }
-  // her father's boat, drawn up on the sand: painted eyes on the bow
+  // her father's boat, drawn up on the sand: painted eyes on the bow (`boatX`: hauled further up before the storm)
+  ctx.save();
+  ctx.translate(boatX, 0);
   const boat = new Path2D();
   boat.moveTo(70, 228);
   boat.lineTo(222, 228);
@@ -344,6 +347,7 @@ export function drawBeach(ctx, t) {
   eye.ellipse(230, 216, 7, 4, 0, 0, Math.PI * 2);
   shape(ctx, eye, 'boatEye');
   shape(ctx, circle(232, 216, 2.4), 'ink', { line: false });
+  ctx.restore();
   // a round basket boat
   const thung = new Path2D();
   thung.ellipse(332, 244, 24, 11, 0, 0, Math.PI);
@@ -356,5 +360,16 @@ export function drawBeach(ctx, t) {
     ctx.moveTo(332 + i, 244);
     ctx.lineTo(332 + i * 0.8, 253);
     ctx.stroke();
+  }
+  if (storm) {
+    ctx.strokeStyle = col('rain');
+    ctx.lineWidth = 1;
+    for (let k = 0; k < 90; k++) {
+      const rx = ((k * 53 + t * 260) % 640) - 120, ry = ((k * 97 + t * 520) % 420) - 100;
+      ctx.beginPath();
+      ctx.moveTo(rx, ry);
+      ctx.lineTo(rx - 4, ry + 12);
+      ctx.stroke();
+    }
   }
 }
