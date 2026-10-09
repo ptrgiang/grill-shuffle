@@ -2,7 +2,7 @@
 // busy, customers eating / ordering again / leaving / arriving only for foods still on the board, cheer / win / lose.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCounter, serve, tick, cheer, win, lose, busy, T } from '../../client/story/counter-model.js';
+import { createCounter, serve, tick, cheer, wow, win, lose, busy, T } from '../../client/story/counter-model.js';
 import { boardFoods } from '../../client/story/counter.js';
 import { loadPacks } from '../../scripts/lib/content.js';
 
@@ -82,6 +82,21 @@ test('counter: a plate with nobody seated waits until someone comes; reduced mot
   run(r, T.fly + T.direct + 0.1);
   assert.equal(r.ut.phase, 'off');
   assert.equal(r.served, 2);
+});
+
+test('counter: a booster makes the customers look up for a moment; it never cuts a cheer or a win short', () => {
+  const c = createCounter({ foods: { shrimp: 6 }, seats: 2, seed: 2 });
+  wow(c);
+  assert.equal(c.mood.phase, 'wow');
+  assert.equal(busy(c), true);
+  run(c, T.cheer + 0.1);
+  assert.equal(c.mood.phase, 'idle');
+  cheer(c);
+  wow(c);
+  assert.equal(c.mood.phase, 'cheer');
+  win(c);
+  wow(c);
+  assert.equal(c.mood.phase, 'won');
 });
 
 test('counter: cheer, win and lose', () => {

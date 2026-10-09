@@ -63,6 +63,10 @@ Looks (#95, props beside the board): low tier, 390 × 844, `/saigon-alley/3` (si
 coal) 89 → 116 calls, 35.3k → 36.2k triangles; `/saigon-alley/19` (night) 89 → 109; `/saigon-alley/2` (cart)
 71 → 82; CPU per frame unchanged (~1 ms). Props merge their repeated parts (stool legs, ice cubes) into one mesh.
 
+The counter band (#91, its own 2D canvas and rAF loop, drawn only while something moves): on the low tier it draws at
+~15 fps without the paper grain. Headless, low tier, `/saigon-alley/27` while it serves: the board's CPU per frame
+1.1 ms at 390 × 844 (as before), 1.2 → 1.4 ms at 844 × 390 (sideways phones now get the band).
+
 - Headless Chrome with **SwiftShader** (software GL, no GPU) at 1280 × 800: ~8 fps; 390 × 844 @3×: ~6 fps.
   Not a target measurement, only a floor: the animation clock clamps dt to 50 ms, so animations run slower there
   but never skip. Measure real devices with the browser's performance panel on `/sandbox/board`.

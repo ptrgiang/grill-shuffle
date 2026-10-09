@@ -514,7 +514,8 @@ const surface = (name) => {
 /**
  * Builds a resolved theme's look (`t.look`, shared/themes.js withLook) for the stage: `surface` (a texture for the
  * table, or null), `group` (overlay + props, at table height) and `fit(view)`, which places them each time the frame
- * changes. view: { x0, x1, z0, z1 } the visible table area, { w, d } the board.
+ * changes. view: { x0, x1 } the table's width the HUD leaves free, { vx0, vx1 } the whole view's, { z0, z1 } its depth,
+ * { w, d } the board.
  */
 export function createDecor(t) {
   const look = t.look;
@@ -541,10 +542,10 @@ export function createDecor(t) {
     surface: surface(look.surface),
     // `side`: left / right of the board (u = 0 far … 1 near), far / near (u = 0 left … 1 right); gap = world units
     // between the board's edge and the prop's centre. Past the visible edge a prop is simply cut off by the frame.
-    fit({ x0, x1, z0, z1, w, d }) {
+    fit({ x0, x1, z0, z1, w, d, vx0 = x0, vx1 = x1 }) {
       if (overlay) {
-        overlay.scale.set(x1 - x0, z1 - z0, 1);
-        overlay.position.x = (x0 + x1) / 2;
+        overlay.scale.set(vx1 - vx0, z1 - z0, 1); // the whole view, also under the HUD
+        overlay.position.x = (vx0 + vx1) / 2;
         overlay.position.z = (z0 + z1) / 2;
       }
       const zs = Math.max(z0 + 0.4, -d / 2 - 0.3), ze = Math.min(z1 - 0.4, d / 2 + 0.3);

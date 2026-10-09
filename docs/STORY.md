@@ -199,7 +199,8 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
   **Few customers, served many times**: two stools on a phone, three on a wide screen; a customer eats two or three
   plates, ordering again in between, then leaves, and a new one sits down only for a food still on the board (or a
   plate already waiting). A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
-  lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
+  lets Mực steal a shrimp, a **booster** makes the customers look up, eyes wide, for a moment (#91). Sounds:
+  footsteps, the clink, the meow (#113).
 - **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,
   the stop's page keeper (Cô Sáu in the alley, Chú Tư at the beach) tells the level's line in front of the place,
   talking while the text types out over the blurred board; "Serve" starts the level (`client/story/intro.js`). It is
@@ -213,7 +214,9 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
 - **The cart** is the badge's cart (stainless body, glass cabinet, spoked wheels) with years of use on it: rust
   patches and streaks, a dent; the badge got the same rust (`client/ui/brand.js`, icons and og.png regenerated).
 - Presentation only: it follows the board's events (`match`, `combo`, `level_complete`, `level_failed`) and never
-  changes a rule. Reduced motion: Út stays at the cart, plates fade from the cart to the customer. Phones held sideways: no band.
+  changes a rule. Reduced motion: Út stays at the cart, plates fade from the cart to the customer. Phones held sideways
+  (#91, owner pick 3): a slim band above the board, between the HUD columns. The low quality tier draws the band at
+  ~15 fps without the paper grain, so the board's frames come first.
 - Next: the band changes with the chapters (laptop on the cart, the tower poster, packing boxes) and the hint in a
   character's voice.
 
