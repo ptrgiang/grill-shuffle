@@ -106,11 +106,11 @@ function motorbike(ctx, x, y) {
 }
 
 /**
- * The alley. Options: `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
+ * The alley. Options: `props: false` (only the place: houses, wires, lights), `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
  * `postcardOnCart`, `dawn` (a pale morning sky, lights off), `cartX` (the cart rolls), `lanyardOnNail`,
  * `phone` ('buzz' | 'dark': Út's phone lying on the cart).
  */
-export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null } = {}) {
+export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true } = {}) {
   const { w, ground } = STAGE;
   if (backdrop) {
     const sky = ctx.createLinearGradient(0, -100, 0, ground);
@@ -161,6 +161,7 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
     }
     shape(ctx, circle(bx, by, 3.4), on ? 'bulbOn' : 'bulbOff', { line: false });
   }
+  if (!props) return; // the counter (client/story/counter.js) places its own stools and cart
   if (backdrop) drawSugarcaneCart(ctx, 362, ground);
   drawStool(ctx, 300, ground);
   drawStove(ctx, 262, ground, t, glow);
@@ -197,7 +198,7 @@ function drawSugarcaneCart(ctx, x, y) {
   }
 }
 
-function drawStool(ctx, x, y) {
+export function drawStool(ctx, x, y) {
   const p = new Path2D();
   p.rect(x - 13, y - 26, 26, 5);
   p.moveTo(x - 12, y - 21);
@@ -235,44 +236,118 @@ function drawStove(ctx, x, y, t, glow) {
   }
 }
 
-/** Bà Năm's cart: a metal grill box on two wheels, coals glowing (`glow` 0..1), a postcard on top. */
+/**
+ * Bà Năm's cart, as on the badge (client/ui/brand.js): a stainless body with two panels and rivets, a small glass
+ * cabinet with bánh mì, the firebox with coals glowing (`glow` 0..1), spoked wheels, the push handle; years of use on
+ * it (owner, 2026-10-09): rust patches and streaks, a dent, worn paint. A postcard can lie on top.
+ */
 export function drawCart(ctx, x, y, t, glow = 0.4, postcard = false) {
   ctx.save();
   ctx.translate(x, y);
-  const pole = new Path2D();
-  pole.moveTo(-49, -62);
-  pole.lineTo(-49, -2);
-  stroke(ctx, pole, 'cartPole', 5);
-  shape(ctx, rect(-46, -66, 92, 40, 4), 'cartBody');
-  shape(ctx, rect(-42, -30, 84, 4), 'cartDark', { line: false });
-  const g = ctx.createLinearGradient(0, -71, 0, -63);
+  // push handle (Út's side)
+  const handle = new Path2D();
+  handle.moveTo(-44, -40);
+  handle.lineTo(-58, -52);
+  handle.lineTo(-64, -52);
+  stroke(ctx, handle, 'steelDark', 3.4);
+  // the stainless body
+  const body = new Path2D();
+  body.rect(-46, -64, 92, 38);
+  shape(ctx, body, 'steel2');
+  ctx.save();
+  ctx.clip(body);
+  const sheen = ctx.createLinearGradient(0, -64, 0, -26);
+  sheen.addColorStop(0, 'rgba(255,255,255,.55)');
+  sheen.addColorStop(0.5, 'rgba(255,255,255,.1)');
+  sheen.addColorStop(1, 'rgba(0,0,0,.18)');
+  ctx.fillStyle = sheen;
+  ctx.fillRect(-46, -64, 92, 38);
+  // rust: blotches where the paint wore through, streaks running down from the rivets, a dented corner
+  ctx.fillStyle = col('rust');
+  for (const [rx, ry, w, h, a] of [[-38, -34, 11, 6, 0.55], [-30, -30, 6, 4, 0.4], [24, -36, 13, 7, 0.5], [33, -31, 7, 5, 0.45], [-8, -60, 8, 4, 0.35], [10, -29, 9, 3.5, 0.4]]) {
+    ctx.globalAlpha = a;
+    ctx.beginPath();
+    ctx.ellipse(rx, ry, w / 2, h / 2, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = col('rustDark');
+  for (const [sx, sy, sh] of [[-42, -58, 14], [42, -58, 18], [-4, -48, 10], [20, -47, 12]]) ctx.fillRect(sx, sy, 1.4, sh);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = 'rgba(40,30,30,.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(30, -64);
+  ctx.quadraticCurveTo(36, -58, 46, -60);
+  ctx.stroke();
+  ctx.restore();
+  // panels and rivets
+  ctx.strokeStyle = col('steelDark');
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.7;
+  ctx.strokeRect(-41, -60, 39, 29);
+  ctx.strokeRect(2, -60, 39, 29);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = col('steel1');
+  for (const [rx, ry] of [[-43, -61], [43, -61], [-43, -29], [43, -29]]) {
+    ctx.beginPath();
+    ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  shape(ctx, new Path2D('M-48 -66 h96 v3 h-96 Z'), 'steel1', { line: false });
+  shape(ctx, new Path2D('M-48 -27 h96 v3 h-96 Z'), 'steelDark', { line: false });
+  // the glass cabinet on the left of the top: bánh mì behind the glass
+  shape(ctx, new Path2D('M-44 -94 h38 v28 h-38 Z'), 'glass');
+  ctx.fillStyle = '#d9a35e';
+  ctx.beginPath();
+  ctx.roundRect(-40, -77, 14, 6, 3);
+  ctx.roundRect(-24, -77, 14, 6, 3);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.6)';
+  ctx.beginPath();
+  ctx.moveTo(-40, -92);
+  ctx.lineTo(-33, -69);
+  ctx.stroke();
+  // the firebox: coals glowing under the grate (right of the top)
+  const fx = -4;
+  const g = ctx.createLinearGradient(0, -72, 0, -64);
   g.addColorStop(0, `rgba(${col('coalHot')},${0.3 + glow * 0.6})`);
   g.addColorStop(1, `rgba(120,20,0,${0.4 + glow * 0.5})`);
   ctx.fillStyle = g;
-  ctx.fillRect(-42, -71, 84, 7);
+  ctx.fillRect(fx, -72, 48, 7);
   ctx.strokeStyle = col('cartDark');
   ctx.lineWidth = 1;
-  for (let i = -40; i <= 40; i += 6) {
+  for (let i = fx + 2; i <= fx + 46; i += 6) {
     ctx.beginPath();
-    ctx.moveTo(i, -72);
-    ctx.lineTo(i, -64);
+    ctx.moveTo(i, -73);
+    ctx.lineTo(i, -65);
     ctx.stroke();
   }
   if (glow > 0.5) {
-    const h = ctx.createRadialGradient(0, -70, 2, 0, -70, 60);
+    const h = ctx.createRadialGradient(20, -70, 2, 20, -70, 50);
     h.addColorStop(0, `rgba(${col('coalHot')},${(glow - 0.5) * 0.7})`);
     h.addColorStop(1, `rgba(${col('coalHot')},0)`);
     ctx.fillStyle = h;
-    ctx.fillRect(-60, -130, 120, 90);
+    ctx.fillRect(-30, -130, 100, 90);
   }
-  if (glow < 0.25) smoke(ctx, 0, -76, t, 5);
-  for (const wx of [-30, 30]) {
+  if (glow < 0.25) smoke(ctx, 20, -76, t, 5);
+  // spoked wheels, a little rust on the hubs
+  for (const wx of [-28, 28]) {
     shape(ctx, circle(wx, -10, 10), 'wheel');
-    shape(ctx, circle(wx, -10, 3), 'hub', { line: false });
+    ctx.strokeStyle = col('steel2');
+    ctx.lineWidth = 1;
+    for (let k = 0; k < 6; k++) {
+      const a = (k * Math.PI) / 3 + wx;
+      ctx.beginPath();
+      ctx.moveTo(wx, -10);
+      ctx.lineTo(wx + Math.cos(a) * 7.5, -10 + Math.sin(a) * 7.5);
+      ctx.stroke();
+    }
+    shape(ctx, circle(wx, -10, 2.6), 'rust', { line: false });
   }
   if (postcard) {
     ctx.save();
-    ctx.translate(26, -76);
+    ctx.translate(26, -78);
     ctx.rotate(0.12);
     shape(ctx, rect(-9, -5, 18, 11, 1), 'postcard');
     shape(ctx, rect(4, -3, 3, 3), 'stamp', { line: false });

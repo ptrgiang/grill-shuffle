@@ -71,7 +71,8 @@ client/        browser game (Vite root)
                  solver.worker.js + solver-client.js (generation and hints off the main thread)
   story/         the story beats (#81, docs/STORY.md "Story player"), lazy-loaded when a beat is due: player.js (full-screen
                  beat, memories panels, skip, reduced motion), beats.js (the staging of each beat), cues.js (pure: the
-                 sound cues of a beat, #113), timeline.js (pure:
+                 sound cues of a beat, #113), counter.js + counter-model.js (the band above the board on story levels:
+                 customers, Út serving each match, #116), food-glyph.js, timeline.js (pure:
                  tracks, pose snap, camera), rig.js (the code-drawn cast), scene.js (alley, fishing village), style.js
                  (present = flat cartoon, past = Đông Hồ print; #106)
   render/        stage.js (renderer, camera, lights, backdrop, theme, quality tier, rAF loop), quality.js (pure: tiers,

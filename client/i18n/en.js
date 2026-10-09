@@ -25,6 +25,8 @@ export default {
   // common
   'common.close': 'Close',
   'story.skip': 'Tap to skip',
+  'intro.serve': 'Serve',
+  'intro.says': '{name} tells',
   'story.memories': 'Memories',
   'story.memoriesSub': 'What happened so far',
   'story.continue': 'Continue',

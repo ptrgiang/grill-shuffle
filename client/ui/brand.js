@@ -120,11 +120,23 @@ const cabinet = `<rect x="36" y="124" width="50" height="29" rx="2" fill="#dff1f
   <g fill="#c25a3a"><circle cx="47" cy="149.5" r="2.2"/><circle cx="55" cy="151.5" r="2.2"/><circle cx="63" cy="153.5" r="2.2"/><circle cx="52" cy="148" r="2.2"/></g>
   <path d="M40 130 L48 156" stroke="#ffffff" stroke-width="1.4" opacity=".55"/>`;
 
+/**
+ * Years of use on the cart (owner, 2026-10-09): rust where the paint wore through, streaks running down from the
+ * rivets and vents, a dent on the corner. Matches the cart in the game (client/story/scene.js drawCart).
+ */
+const rust = `<g fill="#9a4a22">
+  <ellipse cx="50" cy="181" rx="7" ry="3.6" opacity=".55"/><ellipse cx="57" cy="184" rx="3.5" ry="2.2" opacity=".45"/>
+  <ellipse cx="148" cy="179" rx="8" ry="4" opacity=".5"/><ellipse cx="139" cy="184" rx="4" ry="2.4" opacity=".45"/>
+  <ellipse cx="100" cy="186" rx="6" ry="2" opacity=".4"/><ellipse cx="121" cy="165" rx="4" ry="2" opacity=".35"/></g>
+  <g fill="#6a3014" opacity=".38"><rect x="41.4" y="166" width="1.3" height="12"/><rect x="158.4" y="166" width="1.3" height="15"/>
+  <rect x="78" y="162" width="1.2" height="9"/><rect x="116" y="162" width="1.2" height="11"/></g>
+  <path d="M150 162 q5 5 12 3" fill="none" stroke="#3a2a28" stroke-width="1" opacity=".45"/>`;
+
 /** The cart: brushed stainless body, glass cabinet, firebox with skewers, spoked wheels, push handle, quạt nan. */
 function cart(id) {
   const steel = `<linearGradient id="${id}-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f3"/><stop offset=".5" stop-color="#c3c8cc"/><stop offset="1" stop-color="#8f979c"/></linearGradient>`;
   return `<defs>${steel}</defs>${shadow()}${smoke(id, [120, 156], 134)}${cabinet}${firebox(id, 90, 164, 126, 148, 5, 4)}` +
-    cartBody(id, { body: `url(#${id}-body)`, trim: '#eef0f1', panel: '#7c8388', extra: brushed, handle: '#d9dde0' }) + fan(26, 176, -16);
+    cartBody(id, { body: `url(#${id}-body)`, trim: '#e4e6e6', panel: '#7c8388', extra: brushed + rust, handle: '#c9cdcf' }) + fan(26, 176, -16);
 }
 
 const defs = (id) => `<defs>

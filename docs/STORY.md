@@ -181,6 +181,36 @@ first time a beat is due; the main bundle only carries the wiring in `main.js`.
   for a visit. Headless tools start without it (`launchChrome({ story })`, `window.__gsNoStory`), so a fresh profile
   does not open on the cold open. `/sandbox/story?beat=<id>&t=<s>` shows one frame (also in `npm run shot -- --set`).
 
+## The counter: the story during play (#116)
+
+The micro layer. Owner direction after playing (2026-10-09, reference: Đám Cưới Chuột tells its story inside the
+play): the story must not live only between levels. Owner pick: a framed band above the board (variant 1) with the
+painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (3).
+
+- `client/story/counter.js` (lazy-loaded on every story level) draws the stop's place in the band (the alley, the
+  beach), Bà Năm's cart with Mực on it, Út, and customers on red stools, each with an order bubble for a food that
+  is on the board. `client/story/counter-model.js` (pure, tested) decides who orders what and who gets served.
+- A **match** plates the trio: it flies up from the grill to Út, who carries it to the customer who ordered it (or
+  the next one waiting; while Út is out the plate flies straight to them). They eat, leave, and a new customer sits
+  down only for a food still on the board. A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
+  lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
+- **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,
+  the stop's page keeper (Cô Sáu in the alley, Chú Tư at the beach) tells the level's line in front of the place,
+  talking while the text types out over the blurred board; "Serve" starts the level (`client/story/intro.js`). It is
+  the level's only introduction: nothing is ever pinned over the band (Story: Off skips the beats, not this); short
+  toasts ("no moves left") sit low, above the tools.
+- **Customers are strangers who belong to the place**: in the alley a student with a backpack, a xe ôm driver in his
+  helmet, an office worker with glasses, a worker in a cap, an old man; in the fishing village a fish seller in a nón
+  lá, a fisherman with a towel on his head, a child in a sun hat, an old fisherman, a village woman. Never a story
+  character's look, so nobody mistakes them for the cast.
+- **Mực sits on the ground beside the cart**, never on the grill (counter and beats).
+- **The cart** is the badge's cart (stainless body, glass cabinet, spoked wheels) with years of use on it: rust
+  patches and streaks, a dent; the badge got the same rust (`client/ui/brand.js`, icons and og.png regenerated).
+- Presentation only: it follows the board's events (`match`, `combo`, `level_complete`, `level_failed`) and never
+  changes a rule. Reduced motion: Út stays at the cart, plates fade to the customer. Phones held sideways: no band.
+- Next: the band changes with the chapters (laptop on the cart, the tower poster, packing boxes) and the hint in a
+  character's voice.
+
 ## Motion grammar: pantomime
 
 The story has no voice-over, so it follows **pantomime** (Pixar shorts, Shaun the Sheep, Cut the Rope), not

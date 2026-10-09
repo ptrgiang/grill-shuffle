@@ -79,7 +79,7 @@ const app = {
 
 const view = new BoardView(stage, { onFx: (ev, at) => onFx(ev, at) });
 const input = new Input(canvas, () => app.session, view, {
-  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal && !app.replay,
+  enabled: () => app.route === 'game' && app.session?.status === 'playing' && !app.modal && !app.replay && !app.introOpen,
   onGesture: () => audio.unlock(),
   haptics: () => app.settings.haptics !== false,
   onSelect: () => (audio.onEvent({ type: 'select' }), app.coach?.phase('drop')),
@@ -227,6 +227,7 @@ const foodName = (id) => t(`food.${id}`);
 function onFx(ev, at) {
   audio.onEvent(ev, at ? at.x / stage.size.w : 0.5);
   if (!app.hud) return;
+  app.hud.counter?.onFx(ev, at);
   switch (ev.type) {
     case 'score':
       if (at) floatText(fxLayer, ev.combo > 1 ? `+${ev.points}  x${ev.combo}` : `+${ev.points}`, at.x, at.y - 10, ev.combo > 1 ? 'hot' : '');
@@ -473,6 +474,36 @@ function qualityPicker() {
   return h('div.volume', h('span', t('settings.graphics')), h('div.seg', { role: 'group', 'aria-label': t('settings.graphicsQuality') }, ...buttons));
 }
 
+/** The level's opening (#116): the page keeper of the stop tells the level's line over the blurred board; "Serve" plays. */
+function levelIntro(level) {
+  const at = levelPosition(PACKS, level.id);
+  const beach = themeFor(level).id === 'beach_grill';
+  const who = beach ? 'chu-tu' : 'co-sau';
+  const name = beach ? 'Chú Tư' : 'Cô Sáu';
+  const hud = app.hud;
+  app.introOpen = true; // no move before the opening (it loads lazily)
+  const release = () => {
+    if (app.hud === hud) app.introOpen = false;
+  };
+  import('./story/intro.js').then((m) => {
+    if (app.hud !== hud) return; // the player left the level meanwhile
+    return m.playIntro({
+      who,
+      place: beach ? 'beach' : 'alley',
+      title: `${t('level.label', { n: at?.n ?? '' })} · ${pick(level.name)}`,
+      text: pick(level.hint),
+      serveLabel: t('intro.serve'),
+      saysLabel: t('intro.says', { name }),
+      reduced: reducedMotion(),
+      sound: (n, o) => audio.story(n, o),
+    });
+  }).then(release, () => {
+    // the opening could not load (offline before it was cached): a short toast with the line instead
+    release();
+    if (app.hud === hud) hud.tip(pick(level.hint));
+  });
+}
+
 /** Story beats on / off ("skip story"): off still marks them seen, so turning it on later never replays a backlog. */
 function storyPicker() {
   const buttons = [true, false].map((on) =>
@@ -581,6 +612,7 @@ async function startCode(code, { mode }) {
 }
 
 function startLevel(level, { mode, code = null }) {
+  app.introOpen = false;
   app.route = 'game';
   app.mode = mode;
   app.level = level;
@@ -598,7 +630,11 @@ function startLevel(level, { mode, code = null }) {
   app.fit = () => app.hud.margins();
   view.setMargins(app.hud.margins());
   view.setState(app.session.state);
-  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) app.hud.tip(pick(level.hint));
+  if (level.hint && mode === 'story' && !(app.progress[level.id]?.stars > 0)) {
+    // the level's opening: the stop's page keeper tells the level before play (the only introduction; nothing is
+    // pinned over the band). "Story: Off" skips the beats, not this. Headless tools and ?story=off: none.
+    if (!globalThis.__gsNoStory && storyParam !== 'off') levelIntro(level);
+  }
   dismissCoach();
   if (wantsCoach(level, mode)) app.coach = new Coach(fxLayer, view, coachMove(level));
   if (app.target) app.hud.tip(t('tip.friend', { moves: app.target }));
@@ -689,6 +725,7 @@ function restart() {
   app.session.restart();
   view.setState(app.session.state);
   app.hud.update(app.session.state, { immediate: true });
+  app.hud.counter?.reset(app.session.state);
   closeModal();
 }
 
@@ -707,6 +744,7 @@ function undo() {
   app.session.undo();
   view.setState(app.session.state);
   app.hud.update(app.session.state, { immediate: true });
+  app.hud.counter?.reset(app.session.state);
   closeModal();
 }
 
@@ -782,6 +820,16 @@ class Hud {
       this.tipEl,
       footer,
     );
+    // the counter above the board (#116): customers, Út serving the finished trios; story levels only
+    this.counter = null;
+    if (app.mode === 'story' && !replay) {
+      this.el.classList.add('has-counter');
+      this.el.append(h('div.counter-strip', { 'aria-hidden': 'true' }));
+      import('./story/counter.js').then((m) => {
+        if (!this.el.isConnected || app.hud !== this) return; // a newer HUD replaced this one
+        this.counter = m.mountCounter(this.el, { level, state: app.session?.state, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
+      });
+    }
     if (this.boosters.length) footer.classList.add('has-boosters');
     this.goalEls = [];
   }
@@ -793,7 +841,7 @@ class Hud {
     const base = baseMargins();
     return isShortLandscape()
       ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
-      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal')], bottom: q('.tool') }, base, 6);
+      : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.counter-strip')], bottom: q('.tool') }, base, 6);
   }
 
   update(s, { immediate = false } = {}) {
@@ -864,6 +912,7 @@ class Hud {
     this.tipEl.textContent = text;
     this.tipEl.classList.add('show');
     clearTimeout(this.tipTimer);
+    // with the counter it is a note pinned to the band: it stays longer and a tap puts it away
     this.tipTimer = setTimeout(() => this.tipEl.classList.remove('show'), 5200);
   }
 }

@@ -565,6 +565,16 @@ async function runStoryBeats(name, { w, h }) {
     check(!(await page.$('.story-root')), `${name}: a tap skips the cold open`);
     await sleep(500);
     check((await seen()).includes('street.cold-open'), `${name}: the cold open is saved as seen`);
+    // the level's opening: Cô Sáu tells level 1 over the blurred board; Serve starts it
+    const intro = await page.waitForSelector('.level-intro .intro-serve', { timeout: 15000 }).then(() => true, () => false);
+    check(intro, `${name}: the level opens with the page keeper's intro`);
+    await sleep(600);
+    await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}-intro.png`) });
+    // a tap while the line still types shows it whole; the next tap serves
+    await page.evaluate(() => document.querySelector('.level-intro .intro-serve').click());
+    if (await page.$('.level-intro:not(.out)')) await page.evaluate(() => document.querySelector('.level-intro .intro-serve')?.click());
+    await page.waitForFunction(() => !document.querySelector('.level-intro'), { timeout: 5000 }).catch(() => {});
+    check(!(await page.$('.level-intro')), `${name}: "Serve" puts the intro away`);
     await settle(page, 600);
     for (const m of decodeActions(lvl.solver.solution)) {
       const a = await slotXY(page, m.from.grill, m.from.slot, 0.4);

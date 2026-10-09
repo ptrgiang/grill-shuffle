@@ -41,6 +41,18 @@ const LOOKS = {
   // two regulars of the alley: an uncle in a white singlet, a student
   'regular-a': { skin: 'skinA', hair: 'hairA', shirt: 'shirtA', pants: 'pantsA', short: true, height: 0.96 },
   'regular-b': { skin: 'skinB', hair: 'hairB', shirt: 'shirtB', pants: 'pantsB', braid: true, height: 0.92 },
+  // guests at the counter: a student with a backpack, a xe ôm driver in his helmet, an office worker with a bob and
+  // glasses, a worker in a cap, an old man with glasses
+  'guest-1': { skin: 'skinG1', hair: 'hairG1', shirt: 'shirtG1', pants: 'pantsG1', backpack: 'bagG1', height: 0.95 },
+  'guest-2': { skin: 'skinG2', hair: 'hairG2', shirt: 'shirtG2', pants: 'pantsG2', helmet: 'helmetG2', height: 1.02 },
+  'guest-3': { skin: 'skinG3', hair: 'hairG3', shirt: 'shirtG3', pants: 'pantsG3', bob: true, glasses: true, height: 0.93 },
+  'guest-4': { skin: 'skinG4', hair: 'hairG4', shirt: 'shirtG4', pants: 'pantsG4', cap: true, capColor: 'capG4', height: 1 },
+  'guest-5': { skin: 'skinG5', hair: 'hairG5', shirt: 'shirtG5', pants: 'pantsG5', glasses: true, height: 0.94 },
+  'beach-1': { skin: 'skinB1', hair: 'hairB1', shirt: 'shirtB1', pants: 'pantsB1', bun: true, nonla: 'hatB1', height: 0.93 },
+  'beach-2': { skin: 'skinB2', hair: 'hairB2', shirt: 'shirtB2', pants: 'pantsB2', short: true, headTowel: 'towelB2', height: 1 },
+  'beach-3': { skin: 'skinB3', hair: 'hairB3', shirt: 'shirtB3', pants: 'pantsB3', sunhat: 'hatB3', height: 0.74 },
+  'beach-4': { skin: 'skinB4', hair: 'hairB4', shirt: 'shirtB4', pants: 'pantsB4', sunhat: 'hatB4', glasses: false, height: 0.95 },
+  'beach-5': { skin: 'skinB5', hair: 'hairB5', shirt: 'shirtB5', pattern: 'patternB5', pants: 'pantsB5', bob: true, height: 0.92 },
   // flashback: Bà Năm as a girl selling her father's catch (a headscarf, a long braid, a shoulder pole)
   'ba-nam-young': { skin: 'skinBa', hair: 'hairBa', shirt: 'shirtBa', pants: 'pantsBa', braid: true, scarf: true, height: 0.9 },
 };
@@ -210,6 +222,7 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   ctx.save();
   ctx.translate(0, hip);
   ctx.rotate(p.lean);
+  if (L.backpack) shape(ctx, rrect(-20, -36, 10, 26, 4), L.backpack);
   limb(ctx, -3, -34, p.armB[0] - swing * 0.6, p.armB[1], 17 * (2 - lw) * 0.95, 15 * (2 - lw), 8.5 * lw, L.shirt, L.skin);
   // tapered shirt with a collar (rounder in the toy style)
   const bw = S.body ?? 1;
@@ -279,7 +292,14 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   }
   shape(ctx, circle(0, 0, 12), L.skin);
   const hair = new Path2D();
-  if (L.bun || L.braid) {
+  if (L.bob) {
+    // a bob: rounded down to the jaw at the back, a straight fringe
+    hair.moveTo(-13, 8);
+    hair.arc(0, -1, 13.4, Math.PI * 0.8, Math.PI * 1.9);
+    hair.lineTo(11, -4);
+    hair.lineTo(-2, -5);
+    hair.lineTo(-6, 6);
+  } else if (L.bun || L.braid) {
     // Cô Sáu / young Bà Năm: hair combed back (bun / braid)
     hair.arc(0, -1, 12.8, Math.PI * 0.95, Math.PI * 1.95);
     hair.quadraticCurveTo(4, -9, -12.5, 1);
@@ -313,7 +333,44 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
     cap.lineTo(19, -3);
     cap.lineTo(13, -1);
     cap.closePath();
-    shape(ctx, cap, 'boatTrim');
+    shape(ctx, cap, L.capColor ?? 'boatTrim');
+  }
+  if (L.nonla) {
+    // nón lá: the conical hat of the fish sellers
+    shape(ctx, new Path2D('M-22 -4 L0 -26 L22 -4 Q0 0 -22 -4 Z'), L.nonla);
+    ctx.strokeStyle = 'rgba(120,90,40,.5)';
+    ctx.lineWidth = 0.6;
+    for (const k of [0.35, 0.6, 0.85]) {
+      ctx.beginPath();
+      ctx.moveTo(-22 * k, -26 + 22 * k);
+      ctx.lineTo(22 * k, -26 + 22 * k);
+      ctx.stroke();
+    }
+  }
+  if (L.sunhat) {
+    // a soft bucket / sun hat
+    shape(ctx, new Path2D('M-18 -5 Q0 -9 18 -5 L14 -2 Q0 -5 -14 -2 Z'), L.sunhat);
+    shape(ctx, new Path2D('M-11 -5 Q-10 -20 0 -20 Q10 -20 11 -5 Z'), L.sunhat);
+  }
+  if (L.headTowel) {
+    // a towel knotted round the head against the sun
+    shape(ctx, new Path2D('M-13 -3 Q-12 -15 0 -15 Q12 -15 13 -3 L13 1 L-13 1 Z'), L.headTowel);
+    shape(ctx, new Path2D('M-13 -1 L-19 4 L-16 6 L-12 2 Z'), L.headTowel);
+  }
+  if (L.helmet) {
+    // a motorbike half-helmet, strap under the chin
+    const hm = new Path2D();
+    hm.arc(0, -2, 14.5, Math.PI * 1.02, Math.PI * 1.98);
+    hm.lineTo(15, -1);
+    hm.lineTo(-14.5, -1);
+    hm.closePath();
+    shape(ctx, hm, L.helmet);
+    ctx.strokeStyle = col('ink');
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    ctx.moveTo(-8, -1);
+    ctx.quadraticCurveTo(-4, 12, 4, 10);
+    ctx.stroke();
   }
   if (L.scarf) {
     const scarf = new Path2D();
@@ -364,6 +421,15 @@ export function drawPerson(ctx, who, x, y, s, face, p, t = 0) {
   } else {
     ctx.beginPath();
     ctx.arc(6, p.eyes > 0.3 ? 0 : -1, 2.2, Math.PI * 1.1, Math.PI * 1.9);
+    ctx.stroke();
+  }
+  if (L.glasses) {
+    ctx.strokeStyle = col('ink');
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(6.6, -1.2, 3.4, 0, Math.PI * 2);
+    ctx.moveTo(3.2, -1.6);
+    ctx.lineTo(-2, -2.4);
     ctx.stroke();
   }
   ctx.beginPath();
