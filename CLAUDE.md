@@ -9,7 +9,7 @@ When asked to continue development / take the next issue, use the `next-issue` s
 `git checkout main && git pull`, `npm run next-issue`, claim the pick (`status/in-progress` + assign), work it on the
 branch named in the issue, open a PR with `Closes #n`, get CI green, then stop for the user's review.
 Never push to `main` directly (it is not branch-protected, treat it as if it were). Merge only when the user says so;
-merging deploys to https://grillshuffle.thebuilder.work through CI.
+merging deploys to https://banamgrill.thebuilder.work through CI.
 
 ## Rules
 

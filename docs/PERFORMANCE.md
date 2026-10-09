@@ -39,7 +39,7 @@
 
 A corner overlay, averaged over 0.5 s: rendered fps, frame interval (avg + max), CPU ms per frame (view update +
 `render()` call; GPU time is not visible from JS), draw calls, triangles, tier, busy / idle, render / device pixel
-ratio. On a phone: open `https://grillshuffle.thebuilder.work/saigon-alley/27?stats=1&quality=low` (or medium / high), make
+ratio. On a phone: open `https://banamgrill.thebuilder.work/saigon-alley/27?stats=1&quality=low` (or medium / high), make
 a few moves, read the busy numbers.
 
 We have not needed instancing: ~100 draw calls is far from a problem. If profiling ever says otherwise, the plan is

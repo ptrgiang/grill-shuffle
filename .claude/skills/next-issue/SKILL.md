@@ -106,7 +106,7 @@ anything left open. Review is theirs.
 gh pr merge <pr> --squash --delete-branch
 git checkout main && git pull --ff-only
 gh run watch $(gh run list --branch main --event push -L 1 --json databaseId --jq '.[0].databaseId') --exit-status
-curl -s -o /dev/null -w "%{http_code}\n" https://grillshuffle.thebuilder.work/
+curl -s -o /dev/null -w "%{http_code}\n" https://banamgrill.thebuilder.work/
 ```
 Verify the change on the live site. The issue closes through the PR; remove `status/in-progress` if it stays open.
 Then offer the next pick (`npm run next-issue`).
