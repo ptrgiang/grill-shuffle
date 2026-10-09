@@ -106,6 +106,9 @@ const reducedMotion = () => !!globalThis.matchMedia?.('(prefers-reduced-motion: 
 const beatPack = new Map(STORY_FILES.flatMap((f) => (f.beats ?? []).map((b) => [b.id, f.pack])));
 const transitionOf = (beat) => THEMES[PACKS.find((p) => p.id === beatPack.get(beat.id))?.theme]?.story?.transition ?? 'lights';
 let storyRunning = null;
+// the launch story waits for the language (#112): the first launch asks for it on the menu before anything plays
+let langKnown;
+const languageReady = new Promise((r) => (langKnown = r));
 /** Play what `event` triggers (unless the player turned the story off), then mark it all seen. */
 async function runStory(event) {
   if (!STORY_ON && storyParam !== 'log') return;
@@ -430,8 +433,9 @@ function langPicker() {
   audio.unlock();
   openModal(
     h('h2.lang-pick-title', DICTS.vi['lang.pickTitle'], h('br'), h('span.muted', DICTS.en['lang.pickTitle'])),
-    h('div.modal-buttons.lang-pick', ...LANGS.map((l) => h(`button.btn${lang() === l ? '.primary' : ''}`, { lang: l, on: { click: () => (closeModal(), useLang(l, { save: true })) } }, DICTS[l][`lang.${l}`]))),
+    h('div.modal-buttons.lang-pick', ...LANGS.map((l) => h(`button.btn${lang() === l ? '.primary' : ''}`, { lang: l, on: { click: () => (closeModal(), useLang(l, { save: true }), langKnown()) } }, DICTS[l][`lang.${l}`]))),
   );
+  app.langPicking = true;
 }
 
 async function setMuted(m, btn) {
@@ -1104,8 +1108,10 @@ async function boot() {
   render();
   applyQuality();
   stage.start((dt) => view.update(dt * (app.replay?.speed ?? 1)), { gate: (dt) => idle.tick(dt, view.busy), onRendered });
-  // the cold open (first launch) and the memories recap, once the cloud's seen list is merged (or after 3 s offline)
-  Promise.race([syncNow(), new Promise((r) => setTimeout(r, 3000))]).then(() => runStory({ on: 'launch' }));
+  // the cold open (first launch) and the memories recap, once the cloud's seen list is merged (or after 3 s offline) and
+  // the language is known: saved, ?lang=, or detected when no picker is shown (a deep link); else after the pick
+  if (!app.langPicking) langKnown();
+  Promise.all([Promise.race([syncNow(), new Promise((r) => setTimeout(r, 3000))]), languageReady]).then(() => runStory({ on: 'launch' }));
   registerServiceWorker();
 }
 // pull cloud progress, then send whatever waited while offline
