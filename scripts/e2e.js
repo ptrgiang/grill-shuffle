@@ -7,6 +7,7 @@
 //   burn-*: the burn levels (rules v3) won through tap / drag, the tray level included
 //   burn-char: lets an item char on purpose and expects the level lost with the "Burnt!" screen
 //   mobile-360: a full tap win on the smallest supported phone, 360 x 640 at DPR 3
+//   story-lang: first launch on the menu: the language picker comes first, then the cold open in the picked language
 //   story-390: with ?story=on, the cold open plays on first launch and a tap skips it; winning level 1 plays its beat
 //              (the notebook) before the results; a tap skips it, the beats are saved as seen, "Next" opens level 2
 //   landscape: tap play on a phone held sideways (844 x 390, HUD in side columns, asymmetric camera frustum)
@@ -593,6 +594,24 @@ async function runStoryBeats(name, { w, h }) {
   }
 }
 
+async function runStoryLang(name, { w, h }) {
+  const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 2 * 60_000, story: true });
+  const errors = [];
+  collectPageErrors(page, errors);
+  try {
+    await page.goto(`${vite.url}/`, { waitUntil: 'load' });
+    await page.waitForSelector('.lang-pick button', { timeout: 30000 });
+    await sleep(4000); // longer than the launch story's sync wait
+    check(!(await page.$('.story-root')), `${name}: nothing plays while the language picker is open`);
+    await page.evaluate(() => document.querySelector('.lang-pick button[lang=vi]').click());
+    const cold = await page.waitForFunction(() => document.querySelector('.story-root .story-title')?.textContent, { timeout: 15000 }).then((h) => h.jsonValue(), () => null);
+    check(cold === 'Xe nướng của bà', `${name}: after picking Tiếng Việt the cold open plays in Vietnamese (${cold})`);
+    check(errors.length === 0, `${name}: no page errors ${errors.length ? JSON.stringify(errors) : ''}`);
+  } finally {
+    await close();
+  }
+}
+
 mkdirSync(join(ROOT, 'shots'), { recursive: true });
 // `npm run test:e2e -- --only replay,boosters`: just the groups whose name starts with one of those
 const onlyAt = process.argv.indexOf('--only');
@@ -609,6 +628,7 @@ try {
     ['burn-char', () => runCharred('burn-char', { w: 390, h: 844, mobile: true, levelId: 'street-012' })],
     ['mobile-360', () => run('mobile-360', { w: 360, h: 640, mobile: true, levelId: 'street-009', mode: 'tap' })],
     ['story-390', () => runStoryBeats('story-390', { w: 390, h: 844 })],
+    ['story-lang', () => runStoryLang('story-lang', { w: 390, h: 844 })],
     ['landscape', () => run('landscape', { w: 844, h: 390, mobile: true, levelId: 'street-010', mode: 'tap' })],
     ...[[360, 640], [390, 844], [430, 932], [844, 390], [1280, 800]].map(([w, h]) => [`layout-${w}x${h}`, () => runLayout(w, h)]),
     ['quality', () => runQuality('quality', { w: 390, h: 844 })],
