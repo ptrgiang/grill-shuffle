@@ -1,0 +1,82 @@
+# CodeRabbit: second, non-blocking PR reviewer (trial, #104). The owner reviews and merges; comments are suggestions.
+# Schema: https://coderabbit.ai/integrations/schema.v2.json
+# Rules that `npm run check` / `validate:levels` already enforce are NOT repeated here (CI fails on them anyway).
+language: en-US
+tone_instructions: "Be brief and concrete. Skip style nitpicks. Only flag what can break the game, the save, sync, determinism or the content rules."
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  sequence_diagrams: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["main"]
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+  path_filters:
+    # level data: ids, solver blocks and the curve are checked by validate:levels; names / hints are reviewed by the owner
+    - "!content/levels/**/*.json"
+    - "!content/generated/**"
+    - "!tests/visual/**"
+    - "!worker/content.gen.js"
+    - "!package-lock.json"
+    - "!client/public/fonts/**"
+    - "!**/*.png"
+  path_instructions:
+    - path: "shared/**"
+      instructions: |
+        The authoritative, deterministic puzzle simulation. Same level + same actions must give the same final hash on
+        every machine. Flag: anything that can change the outcome of an action sequence without bumping
+        PUZZLE_RULE_VERSION in shared/version.js; edits to a shipped CHALLENGE_PRESETS version; iteration over
+        unordered data that affects results; floating-point or locale-dependent logic in rules; mutation of input state
+        (applyAction must return a new state). DOM / three.js / Math.random / clock imports are already blocked by CI.
+    - path: "solver/**"
+      instructions: |
+        Search over the shared simulation. Flag: anything that makes minMoves non-optimal (heuristic must stay
+        admissible), non-determinism in the generator (must be seeded via deriveSeed and versioned by
+        GENERATOR_VERSION), and changes to frozen preset configs.
+    - path: "worker/**"
+      instructions: |
+        Cloudflare Worker API over D1. Clients are untrusted: flag any value from a request body / header that reaches
+        D1 or a response without validation, unbounded loops or batch sizes from client input, SQL built by string
+        concatenation, and schema use without a matching file in migrations/. Results must stay "best of" (never lower
+        a stored best).
+    - path: "migrations/**"
+      instructions: "Migrations are append-only and run on deploy. Flag edits to an existing migration file and anything that is not idempotent (CREATE ... IF NOT EXISTS)."
+    - path: "client/**"
+      instructions: |
+        Browser game. The simulation in shared/ is authoritative: flag game rules or game truth read from meshes in
+        render/, input or animation code. Every player-facing string goes through t() / pick() and exists in BOTH
+        client/i18n/vi.js and en.js (flag new English-only literals). Pure modules (client/game/unlock.js, story.js,
+        routes.js, daily.js) must stay free of DOM access. Flag IndexedDB save-shape changes without SAVE_VERSION
+        handling, and sync code that could lose or downgrade progress.
+    - path: "client/render/**"
+      instructions: "three.js presentation only. Flag per-frame allocations in update loops, undisposed geometries / materials / textures, and anything that blocks input during animations."
+    - path: "content/story/**"
+      instructions: |
+        Story beats (docs/STORY.md). Ids are append-only: flag a removed or reordered shipped beat / keepsake id.
+        Every title / line is { vi, en }. Beats never touch level data. Do not judge the Vietnamese wording; the owner
+        reviews story text.
+    - path: "scripts/**"
+      instructions: "Node tooling. Any headless browser must go through scripts/lib/browser.js (launchChrome); flag direct puppeteer / Chrome launches."
+    - path: "tests/**"
+      instructions: "node:test suites. Flag tests that depend on wall-clock time, randomness or test order, and assertions that cannot fail."
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      - "CLAUDE.md"
+      - "docs/ARCHITECTURE.md"
+      - "CONTRIBUTING.md"
