@@ -62,5 +62,6 @@
   },
   "unlock": {
     "stars": 0
-  }
+  },
+  "story": { "transition": "lights" }
 }

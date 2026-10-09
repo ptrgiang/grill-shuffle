@@ -102,11 +102,19 @@ export async function recordResult(levelId, { stars, moves, score }) {
   return { record: rec, improved: !old || rec.stars > old.stars || rec.bestMoves < old.bestMoves };
 }
 
-/** Mark story beats / keepsakes as seen (once they were shown). Returns the new seen list. */
-export async function markStorySeen(ids) {
-  const seen = addSeen(await get('storySeen', []), ids);
-  await set('storySeen', seen);
-  return seen;
+// every 'storySeen' write goes through this chain (read + write in one step), so a cloud merge and a beat marked seen
+// at the same moment cannot overwrite each other
+let seenChain = Promise.resolve();
+
+/** Add story beat / keepsake ids to the seen list (shown here, or merged from the cloud). Returns the new list. */
+export function markStorySeen(ids) {
+  const run = seenChain.then(async () => {
+    const seen = addSeen(await get('storySeen', []), ids);
+    await set('storySeen', seen);
+    return seen;
+  });
+  seenChain = run.catch(() => {});
+  return run;
 }
 
 /** Merge progress from elsewhere (cloud): per level, the best of both. */

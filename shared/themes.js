@@ -32,7 +32,12 @@ export const THEME_DEFAULTS = Object.freeze({
   // grill: hiss (level), low rumble (level), crackle pops per second; seed picks the noise
   ambience: { preset: 'grill', hiss: 0.14, rumble: 2.2, crackle: 7, seed: 21 },
   unlock: { stars: 0 },
+  // story beats (client/story/player.js): the stop's signature transition, docs/STORY.md "The five stops"
+  story: { transition: 'lights' },
 });
+
+/** Story transitions a theme can pick (client/story/player.js draws them). */
+export const STORY_TRANSITIONS = Object.freeze(['lights', 'wave', 'fade']);
 
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
@@ -90,6 +95,7 @@ export function validateTheme(theme) {
   if (theme.backdrop?.count !== undefined && (!Number.isInteger(theme.backdrop.count) || theme.backdrop.count > 80)) err('backdrop.count must be an integer 0..80');
   if (theme.table?.planks !== undefined && (!Number.isInteger(theme.table.planks) || theme.table.planks < 1 || theme.table.planks > 16)) err('table.planks must be an integer 1..16');
   if (theme.unlock?.stars !== undefined && !Number.isInteger(theme.unlock.stars)) err('unlock.stars must be an integer');
+  if (theme.story?.transition !== undefined && !STORY_TRANSITIONS.includes(theme.story.transition)) err(`story.transition must be one of ${STORY_TRANSITIONS.join(', ')}`);
   return errors;
 }
 

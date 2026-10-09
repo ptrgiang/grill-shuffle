@@ -20,6 +20,11 @@ const SET = [
   { path: '/sandbox/board?level=street-008&anim=0', w: 430, h: 932, mobile: true, out: 'board-mobile-430.png' },
   { path: '/sandbox/board?level=street-015&anim=0', w: 390, h: 844, mobile: true, out: 'board-mobile-390-oranges.png' }, // shrimp / carrot / salmon
   { path: '/sandbox/board?level=street-016&anim=0', w: 360, h: 800, mobile: true, out: 'board-mobile-360-slabs.png' }, // steak / toast / salmon
+  // story beats (client/story/player.js): stills at a key moment, phone + desktop, the memories page
+  { path: '/sandbox/story?beat=street.cold-open&t=9.6', w: 390, h: 844, mobile: true, out: 'story-cold-open-390.png' },
+  { path: '/sandbox/story?beat=street.fan&t=6.4&lang=vi', w: 360, h: 640, mobile: true, out: 'story-fan-360.png' },
+  { path: '/sandbox/story?beat=beach.arrival&t=6.4', w: 1280, h: 800, out: 'story-beach-desktop.png' },
+  { path: '/sandbox/story?recap=1', w: 390, h: 844, mobile: true, out: 'story-recap-390.png' },
   { path: '/play/street-001', w: 390, h: 844, mobile: true, out: 'game-mobile.png' },
   { path: '/', w: 1280, h: 800, out: 'menu-desktop.png' },
   // issue #3 viewports: HUD vs board on small, tall and sideways phones

@@ -40,6 +40,7 @@ export default defineConfig({
         'sandbox/board': r('client/sandbox/board.html'),
         'sandbox/brand': r('client/sandbox/brand.html'),
         'sandbox/food': r('client/sandbox/food.html'),
+        'sandbox/story': r('client/sandbox/story.html'),
       },
     },
   },

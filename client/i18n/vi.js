@@ -23,6 +23,13 @@ export default {
   'lang.pickTitle': 'Chọn ngôn ngữ',
 
   // chung
+  'story.skip': 'Chạm để bỏ qua',
+  'story.memories': 'Ký ức',
+  'story.memoriesSub': 'Chuyện đã qua',
+  'story.continue': 'Tiếp tục',
+  'settings.story': 'Truyện',
+  'common.on': 'Bật',
+  'common.off': 'Tắt',
   'common.close': 'Đóng',
   'common.back': 'Quay lại',
   'common.menu': 'Menu',

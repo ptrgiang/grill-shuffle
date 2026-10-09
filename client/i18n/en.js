@@ -24,6 +24,13 @@ export default {
 
   // common
   'common.close': 'Close',
+  'story.skip': 'Tap to skip',
+  'story.memories': 'Memories',
+  'story.memoriesSub': 'What happened so far',
+  'story.continue': 'Continue',
+  'settings.story': 'Story',
+  'common.on': 'On',
+  'common.off': 'Off',
   'common.back': 'Back',
   'common.menu': 'Menu',
   'common.backToMenu': '← Menu',

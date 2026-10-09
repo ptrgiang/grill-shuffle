@@ -153,6 +153,27 @@ IndexedDB (`storySeen`) and sync with `/api/progress` (`story`, D1 `story_seen`;
 A seen id never plays again, so a returning player never gets a backlog. `?story=log` prints what an app start or a
 story win would trigger (nothing plays or is marked seen until the beats get their presentation).
 
+## Story player (#81)
+
+The owner picked the presentation in #81: **every beat full screen** (a vignette with a paper caption card: the
+chapter title and its one line), and **comic panels for the "memories" recap**. `client/story/` is lazy-loaded the
+first time a beat is due; the main bundle only carries the wiring in `main.js`.
+
+- **When**: on app start (`storyFor({ on: 'launch' })`: the cold open, then the recap if any) and after a story win,
+  before the results (`{ on: 'win' }`); "Next" on the results goes straight on to the next level.
+- **Skip**: a tap skips the beat, Escape skips the rest. A skipped beat counts as seen. Settings → Story: Off turns
+  beats off (they are still marked seen, so turning it on later never replays a backlog).
+- **Reduced motion**: no camera or character motion; the beat's three key moments (`panels`) as stills, cross-faded.
+- **Transitions**: the theme's `story.transition` (`lights`: the string lights flick on, Street; `wave`: a wave wipes
+  across, Beach; `fade`).
+- **Staging** lives in `client/story/beats.js` (positions, poses, props, camera, scene state per beat); the text stays
+  in `content/story/`. A new beat without staging shows a still of the cart until it is staged; the tests require
+  staging for every shipped beat.
+- **Art** (#106, owner pick A): the present is drawn flat (`style: 'present'`), Bà Năm's past as a Đông Hồ woodblock
+  print on điệp paper (`style: 'past'`).
+- **Production**: off until #106 finishes the art (`STORY_DEFAULT_ON` in `client/game/story.js`); `?story=on` plays the
+  beats for a visit. `/sandbox/story?beat=<id>&t=<s>` shows one frame (also in `npm run shot -- --set`).
+
 ## Motion grammar: pantomime
 
 The story has no voice-over, so it follows **pantomime** (Pixar shorts, Shaun the Sheep, Cut the Rope), not
