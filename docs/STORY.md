@@ -190,9 +190,12 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
 - `client/story/counter.js` (lazy-loaded on every story level) draws the stop's place in the band (the alley, the
   beach), Bà Năm's cart with Mực on it, Út, and customers on red stools, each with an order bubble for a food that
   is on the board. `client/story/counter-model.js` (pure, tested) decides who orders what and who gets served.
-- A **match** plates the trio: it flies up from the grill to Út, who carries it to the customer who ordered it (or
-  the next one waiting; while Út is out the plate flies straight to them). They eat, leave, and a new customer sits
-  down only for a food still on the board. A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
+- A **match** plates the trio: it flies up from the grill to the cart, and **Út carries every plate**, one by one, to
+  the customer who ordered it (else whoever waits, else whoever is still eating). Plates that come faster than he
+  walks wait on the cart and he hurries; nothing is dropped, so the deliveries count the matches (owner, 2026-10-09).
+  **Few customers, served many times**: two stools on a phone, three on a wide screen; a customer eats two or three
+  plates, ordering again in between, then leaves, and a new one sits down only for a food still on the board (or a
+  plate already waiting). A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
   lets Mực steal a shrimp. Sounds: footsteps, the clink, the meow (#113).
 - **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,
   the stop's page keeper (Cô Sáu in the alley, Chú Tư at the beach) tells the level's line in front of the place,
@@ -207,7 +210,7 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
 - **The cart** is the badge's cart (stainless body, glass cabinet, spoked wheels) with years of use on it: rust
   patches and streaks, a dent; the badge got the same rust (`client/ui/brand.js`, icons and og.png regenerated).
 - Presentation only: it follows the board's events (`match`, `combo`, `level_complete`, `level_failed`) and never
-  changes a rule. Reduced motion: Út stays at the cart, plates fade to the customer. Phones held sideways: no band.
+  changes a rule. Reduced motion: Út stays at the cart, plates fade from the cart to the customer. Phones held sideways: no band.
 - Next: the band changes with the chapters (laptop on the cart, the tower poster, packing boxes) and the hint in a
   character's voice.
 

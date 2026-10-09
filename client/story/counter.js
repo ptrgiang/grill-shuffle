@@ -1,7 +1,7 @@
 // The counter above the board (#116, owner pick: the strip above the board + the painting's frame and paper + Út
 // carrying the plate): the stop's place in a framed band, customers on red stools with an order bubble each, Út at
-// Bà Năm's cart, Mực on it. A match plates the trio: it flies up from the grill to Út, who carries it to the
-// customer; combos make them cheer, a win makes them wave, a loss lets Mực steal a shrimp. Presentation only.
+// Bà Năm's cart, Mực on it. A match plates the trio: it flies up from the grill to the cart, and Út carries every
+// plate, one by one, to a customer (few customers, each served two or three times); combos make them cheer, a win makes them wave, a loss lets Mực steal a shrimp. Presentation only.
 //
 //   const counter = mountCounter(hud, { level, theme, reduced, sound })
 //   counter.onFx(ev, at)   the board's presentation events (match / combo / level_complete / level_failed)
@@ -48,7 +48,7 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
   cv.className = 'counter-canvas';
   hud.prepend(cv);
   const wide = () => strip.getBoundingClientRect().width > 620;
-  const make = (foods) => createCounter({ foods, seats: wide() ? 4 : 3, seed: hash(level.id), cast: GUESTS[theme] ?? GUESTS.street_bbq, carry: !reduced });
+  const make = (foods) => createCounter({ foods, seats: wide() ? 3 : 2, seed: hash(level.id), cast: GUESTS[theme] ?? GUESTS.street_bbq, carry: !reduced });
   let c = make(state ? stateFoods(state) : boardFoods(level)); // mounted late: the board as it is now
   const beach = theme === 'beach_grill';
   let last = performance.now(), running = false, t = 0;
@@ -60,7 +60,10 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
     const sc = (r.height - 12) / 118;
     const n = c.seats.length;
     const seatX = (i) => r.x + r.width * (0.36 + (0.6 * (i + 0.5)) / n);
-    return { r, sc, ground: r.y + r.height - 6, home: r.x + r.width * 0.08, cart: r.x + r.width * 0.19, seatX };
+    const ground = r.y + r.height - 6, cart = r.x + r.width * 0.19;
+    // where plates wait: on the grate of the cart, side by side, then stacked
+    const shelf = (k) => ({ x: cart + (10 + (k % 3) * 14) * sc * 0.8, y: ground - (78 + Math.floor(k / 3) * 7) * sc * 0.8 });
+    return { r, sc, ground, home: r.x + r.width * 0.08, cart, seatX, shelf };
   };
 
   function person(ctx, g, who, x, face, pose) {
@@ -137,10 +140,10 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
     const u = c.ut;
     const walkTo = (k) => g.home + (g.seatX(u.seat) - 40 * g.sc - g.home) * ease(clamp(k)); // stops just short of the stool
     let ux = g.home, upose = POSES.stand, uface = 1;
-    if (u.phase === 'fetch') upose = { ...POSES.reach, prop: null };
-    else if (u.phase === 'walk') (ux = walkTo(u.t / T.walk)), (upose = CARRY);
+    if (u.phase === 'pick') upose = { ...POSES.reach, prop: null };
+    else if (u.phase === 'walk') (ux = walkTo(u.t / u.d.walk)), (upose = CARRY);
     else if (u.phase === 'hand') (ux = walkTo(1)), (upose = POSES.serve);
-    else if (u.phase === 'back') (ux = walkTo(1 - u.t / T.back)), (upose = POSES.walk), (uface = -1);
+    else if (u.phase === 'back') (ux = walkTo(1 - u.t / u.d.back)), (upose = POSES.walk), (uface = -1);
     if (c.mood.phase === 'won' && u.phase === 'home') upose = POSES.smile;
     person(ctx, g, 'ut', ux, uface, upose);
     ctx.save();
@@ -148,6 +151,11 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
     ctx.scale(g.sc * 0.8, g.sc * 0.8);
     drawCart(ctx, 0, 0, t, 0.6);
     ctx.restore();
+    // the plates waiting for Út on the cart
+    c.queue.forEach((food, k) => {
+      const q = g.shelf(Math.min(k, 8));
+      plate(ctx, q.x, q.y, food, 4.5 * g.sc + 2);
+    });
     const cat = c.cat;
     if (cat.phase === 'steal') {
       const k = cat.t / T.steal;
@@ -196,10 +204,10 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
     ctx.beginPath();
     ctx.roundRect(g.r.x + 3, g.r.y + 3, g.r.width - 6, g.r.height - 6, 9);
     ctx.stroke();
-    // plates in flight: from the matched grill up to Út (or straight to the customer), a dotted trail behind
+    // plates in flight: from the matched grill up to the cart (without motion: from the cart to the customer)
     for (const p of c.plates) {
-      const a = from.get(p) ?? { x: g.r.x + g.r.width / 2, y: g.r.y + g.r.height + 80 };
-      const b = p.to === 'ut' ? { x: g.home + 18 * g.sc, y: g.ground - 70 * g.sc } : { x: g.seatX(p.to) - 10 * g.sc, y: g.ground - 50 * g.sc };
+      const a = p.from === 'cart' ? g.shelf(0) : from.get(p) ?? { x: g.r.x + g.r.width / 2, y: g.r.y + g.r.height + 80 };
+      const b = p.to === 'cart' ? g.shelf(c.queue.length) : { x: g.seatX(p.to) - 10 * g.sc, y: g.ground - 50 * g.sc };
       const k = ease(clamp(p.t / p.dur));
       const x = a.x + (b.x - a.x) * k, y = a.y + (b.y - a.y) * k - Math.sin(Math.PI * k) * 40;
       if (reduced) {
@@ -243,10 +251,7 @@ export function mountCounter(hud, { level, state = null, theme = 'street_bbq', r
 
   return {
     onFx(ev, at) {
-      if (ev.type === 'match') {
-        const before = c.plates.length;
-        if (serve(c, ev.food) && c.plates.length > before) from.set(c.plates[c.plates.length - 1], at ?? null);
-      } else if (ev.type === 'combo' && ev.combo >= 2) cheer(c);
+      if (ev.type === 'match') from.set(serve(c, ev.food), at ?? null); else if (ev.type === 'combo' && ev.combo >= 2) cheer(c);
       else if (ev.type === 'level_complete') win(c);
       else if (ev.type === 'level_failed') for (const q of lose(c)) sound(q.name);
       else return;
