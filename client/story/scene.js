@@ -108,9 +108,10 @@ function motorbike(ctx, x, y) {
 /**
  * The alley. Options: `props: false` (only the place: houses, wires, lights), `lightsFrom` (s, when the string lights start flicking on; null = off), `glow` (coals 0..1),
  * `postcardOnCart`, `dawn` (a pale morning sky, lights off), `cartX` (the cart rolls), `lanyardOnNail`,
- * `phone` ('buzz' | 'dark': Út's phone lying on the cart).
+ * `phone` ('buzz' | 'dark': Út's phone lying on the cart), `tarp` (0 covered … 1 pulled off; null: none),
+ * `laptopBag` (stage x: Út's office bag left on the ground), `ringing` (stage x of a phone in Út's hand: sound only).
  */
-export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true, tarp = null } = {}) {
+export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow = 0.4, postcardOnCart = false, dawn = false, cartX = 196, lanyardOnNail = false, phone = null, props = true, tarp = null, laptopBag = null } = {}) {
   const { w, ground } = STAGE;
   if (backdrop) {
     const sky = ctx.createLinearGradient(0, -100, 0, ground);
@@ -167,6 +168,17 @@ export function drawScene(ctx, t, s, { backdrop = true, lightsFrom = 0.4, glow =
   drawStove(ctx, 262, ground, t, glow);
   drawCart(ctx, cartX, ground, t, glow, postcardOnCart);
   if (tarp != null) drawTarp(ctx, cartX, ground, tarp);
+  if (laptopBag != null) {
+    // the office bag, dark grey with a strap, left on the ground (Mực likes it)
+    shape(ctx, rect(laptopBag - 17, ground - 9, 34, 9, 2), '#3c4048');
+    shape(ctx, rect(laptopBag - 6, ground - 8, 12, 3, 1), '#5c6470', { line: false });
+    ctx.strokeStyle = '#2a2d33';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(laptopBag - 14, ground - 8);
+    ctx.quadraticCurveTo(laptopBag + 8, ground - 26, laptopBag + 24, ground - 2);
+    ctx.stroke();
+  }
   if (phone) {
     // Út's phone on the cart: face up and buzzing, or face down and dark
     ctx.save();

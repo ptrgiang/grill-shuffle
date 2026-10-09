@@ -41,10 +41,10 @@ and every step is shown with objects, not words:
 | cold open | Út is a **marketing executive at a real-estate developer**, comes on a weekday evening meaning to "keep the cart for a few days" as the postcard asks | lanyard, laptop bag, phone buzzing with work; missed calls from Bà Năm |
 | levels 1–9 | grills after office hours (Street BBQ is an evening pack for that reason) | laptop open on the cart, red notification badges |
 | level 10 | burns a skewer; Cô Sáu shows the woven-fan trick; Út smiles for the first time | the phone face-down |
-| level 20 | the regulars come back; Út forgets to check the phone for a whole evening | the laptop bag left behind |
+| level 20 | the regulars come back; Út forgets to check the phone for a whole evening | the laptop bag left on the ground, Mực asleep on it |
 | level 30 | **the reveal**: Khang's tasting visit; his flyer for the tower restaurant carries Út's company logo and the slogan Út wrote. Út's own campaign is clearing the alley | the flyer next to Út's laptop with the same slide |
 | level 40 | the clearance date is set; the boss calls; Út hangs the lanyard on Cô Sáu's nail and lets the phone ring out. **Út quits** and decides to follow Bà Năm | the lanyard on the nail, the phone going dark |
-| level 50 | Cô Sáu gives the first page; Út pushes the cart out of the alley at dawn | the cart on the open road |
+| level 50 | Cô Sáu gives the first page; tucked in it, an old photo (close-up, Đông Hồ print): young Bà Năm waving from her father's boat, the clue to the coast; Út pushes the cart out of the alley at dawn | the cart on the open road |
 
 Three reasons, stacked so no single one feels convenient:
 
@@ -94,7 +94,7 @@ Tết, Trung thu) are "another person she once knew", never a forced sequel.
 
 | When | Beat | Length |
 |---|---|---|
-| first launch (stop 1 only) | cold open: the empty alley, the cart, the postcard, the notice; then straight into level 1 | 15–20 s, skippable |
+| first launch (stop 1 only) | cold open (owner pick #82, 3 + 2): Út walks into the alley on the phone, a close-up shows Bà Năm's missed calls (↙ ×5); the cart stands under a blue tarp; Út pulls it off, the string lights come on, her postcard was under it (her words appear on the card only now); Mực trots in; the notice stays on the wall behind. Then straight into level 1 | 18 s, skippable |
 | first win of level 1 (stop 1 only) | the notebook opens: the missing pages | ≤ 8 s |
 | first entry into a pack (stops 2–5) | arrival: the place, the page keeper, "she was here last week" | ≤ 12 s |
 | first win of levels 10, 20, 30, 40 | one step of the stop's arc | ≤ 8 s |
@@ -165,6 +165,9 @@ first time a beat is due; the main bundle only carries the wiring in `main.js`.
 - **Skip**: a tap skips the beat, Escape skips the rest. A skipped beat counts as seen. Settings → Story: Off turns
   beats off (they are still marked seen, so turning it on later never replays a backlog).
 - **Reduced motion**: no camera or character motion; the beat's three key moments (`panels`) as stills, cross-faded.
+- **Close-ups** (#82, `client/story/insets.js`): a staging's `inset(ctx, t, w, h)` draws a card over the upper
+  middle of the screen after the stage (the phone's missed calls, the old photo); wordless, only a name and numbers.
+  `linesAt` (s) holds the caption's line back until its moment (the cold open: Bà Năm's words once Út reads them).
 - **Sound** (#113): no voice-over; the motion is heard. `client/story/cues.js` derives the cues from the staging
   (footsteps, paper, the phone, bulbs, the fan, the coals, a passing motorbike, surf, rain, Mực's meow, a sting on a
   shock, a clink), the player adds the caption chime and the wave transition; the sounds are procedural
