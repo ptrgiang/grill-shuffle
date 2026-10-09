@@ -561,6 +561,8 @@ export function createDecor(t) {
           const zn = Math.min(z1 - gap * 0.7, d / 2 + gap);
           o.position.set(sg * (half - gap - u * half * 0.45), 0, zn);
         }
+        // never over the grills: a prop with no room left is not shown (its footprint ~ its gap)
+        o.visible = !(Math.abs(o.position.x) < w / 2 + gap * 0.7 && Math.abs(o.position.z) < d / 2 + gap * 0.7);
       }
     },
     dispose() {
