@@ -103,6 +103,8 @@ body.in-game .landing { display: none; }
 .hud-title { flex: 1; min-width: 0; background: var(--panel); border-radius: 14px; padding: 5px 12px; height: 46px; display: flex; flex-direction: column; justify-content: center; }
 .hud-title .lvl { font-weight: 700; font-size: 16px; line-height: 1.1; }
 .hud-title .lvl-name { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* phones: "Level 40" only (#103: "Fishing Village · Level 40" wrapped and pushed the level name out at 360 px) */
+@media (max-width: 480px), (orientation: landscape) and (max-height: 520px) { .hud-title .lvl-pack { display: none; } }
 .moves { background: var(--panel); border-radius: 14px; height: 46px; min-width: 76px; padding: 0 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .moves-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 .moves-num { font-size: 22px; font-weight: 700; line-height: 1; }

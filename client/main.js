@@ -251,6 +251,16 @@ function onFx(ev, at) {
 const parseRoute = (path = location.pathname) => routeOf(path, PACKS);
 const levelPath = (id) => pathOf(PACKS, id);
 
+/**
+ * The HUD title (#103, owner pick 2): "Fishing Village · Level 40", where the pack part hides on narrow screens
+ * (style.css: phones show "Level 40"; the pack is known from its theme). Replays, dailies, challenges: as given.
+ */
+function hudTitle(level, title, sub, replay) {
+  const at = !replay && app.mode === 'story' && PACKS.length > 1 ? levelPosition(PACKS, level.id) : null;
+  const lvl = at ? h('div.lvl', h('span.lvl-pack', `${pick(at.pack.name)} · `), t('level.label', { n: at.n })) : h('div.lvl', title);
+  return h('div.hud-title', lvl, h('div.lvl-name', sub));
+}
+
 /** On-screen name of a story level: "Level 12", with the pack's name once there is more than one pack. */
 function levelLabel(id) {
   const at = levelPosition(PACKS, id);
@@ -760,7 +770,7 @@ class Hud {
         replay
           ? h('a.icon-btn', { href: location.pathname, 'data-nav': true, 'aria-label': t('hud.closeReplay') }, iconEl('close'))
           : h('button.icon-btn', { 'aria-label': t('hud.pause'), on: { click: () => pauseMenu() } }, iconEl('pause')),
-        h('div.hud-title', h('div.lvl', title), h('div.lvl-name', sub)),
+        hudTitle(level, title, sub, !!replay),
         h('div.moves', h('span.moves-label', t(replay ? 'hud.step' : 'hud.moves')), this.movesEl),
       ),
       this.goalsEl,
