@@ -48,7 +48,7 @@ const vite = await startVite(ROOT);
 const errors = [];
 try {
   for (const job of jobs) {
-    const { page, close } = await launchChrome({ width: job.w, height: job.h, mobile: job.mobile, life: 3 * 60_000 });
+    const { page, close } = await launchChrome({ width: job.w, height: job.h, mobile: job.mobile, life: 3 * 60_000, gpu: true });
     try {
       collectPageErrors(page, errors, `${job.path}: `);
       await page.goto(vite.url + job.path, { waitUntil: 'load', timeout: 60000 });

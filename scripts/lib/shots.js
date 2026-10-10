@@ -49,7 +49,7 @@ export async function capture(root, pages, dir, label) {
   const errors = [];
   try {
     for (const p of pages) {
-      const { page, close } = await launchChrome({ width: p.w, height: p.h, mobile: p.mobile, dpr: p.mobile ? 2 : 1, life: 3 * 60_000 });
+      const { page, close } = await launchChrome({ width: p.w, height: p.h, mobile: p.mobile, dpr: p.mobile ? 2 : 1, life: 3 * 60_000, gpu: true }); // for eyes, not pixel compares
       try {
         collectPageErrors(page, errors, `${label} ${p.name}: `);
         if (p.unlock || p.progress) {

@@ -37,6 +37,8 @@
   idle tick. A frozen stage (`?freeze=1`, screenshots) goes through the same gate but draws no idle frames
   (`FROZEN_IDLE_FPS = 0`): they are all the same picture. Before, it skipped the gate and redrew that picture as fast
   as it could: in SwiftShader at 390 × 844 @3× with shadows, ~9 cores busy between captures; now ~0.
+  `npm run variant-shots` (5 variants × 2 pages + 2 sheets, headless Chrome CPU incl. renderers): 269 core-s before,
+  126 after this fix, 47 with the GPU for captures people look at (`launchChrome({ gpu: true })`, docs/RENDERING.md).
 - **Hidden page**: the rAF loop stops on `visibilitychange` and restarts without a time jump.
 - `?quality=high|medium|low` forces a tier for one visit (testing, screenshots: `quality-*.png` in `npm run shot -- --set`).
 

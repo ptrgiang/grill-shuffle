@@ -145,6 +145,10 @@ Baselines come from CI (Linux headless Chrome, the `visual` workflow on PRs touc
 `shared/`): fonts and SwiftShader differ slightly per OS, so a Windows capture is never committed. The workflow
 uploads its captures and diffs as the `visual` artifact; after an intended change, `npm run visual:accept [-- <run>]`
 copies that run's captures into `tests/visual/`. `npm run visual -- --update` / `-- <name>` exist for local use.
+`visual.js` and `e2e.js` always render with SwiftShader, like CI. Captures that only people look at (`variant-shots`,
+`pr-shots`, `shot`) draw on the GPU on Windows (`launchChrome({ gpu: true })`, ANGLE on D3D11): the same picture to
+the eye, about a sixth of the CPU. The run logs the WebGL renderer, with a warning if it fell back to SwiftShader;
+`GS_GPU=0` turns it off.
 
 ## Before / after in PRs
 
