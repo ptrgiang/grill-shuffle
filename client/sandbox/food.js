@@ -61,6 +61,7 @@ function bindSlider(id, apply) {
   const set = () => {
     out.textContent = Number(el.value).toFixed(2);
     apply(Number(el.value));
+    stage.invalidate(); // a uniform changed: a frozen, idle stage draws again
   };
   el.addEventListener('input', set);
   set();
