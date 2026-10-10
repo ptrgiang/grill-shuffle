@@ -394,7 +394,6 @@ body.in-game .landing { display: none; }
 @media (min-width: 820px) {
   .j-layout { grid-template-columns: minmax(0, 400px) minmax(0, 1fr); align-items: start; }
   .j-mapcol { position: sticky; top: 0; }
-  .j-map { max-width: min(400px, calc((100dvh - 40px - var(--safe-top)) * 168 / 200)); }
 }
 .stars.tiny { gap: 0; justify-content: center; }
 .stars.tiny .star svg { width: 9px; height: 9px; }
@@ -460,3 +459,4 @@ body.in-game .landing { display: none; }
 .j-node .j-cart { position: absolute; bottom: calc(100% - 4px); left: 50%; width: 30px; transform: translateX(-50%); }
 .j-mark { position: absolute; width: 14px; top: -5px; right: -5px; }
 @media (prefers-reduced-motion: reduce) { .j-map-cart { transition: none; } .j-map-cart.rolling .j-cart { animation: none; } }
+@media (min-width: 820px) { .j-map { max-width: min(400px, calc((100dvh - 40px - var(--safe-top)) * 168 / 200)); } } /* sideways phones: the whole map in view */
