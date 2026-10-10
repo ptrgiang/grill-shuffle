@@ -10,7 +10,7 @@
 //   npm run variant-shots -- --issue 89 --set font ...         one issue, several decisions: `v-font=<v>` in the query
 //                                                              (client: variant('font')), its own comment per set
 //
-// Page specs as in pr-shots (<path>@<W>x<H>[m][+select][+unlock][+tap=<css>]). Captures this working tree only.
+// Page specs as in pr-shots (<path>@<W>x<H>[m][+select][+unlock][+progress=<n>][+tap=<css>]). Captures this working tree only.
 import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { launchChrome } from './lib/browser.js';

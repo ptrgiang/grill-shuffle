@@ -64,6 +64,18 @@ export default {
   // màn chơi
   'levels.title': 'Màn chơi',
   'levels.themes': 'Điểm dừng',
+  // journey map (#84)
+  'journey.title': 'Hành trình',
+  'journey.stop': 'Chặng {n}',
+  'journey.unknown': 'Chặng chưa biết',
+  'journey.soon': 'Sắp mở',
+  'journey.cart': 'Xe nướng của bà',
+  'journey.banamAhead': 'Bà Năm ở phía trước',
+  'journey.banamNote': 'Bà luôn đi trước một chặng.',
+  'journey.missingPage': 'Một trang bị xé. Bà Năm giữ nó.',
+  'journey.mark.page': 'Trang công thức',
+  'journey.mark.beat': 'Chuyện',
+  'journey.mark.keepsake': 'Kỷ vật',
   'pack.locked': '{pack} chưa mở. {reason}.',
   'lock.finishAndEarn': 'Hoàn thành {pack} và đạt ★ {need}',
   'lock.finish': 'Hoàn thành {pack}',

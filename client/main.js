@@ -35,7 +35,9 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant } from './ui/variant.js';
+import { initVariant, variant } from './ui/variant.js';
+import { journeyModel } from './game/journey.js';
+import { journeyScreen, scrollToCart, JOURNEY_VARIANTS } from './ui/journey.js';
 import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
@@ -541,6 +543,14 @@ function showLevels(packId) {
   // one tab per pack (theme), numbered inside the pack (the URL number). /levels/<slug> (either language) picks the tab; plain /levels
   // opens the pack "Continue" is in (old /levels#pack-<id> links too). A pack opens when the previous one is finished
   // and its theme's star requirement is met (game/unlock.js); a locked tab says what it needs.
+  // the journey map (#84): design prototypes behind ?variant=1..5 until the owner picks one
+  if (variant() >= 1 && variant() <= JOURNEY_VARIANTS) {
+    const model = journeyModel(PACKS, app.progress, THEMES, STORY_FILES);
+    const ctx = { themes: THEMES, themeIcons: THEME_ICONS, getLevel, levelPath, levelsPath, packId, streak: currentStreak(app.streak, todayUTC()) };
+    screen(journeyScreen(variant(), model, ctx));
+    scrollToCart(ui, variant() <= 2 ? packId : null);
+    return;
+  }
   const hashId = location.hash.startsWith('#pack-') ? location.hash.slice(6) : null;
   const sel = Math.max(0, PACKS.findIndex((p) => (packId ? p.id === packId : hashId ? p.id === hashId : p.levels.includes(nextStoryLevel()))));
   const pack = PACKS[sel];

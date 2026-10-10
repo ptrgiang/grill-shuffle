@@ -8,7 +8,7 @@
 //   npm run pr-shots -- --pr 61 --base origin/main --no-publish     (local only: shots/pr/)
 //   npm run pr-shots -- --all --pages "…"              show every pair, also the small ones (a HUD line of text)
 //
-// Page spec: <path>@<W>x<H>[m][+select][+unlock][+tap=<css>]
+// Page spec: <path>@<W>x<H>[m][+select][+unlock][+progress=<n>][+tap=<css>]
 //   m = phone (touch, DPR 2), +select = tap-select a food first (game pages), +unlock = every story level 3 stars
 //   first (locked packs open, e.g. /fishing-village/37), +tap=<css> = tap that element first (e.g. a HUD button:
 //   +tap=[data-booster=fan]; skipped quietly where it does not exist, as on a base without the feature).
