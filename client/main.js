@@ -551,7 +551,7 @@ function showLevels(packId) {
   const model = journeyModel(PACKS, app.progress, THEMES, STORY_FILES);
   const ctx = { themes: THEMES, themeIcons: THEME_ICONS, getLevel, levelPath, levelsPath, packId: want, streak: currentStreak(app.streak, todayUTC()) };
   screen(journeyScreen(model, ctx));
-  showCart(ui, { packId: want, from: app.journeyCart, cart: model.cart, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches });
+  showCart(ui, { packId: want, from: app.journeyCart, cart: model.cart, reduced: reducedMotion() });
   app.journeyCart = model.cart;
 }
 

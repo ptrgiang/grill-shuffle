@@ -135,7 +135,7 @@ export function journeyScreen(model, ctx) {
  * the map was shown; when it moved on, it rolls along the route on the map (≤ 0.6 s, not with reduced motion).
  */
 export function showCart(el, { packId = null, from = null, cart = 0, reduced = false } = {}) {
-  const target = packId ? el.querySelector(`.j-card[data-pack="${packId}"]`) : el.querySelector('.j-node.current') ?? el.querySelector('.j-card.open');
+  const target = packId ? el.querySelector(`.j-card[data-pack="${CSS.escape(packId)}"]`) : el.querySelector('.j-node.current') ?? el.querySelector('.j-card.open');
   target?.scrollIntoView({ block: packId ? 'start' : 'center' });
   const mapCart = el.querySelector('.j-map-cart');
   if (!mapCart || reduced || from === null || from === cart) return;

@@ -66,7 +66,7 @@ export async function capture(root, pages, dir, label) {
             window.__gameReady = false;
             history.pushState(null, '', u);
             gs.go(location.pathname + location.search + location.hash, { replace: true });
-          }, p.url, p.progress);
+          }, p.url, p.unlock ? null : p.progress);
         } else await page.goto(vite.url + p.url, { waitUntil: 'load', timeout: 60000 });
         await page.waitForFunction('window.__sandboxReady || window.__gameReady', { timeout: 30000 }).catch(() => {});
         await page.evaluate(() => document.fonts?.ready);
