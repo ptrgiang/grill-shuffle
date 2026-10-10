@@ -36,3 +36,18 @@ test('journey: into the second pack: the cart moves on, Bà Năm ahead on a teas
   assert.equal(m.stops[2].teaser && m.stops[2].banam, true);
   assert.deepEqual([m.stops[0].stars, m.stops[0].total, m.stars], [7, 9, 7]);
 });
+
+test('journey: the map: every stop and island inside the frame, the route solid up to the cart', async () => {
+  const { mapSvg, smoothPath, P, VIEW } = await import('../../client/ui/vietnam-map.js');
+  const { PLACES } = await import('../../client/ui/journey.js');
+  assert.equal(PLACES.length, JOURNEY_STOPS);
+  for (const p of [...PLACES, [111.9, 16.4], [114.2, 9.9], [102.14, 22.4], [104.8, 8.6]]) {
+    const [x, y] = P(...p);
+    assert.ok(x > VIEW.x && x < VIEW.x + VIEW.w && y > VIEW.y && y < VIEW.y + VIEW.h, `${p} inside the map`);
+  }
+  assert.match(smoothPath([[102, 22], [104, 20], [103, 18]]), /^M[\d. ]+( Q[\d. ]+){3} Z$/);
+  const svg = mapSvg({ places: PLACES, reached: 2, labels: { sea: 'Biển Đông', paracel: 'Hoàng Sa', spratly: 'Trường Sa' } });
+  for (const label of ['Biển Đông', 'Hoàng Sa', 'Trường Sa']) assert.ok(svg.includes(label), label);
+  const done = /class="jm-route-done" d="([^"]*)"/.exec(svg)[1];
+  assert.equal(done.split('L').length, 2, 'two stops reached: one solid leg');
+});

@@ -62,8 +62,6 @@ export default {
   'band.C': 'Challenge',
 
   // levels
-  'levels.title': 'Levels',
-  'levels.themes': 'Themes',
   // journey map (#84)
   'journey.title': 'The journey',
   'journey.stop': 'Stop {n}',
@@ -71,11 +69,12 @@ export default {
   'journey.soon': 'Coming soon',
   'journey.cart': 'Grandma’s cart',
   'journey.banamAhead': 'Bà Năm is up ahead',
-  'journey.banamNote': 'She is always one stop ahead.',
-  'journey.missingPage': 'A page torn out. Bà Năm has it.',
   'journey.mark.page': 'Recipe page',
   'journey.mark.beat': 'Story',
   'journey.mark.keepsake': 'Keepsake',
+  'journey.sea': 'East Sea',
+  'journey.paracel': 'Hoàng Sa',
+  'journey.spratly': 'Trường Sa',
   'pack.locked': '{pack} is locked. {reason}.',
   'lock.finishAndEarn': 'Finish {pack} and earn ★ {need}',
   'lock.finish': 'Finish {pack}',

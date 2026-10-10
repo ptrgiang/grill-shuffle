@@ -17,8 +17,7 @@ import { ReplayPlayer, parseReplayParam, replayQuery } from './game/replay-playe
 import { parseRoute as routeOf, levelPath as pathOf, levelPosition, levelsPath } from './game/routes.js';
 import { PACKS, STORY, SHARE, THEMES, THEME_ICONS, STORY_FILES, getLevel, storyIndex, shareIndex, themeFor, lookFor } from './game/content.js';
 import { storyFor, STORY_DEFAULT_ON } from './game/story.js';
-import { packStatus, packIndexOf, levelOpen, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
-import { resolveTheme } from '../shared/themes.js';
+import { packStatus, packIndexOf, lockReason, storyStars, nextStoryLevel as firstOpenLevel, nextLevelAfter } from './game/unlock.js';
 import { puzzleFromCode, hintFor } from './game/solver-client.js';
 import { Audio } from './audio/audio.js';
 import * as db from './storage/db.js';
@@ -35,9 +34,9 @@ import { registerServiceWorker } from './ui/update.js';
 import { marginsFrom, baseMargins, rects, isShortLandscape } from './ui/fit.js';
 import { TIERS, QUALITY_SETTINGS, initialTier, lowerTier, FrameMonitor, IdleGate } from './render/quality.js';
 import { StatsOverlay } from './ui/stats.js';
-import { initVariant, variant } from './ui/variant.js';
+import { initVariant } from './ui/variant.js';
 import { journeyModel } from './game/journey.js';
-import { journeyScreen, scrollToCart, JOURNEY_VARIANTS } from './ui/journey.js';
+import { journeyScreen, showCart } from './ui/journey.js';
 import { badgeSvg } from './ui/brand.js';
 import { t, pick, lang, setLang, detectLang, onLangChange, LANGS, DICTS } from './i18n/index.js';
 import { applyStatic } from './i18n/dom.js';
@@ -75,6 +74,7 @@ const app = {
   seenBoosters: {}, // boosters the player has tried at least once (the HUD marks the others "new")
   replay: null, // ReplayPlayer while the replay viewer is open (input off, nothing recorded)
   busy: false,
+  journeyCart: null, // the stop the cart was at when the journey map was last shown (it rolls on from there)
 };
 
 // ---------------------------------------------------------------- board + input (one each, for the app's life)
@@ -540,60 +540,19 @@ function showLevels(packId) {
   app.route = 'levels';
   app.hud = null;
   app.fit = null;
-  // one tab per pack (theme), numbered inside the pack (the URL number). /levels/<slug> (either language) picks the tab; plain /levels
-  // opens the pack "Continue" is in (old /levels#pack-<id> links too). A pack opens when the previous one is finished
-  // and its theme's star requirement is met (game/unlock.js); a locked tab says what it needs.
-  // the journey map (#84): design prototypes behind ?variant=1..5 until the owner picks one
-  if (variant() >= 1 && variant() <= JOURNEY_VARIANTS) {
-    const model = journeyModel(PACKS, app.progress, THEMES, STORY_FILES);
-    const ctx = { themes: THEMES, themeIcons: THEME_ICONS, getLevel, levelPath, levelsPath, packId, streak: currentStreak(app.streak, todayUTC()) };
-    screen(journeyScreen(variant(), model, ctx));
-    scrollToCart(ui, variant() <= 2 ? packId : null);
-    return;
-  }
+  // the journey map (#84): the map of Vietnam with a pin per stop, and a postcard per pack; /levels/<slug> (either
+  // language) turns that pack's postcard over, plain /levels the one "Continue" is in (old /levels#pack-<id> links too).
+  // A pack opens when the previous one is finished and its theme's star requirement is met (game/unlock.js); a locked
+  // postcard says what it needs.
   const hashId = location.hash.startsWith('#pack-') ? location.hash.slice(6) : null;
-  const sel = Math.max(0, PACKS.findIndex((p) => (packId ? p.id === packId : hashId ? p.id === hashId : p.levels.includes(nextStoryLevel()))));
-  const pack = PACKS[sel];
-  if (packId && location.pathname !== levelsPath(pack)) history.replaceState(null, '', levelsPath(pack)); // the other language's slug
-  const card = (id, n) => {
-    const lvl = getLevel(id);
-    const open = levelOpen(PACKS, id, app.progress, THEMES);
-    const stars = app.progress[id]?.stars ?? 0;
-    return open
-      ? h('a.level-card', { href: levelPath(id), 'data-nav': true }, h('span.num', String(n)), h('span.name', pick(lvl.name) || id), starsEl(stars, 3, 'stars.small'))
-      : h('div.level-card.locked', h('span.num', String(n)), iconEl('lock'));
-  };
-  const swatch = (p) => {
-    if (THEME_ICONS[p.theme]) return h('span.pack-swatch.pack-icon', { 'aria-hidden': 'true', html: THEME_ICONS[p.theme] });
-    const t = resolveTheme(THEMES[p.theme] ?? {});
-    return h('span.pack-swatch', { 'aria-hidden': 'true', style: { background: `linear-gradient(135deg, ${t.palette.background} 0 40%, ${t.grill.ember.hot} 40% 60%, ${t.table.color} 60%)` } });
-  };
-  const one = PACKS.length === 1;
-  const status = packStatus(PACKS, sel, app.progress, THEMES);
-  const tabs = one
-    ? null
-    : h('nav.pack-tabs', { 'aria-label': t('levels.themes') },
-        ...PACKS.map((p, k) => {
-          const st = packStatus(PACKS, k, app.progress, THEMES);
-          const cls = `a.pack-tab${st.open ? '' : '.locked'}`;
-          return h(cls, { href: levelsPath(p), 'data-nav': true, 'data-pack': p.id, 'aria-current': k === sel ? 'page' : null },
-            swatch(p),
-            h('span.pack-tab-text', h('span.pack-tab-name', pick(p.name)), h('span.pack-tab-sub', st.open ? `★ ${storyStars([p], app.progress)}/${p.levels.length * 3}` : `★ ${st.need}`)),
-            st.open ? null : iconEl('lock'),
-          );
-        }),
-      );
-  screen(
-    h('div.levels',
-      h('header.levels-head', h('a.btn.ghost', { href: '/', 'data-nav': true }, t('common.backToMenu')), h('h2', one ? pick(pack.name) : t('levels.title')), h('span.badge', `★ ${storyStars(PACKS, app.progress)}/${STORY.length * 3}`)),
-      tabs,
-      h(`section.pack${status.open ? '' : '.locked'}#pack-${pack.id}`, { 'data-pack': pack.id },
-        status.open ? null : h('p.pack-lock', iconEl('lock'), h('span', lockReason(status))),
-        h('div.level-grid', ...pack.levels.map((id, i) => card(id, i + 1))),
-      ),
-    ),
-  );
-  document.querySelector('.pack-tab[aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  const want = packId ?? (PACKS.some((p) => p.id === hashId) ? hashId : null);
+  const pack = want ? PACKS.find((p) => p.id === want) : null;
+  if (packId && pack && location.pathname !== levelsPath(pack)) history.replaceState(null, '', levelsPath(pack)); // the other language's slug
+  const model = journeyModel(PACKS, app.progress, THEMES, STORY_FILES);
+  const ctx = { themes: THEMES, themeIcons: THEME_ICONS, getLevel, levelPath, levelsPath, packId: want, streak: currentStreak(app.streak, todayUTC()) };
+  screen(journeyScreen(model, ctx));
+  showCart(ui, { packId: want, from: app.journeyCart, cart: model.cart, reduced: matchMedia('(prefers-reduced-motion: reduce)').matches });
+  app.journeyCart = model.cart;
 }
 
 

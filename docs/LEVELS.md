@@ -46,9 +46,14 @@ Packs play in `order` (then id).
 the story star total reaches its theme's `unlock.stars`; once one of its levels has a star it stays open (appended
 levels or a raised requirement never lock a player out). Inside a pack levels open one by one (previous level won).
 Only story stars count, not dailies or challenges. The level select groups by pack: a locked pack shows its theme
-swatch and what it needs ("Finish Saigon Alley and earn ★ 75"), its levels are not links. The level select has one
-**tab per pack** (`/levels/<slug>`, the theme's icon, name, stars or the requirement); plain `/levels` opens the tab of the
-pack "Continue" is in. A deep link into a locked pack lands on that pack's tab with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
+icon and what it needs ("Finish Saigon Alley and earn ★ 75"), its levels are not links. The level select is the
+**journey map** (#84, owner pick: postcards + the map of Vietnam; `client/ui/journey.js`): a map with a pin per stop
+(the cart at the next level, Bà Năm one stop ahead, the route solid up to the cart, stops not shipped yet as "?"), and
+one postcard per stop (theme icon, name, stars or the requirement); the focused stop's postcard is turned over to its
+levels, with the story's marks (recipe page, beat, keepsake). `/levels/<slug>` focuses that stop; plain `/levels`
+the stop "Continue" is in, scrolled to that level. When the cart has moved on to a new stop since the map was last
+shown, it rolls there along the route (0.6 s, not with reduced motion). A deep link into a locked pack lands on that
+pack's postcard with a toast; "Continue" and the result screen's "Next level" never enter a locked pack
 (the result screen offers "Levels" instead). The menu wears the theme of the level "Continue" opens.
 
 Shipped: Street BBQ, then Beach Grill (★ 75). `npm run test:e2e` (`packs-390`) checks Beach Grill's lock, the deep
@@ -71,9 +76,8 @@ link, the unlock and its theme. `?fixtures=1` on the dev server adds a third tes
    mean raising the levels after it.
 5. **Street BBQ 1–50 are legacy** (`"curveFrom": 51` in its `pack.json`: they predate rule 4 and keep their
    shipped order; the pack is full).
-6. **Packs unlock in order** (see Unlocks). The level select shows one tab per pack (`/levels/<slug>`) **until the
-   journey map (#84) ships**: owner, 2026-10-08, the tabs may be replaced by one continuous road through all packs
-   (the story, `docs/STORY.md`), chosen from 5 variants. `/levels/<slug>` and `/<pack-slug>/<n>` keep working.
+6. **Packs unlock in order** (see Unlocks). The level select is the journey map (#84, replaced the tab per pack): one
+   stop per pack on the map of Vietnam, in pack order. `/levels/<slug>` and `/<pack-slug>/<n>` keep working.
 7. **Story beats never change levels.** Beats (`content/story/`, #80) attach to existing level ids; they never add,
    reorder or edit a level and never count for difficulty.
 
