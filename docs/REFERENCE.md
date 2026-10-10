@@ -15,7 +15,7 @@ Node/uWebSockets.js server, binary protocol, PostgreSQL, Railway. Very different
 | Shared geometry/materials, fixed light count, no per-frame allocation | One merged geometry per food variant, one material per look, fixed 3-light rig, pooled particles. |
 | Sandbox pages per subsystem (`client/sandbox/*`) | `/sandbox/food`, `/sandbox/board`. |
 | Tiny dependency list, many plain `node` test scripts, a `node --check` sweep | `three` only at runtime; tests use `node:test`; `scripts/check.js`. |
-| **The safe headless-browser launcher** (Chromium's blank-password probe can lock a Windows account) | `scripts/lib/browser.js` keeps the essential rules: pre-seeded `Local State`, failed-sign-in counter checked before/after with a block file, no credentials, one browser per machine, watchdog, SwiftShader, `GS_NO_BROWSER=1` kill switch. Every Puppeteer use goes through it. |
+| **The safe headless-browser launcher** (Chromium's blank-password probe can lock a Windows account) | `scripts/lib/browser.js` keeps the essential rules: pre-seeded `Local State`, failed-sign-in counter checked before/after with a block file, no credentials, one browser per machine, watchdog, SwiftShader (GPU only for captures people look at), below-normal priority, `GS_NO_BROWSER=1` kill switch. Every Puppeteer use goes through it. |
 | Docs that explain conventions and invariants, not just APIs | `docs/*.md`. |
 
 ## Rejected (FPS-specific or against this project's platform rules)

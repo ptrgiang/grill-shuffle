@@ -3,6 +3,7 @@
 //   ?theme=test_mint (any content theme or test fixture instead of the level's own)
 import { Stage } from '../render/stage.js';
 import { BoardView } from '../render/board.js';
+import { IdleGate } from '../render/quality.js';
 import { Input } from '../game/input.js';
 import { Session } from '../game/session.js';
 import { Audio } from '../audio/audio.js';
@@ -119,7 +120,9 @@ window.addEventListener('resize', () => {
   stage.resize();
   view.relayout();
 });
-stage.start((dt) => view.update(dt));
+// every frame (measuring), except for frozen stills: on demand like the game, so screenshots do not redraw one picture
+const idle = stage.frozen ? IdleGate.for(true) : null;
+stage.start((dt) => view.update(dt), { gate: idle && ((dt) => idle.tick(dt, view.busy)) });
 // test hooks (e2e): the authoritative state and a way to drive moves
 window.__board = { get state() { return session.state; }, view, stage, doMove, load };
 window.__sandboxReady = true;

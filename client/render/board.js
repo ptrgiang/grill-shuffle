@@ -75,6 +75,7 @@ export class BoardView {
 
   /** Follow the stage's quality tier: particle density, blob shadows when the shadow map is off. */
   setQuality(tier) {
+    this.stage.invalidate();
     this.particles.density = tier.particles;
     this.blobs = tier.shadows === 'off';
     for (const v of this.items.values()) if (v.blob) v.blob.visible = this.blobs;
@@ -119,6 +120,7 @@ export class BoardView {
 
   relayout() {
     if (!this.state) return;
+    this.stage.invalidate();
     const { w, h } = this.stage.size;
     const availW = w - this.margins.marginLeft - this.margins.marginRight, availH = h - this.margins.marginTop - this.margins.marginBottom;
     this.layout = layoutBoard(this.state.grills.map((g) => g.slots.length), Math.max(0.2, availW / Math.max(1, availH)));
@@ -150,6 +152,7 @@ export class BoardView {
 
   /** Converge the view on `state`: create missing items, drop stale ones, retarget everything to its slot. */
   reconcile(state, { snap = false, grills = snap } = {}) {
+    this.stage.invalidate();
     this.state = state;
     const seen = new Set();
     if (grills) this.#syncGrills(state, snap);
@@ -221,6 +224,7 @@ export class BoardView {
 
   #refreshSlots() {
     if (!this.state) return;
+    this.stage.invalidate();
     this.state.grills.forEach((g, gi) => {
       const candidate = !!this.targets?.includes(gi) && !this.hover && this.targetSlots !== false;
       g.slots.forEach((it, si) => this.grills[gi].setSlotState(si, { empty: !it, dim: g.lock > 0 && !this.reach, candidate, target: !!this.hover && this.hover.grill === gi && this.hover.slot === si }));
@@ -394,6 +398,7 @@ export class BoardView {
 
   /** Jump every running animation to its end (fast-forward). Game state is unaffected by definition. */
   skip() {
+    this.stage.invalidate();
     this.clock += 10;
     this.update(0);
     for (const v of this.clearing) this.root.remove(v.holder);
@@ -427,6 +432,7 @@ export class BoardView {
   }
 
   select(grill, slot) {
+    this.stage.invalidate();
     const prev = this.selected?.view;
     this.selected = grill === null ? null : { grill, slot, view: this.itemAt(grill, slot) };
     // put down without a move: a small squash when it touches the grate again

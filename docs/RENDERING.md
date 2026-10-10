@@ -135,7 +135,8 @@ serve chime; combo raises the chime's pitch, adds an octave layer at x2, brightn
 390×844, 430×932, 844×390 and 1280×800, the menu on a phone and a desktop) and pixel-compares each with
 `tests/visual/<name>.png`. Captures use `?freeze=1` (`Stage.frozen`: the stage clock stands still, so no ember
 drift or bulb flicker; the board pins its idle oscillations (bob, wobble, pulses) and spawns no ambient particles,
-but still gets real dt, so a selection's glow and dim settle into their end state), `quality=high` and DPR 1, so
+but still gets real dt, so a selection's glow and dim settle into their end state; every frame while the board is
+busy or the scene changed, then none, since its idle frames are one picture: `FROZEN_IDLE_FPS`), `quality=high` and DPR 1, so
 two runs on one machine match to the pixel. A
 pixel counts as changed when a channel differs by more than 40; a capture fails above 0.4 % changed pixels. Diffs (red
 on a faded copy) go to `shots/visual/diff/`.
@@ -144,6 +145,10 @@ Baselines come from CI (Linux headless Chrome, the `visual` workflow on PRs touc
 `shared/`): fonts and SwiftShader differ slightly per OS, so a Windows capture is never committed. The workflow
 uploads its captures and diffs as the `visual` artifact; after an intended change, `npm run visual:accept [-- <run>]`
 copies that run's captures into `tests/visual/`. `npm run visual -- --update` / `-- <name>` exist for local use.
+`visual.js` and `e2e.js` always render with SwiftShader, like CI. Captures that only people look at (`variant-shots`,
+`pr-shots`, `shot`) draw on the GPU on Windows (`launchChrome({ gpu: true })`, ANGLE on D3D11): the same picture to
+the eye, about a sixth of the CPU. The run logs the WebGL renderer, with a warning if it fell back to SwiftShader;
+`GS_GPU=0` turns it off.
 
 ## Before / after in PRs
 

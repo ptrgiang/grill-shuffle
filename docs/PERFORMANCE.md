@@ -32,6 +32,13 @@
 - **Render on demand** (`IdleGate`): every frame while the board is busy (`BoardView.busy`: timeline, matches, drag,
   selection, hint, a burst in the air, fading glows, camera shake) and for 0.6 s after; when still, 12 frames/s
   (ember flicker and bulbs keep moving, the GPU mostly sleeps). Pointer input and resizes wake it at once.
+  A scene change that is not an animation (new state, layout, slot markers, theme, quality, size) calls
+  `Stage.invalidate()`, which counts as busy until the next frame is drawn, so it shows at once instead of on the next
+  idle tick. A frozen stage (`?freeze=1`, screenshots) goes through the same gate but draws no idle frames
+  (`FROZEN_IDLE_FPS = 0`): they are all the same picture. Before, it skipped the gate and redrew that picture as fast
+  as it could: in SwiftShader at 390 × 844 @3× with shadows, ~9 cores busy between captures; now ~0.
+  `npm run variant-shots` (5 variants × 2 pages + 2 sheets, headless Chrome CPU incl. renderers): 269 core-s before,
+  126 after this fix, 47 with the GPU for captures people look at (`launchChrome({ gpu: true })`, docs/RENDERING.md).
 - **Hidden page**: the rAF loop stops on `visibilitychange` and restarts without a time jump.
 - `?quality=high|medium|low` forces a tier for one visit (testing, screenshots: `quality-*.png` in `npm run shot -- --set`).
 

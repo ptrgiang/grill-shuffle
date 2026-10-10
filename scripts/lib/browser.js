@@ -17,8 +17,10 @@
 //     landed during an e2e run and the launcher blamed itself. The seed was verified to work: Chrome 153
 //     reads it ~15 s after start, skips LogonUser, and rewrites os_password_last_changed with the real value.)
 //   - touches no credentials (fresh empty profile, password manager / sync / NTLM all off);
-//   - is always headless, muted, software-rendered (SwiftShader), one browser per machine (lock file), killed by a
-//     detached watchdog after `life` ms even if this script hangs, and its temporary profile is deleted;
+//   - is always headless, muted, software-rendered (SwiftShader) unless `gpu` (below), one browser per machine (lock
+//     file), killed by a detached watchdog after `life` ms even if this script hangs, and its temporary profile is
+//     deleted;
+//   - runs below normal priority on Windows (the browser and every process it starts), so the machine stays usable;
 //   - stubs pointer lock / fullscreen / keyboard lock / wake lock in every page;
 //   - starts nothing when GS_NO_BROWSER=1.
 import { spawn, execFileSync } from 'node:child_process';
@@ -37,8 +39,13 @@ const ARGS = [
   '--password-store=basic', '--use-mock-keychain', '--disable-sync', '--disable-background-networking', '--disable-component-update',
   '--no-service-autorun', '--auth-server-allowlist=', '--auth-negotiate-delegate-allowlist=',
   '--disable-features=PasswordManagerOnboarding,AutofillServerCommunication,BiometricAuthenticationForFilling,PasswordImport,WebAuthenticationUI',
-  '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--window-position=-32000,-32000',
+  '--window-position=-32000,-32000',
 ];
+// WebGL: SwiftShader (CPU) matches CI (Linux + SwiftShader), which pixel compares need (visual.js, e2e.js). Captures
+// only people look at (variant-shots, pr-shots, shot) pass `gpu`: on Windows, ANGLE on D3D11, the machine's GPU.
+// Same picture to the eye (~0.05 % of pixels differ by more than 40), a fraction of the CPU.
+const SOFTWARE_GL = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+const GPU_GL = ['--use-angle=d3d11'];
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -175,11 +182,38 @@ function SAFE_STUBS() {
   if (navigator.wakeLock) def(navigator.wakeLock, 'request', () => Promise.resolve({ release: ok, addEventListener() {} }));
 }
 
+/** Windows: the browser and its processes so far below normal priority; later ones inherit it. Best effort. */
+function lowerPriority(pid) {
+  if (process.platform !== 'win32' || !pid) return;
+  try {
+    execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `Get-CimInstance Win32_Process -Filter "ProcessId=${pid} OR ParentProcessId=${pid}" | ForEach-Object { try { (Get-Process -Id $_.ProcessId).PriorityClass = 'BelowNormal' } catch {} }`], { timeout: 20000, stdio: 'ignore', windowsHide: true });
+  } catch {}
+}
+
+let glNamed = false;
+/** Say once per run what WebGL draws on: headless Chrome falls back to SwiftShader without a word. */
+async function nameGl(page, gpu) {
+  const gl = await page
+    .evaluate(() => {
+      const g = document.createElement('canvas').getContext('webgl');
+      const e = g?.getExtension('WEBGL_debug_renderer_info');
+      return g ? g.getParameter(e ? e.UNMASKED_RENDERER_WEBGL : g.RENDERER) : 'no WebGL';
+    })
+    .catch(() => 'unknown');
+  const soft = /swiftshader|no webgl/i.test(gl);
+  if (gpu && soft) console.warn(`headless Chrome: asked for the GPU, got ${gl} (CPU rendering)`);
+  else if (!glNamed) console.log(`headless Chrome WebGL: ${gl}`);
+  glNamed = true;
+}
+
 /**
  * Launch the one headless Chrome. Returns { browser, page, close }. Always call close() in a finally.
- * opts: { width, height, life (ms, default 4 min, max 10), mobile (touch + DPR 3) }
+ * opts: { width, height, life (ms, default 4 min, max 10), mobile (touch + DPR 3), story,
+ *         gpu (Windows: WebGL on the GPU instead of SwiftShader; for captures only people look at, never for pixel
+ *         compares; GS_GPU=0 turns it off) }
  */
-export async function launchChrome({ width = 900, height = 600, life = 4 * 60_000, mobile = false, dpr = mobile ? 3 : 1, story = false } = {}) {
+export async function launchChrome({ width = 900, height = 600, life = 4 * 60_000, mobile = false, dpr = mobile ? 3 : 1, story = false, gpu = false } = {}) {
+  const useGpu = gpu && process.platform === 'win32' && process.env.GS_GPU !== '0';
   if (process.env.GS_NO_BROWSER === '1') throw new Error('GS_NO_BROWSER=1: no browser may be started now');
   if (existsSync(BLOCK_FILE)) throw new Error(`blocked by ${BLOCK_FILE}: the failed sign-in counter rose while a browser was up. The file lists the browsers that were up (OURS / FOREIGN): find out why, then delete it.`);
   const before = badPasswordAttempts();
@@ -196,7 +230,7 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
       executablePath: chromePath(),
       headless: true,
       userDataDir: profile,
-      args: [...ARGS, `--window-size=${width},${height}`],
+      args: [...ARGS, ...(useGpu ? GPU_GL : SOFTWARE_GL), `--window-size=${width},${height}`],
       ignoreDefaultArgs: ['--enable-automation'],
       defaultViewport: null,
     });
@@ -208,7 +242,9 @@ export async function launchChrome({ width = 900, height = 600, life = 4 * 60_00
   }
   const pid = browser.process()?.pid;
   startWatchdog(pid, profile, Math.min(10 * 60_000, life));
+  lowerPriority(pid);
   const page = (await browser.pages())[0] ?? (await browser.newPage());
+  await nameGl(page, useGpu);
   await page.evaluateOnNewDocument(SAFE_STUBS);
   // a fresh profile is a first launch: without this every capture / e2e page would open on the story's cold open.
   // `story: true` (or ?story=on in the page URL) keeps the beats.
