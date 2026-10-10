@@ -832,7 +832,7 @@ class Hud {
       this.el.append(h('div.counter-strip', { 'aria-hidden': 'true' }));
       import('./story/counter.js').then((m) => {
         if (!this.el.isConnected || app.hud !== this) return; // a newer HUD replaced this one
-        this.counter = m.mountCounter(this.el, { level, state: app.session?.state, theme: themeFor(level).id, reduced: reducedMotion(), sound: (name, o) => audio.story(name, o) });
+        this.counter = m.mountCounter(this.el, { level, state: app.session?.state, theme: themeFor(level).id, reduced: reducedMotion(), tier: () => stage.tierName, sound: (name, o) => audio.story(name, o) });
       });
     }
     if (this.boosters.length) footer.classList.add('has-boosters');
@@ -845,7 +845,7 @@ class Hud {
     const q = (sel) => rects(this.el, sel);
     const base = baseMargins();
     return isShortLandscape()
-      ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool') }, base)
+      ? marginsFrom(W, H, { left: [...q('.hud-top'), ...q('.goal')], right: q('.tool'), top: q('.counter-strip') }, base) // the counter's band between the columns (#91)
       : marginsFrom(W, H, { top: [...q('.hud-top'), ...q('.goal'), ...q('.counter-strip')], bottom: q('.tool') }, base, 6);
   }
 

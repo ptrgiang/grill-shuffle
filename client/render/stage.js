@@ -218,7 +218,9 @@ export class Stage {
     this.camera.updateProjectionMatrix();
     // backdrop pieces follow the frame
     const zOf = (v) => this.focus.z - v / s; // a screen offset (world units) -> z on the table
-    this.decor?.fit({ x0: this.focus.x + this.camera.left, x1: this.focus.x + this.camera.right, z0: zOf(this.camera.top), z1: zOf(this.camera.bottom), w: width, d: depth });
+    // the look's props stay in the area the HUD leaves free (a sideways phone's columns cover the sides)
+    const vx0 = this.focus.x + this.camera.left, vx1 = this.focus.x + this.camera.right;
+    this.decor?.fit({ x0: vx0 + marginLeft * wpp, x1: vx1 - marginRight * wpp, z0: zOf(this.camera.top), z1: zOf(this.camera.bottom), w: width, d: depth, vx0, vx1 });
     const span = Math.max(W, H) * wpp * 1.6;
     this.vignette.scale.set(span, span * 1.2, 1);
     const farZ = -depth / 2 - 1.6 - (marginTop * wpp) / s;

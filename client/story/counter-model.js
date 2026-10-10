@@ -7,7 +7,8 @@
 //                       plates one by one, each to a seated customer (the one who ordered it first). Every match is
 //                       one plate and one delivery: nothing is dropped, a queue makes Út hurry
 //   tick(c, dt)         advances every walk / meal / arrival; returns the cues to play ('step', 'clink', 'meow')
-//   cheer(c) / win(c) / lose(c)    combos, the level won (everyone waves), lost (Mực steals a shrimp)
+//   cheer(c) / wow(c) / win(c) / lose(c)    combos, a booster (a surprised look), the level won (everyone waves),
+//                       lost (Mực steals a shrimp)
 //
 // Seat phases: empty → arriving → waiting (with an order) → eating → waiting (orders again) … → leaving → empty.
 // A customer stays for 2–3 plates (few customers, served many times, owner 2026-10-09), then leaves. A new one arrives
@@ -128,6 +129,8 @@ export function tick(c, dt) {
 }
 
 export const cheer = (c) => (c.mood = { phase: 'cheer', t: 0 });
+/** A booster: the customers look up, surprised, for a moment (a cheer or a win is never cut short). */
+export const wow = (c) => c.mood.phase === 'idle' && (c.mood = { phase: 'wow', t: 0 });
 export const win = (c) => (c.mood = { phase: 'won', t: 0 });
 export function lose(c) {
   c.cat = { phase: 'steal', t: 0 };
@@ -135,4 +138,4 @@ export function lose(c) {
 }
 
 /** Anything moving (the renderer keeps drawing while true, then rests). */
-export const busy = (c) => c.plates.length > 0 || c.queue.length > 0 || (c.ut.phase !== 'home' && c.ut.phase !== 'off') || c.cat.phase !== 'idle' || c.mood.phase === 'cheer' || c.seats.some((s) => s.phase === 'arriving' || s.phase === 'eating' || s.phase === 'leaving');
+export const busy = (c) => c.plates.length > 0 || c.queue.length > 0 || (c.ut.phase !== 'home' && c.ut.phase !== 'off') || c.cat.phase !== 'idle' || (c.mood.phase === 'cheer' || c.mood.phase === 'wow') || c.seats.some((s) => s.phase === 'arriving' || s.phase === 'eating' || s.phase === 'leaving');
