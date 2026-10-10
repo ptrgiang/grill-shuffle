@@ -197,8 +197,9 @@ painting's feel (4: a thin gold frame, paper grain) and Út carrying the plate (
   the customer who ordered it (else whoever waits, else whoever is still eating). Plates that come faster than he
   walks wait on the cart and he hurries; nothing is dropped, so the deliveries count the matches (owner, 2026-10-09).
   **Few customers, served many times**: two stools on a phone, three on a wide screen; a customer eats two or three
-  plates, ordering again in between, then leaves, and a new one sits down only for a food still on the board (or a
-  plate already waiting). A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
+  plates, ordering again in between, then leaves. **The books balance** (owner, 2026-10-10): every open order stands
+  for one trio still to come of that food, so with two servings left at most two customers wait, two never wait for
+  the same last trio, and whoever has nothing left to order goes home. A **combo** makes them cheer, a **win** makes everyone wave, a **loss**
   lets Mực steal a shrimp, a **booster** makes the customers look up, eyes wide, for a moment (#91). Sounds:
   footsteps, the clink, the meow (#113).
 - **The level's opening** (owner, 2026-10-09: the story must be read, not glanced at): on a story level not won yet,

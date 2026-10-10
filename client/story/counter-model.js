@@ -11,14 +11,15 @@
 //                       lost (Mực steals a shrimp)
 //
 // Seat phases: empty → arriving → waiting (with an order) → eating → waiting (orders again) … → leaving → empty.
-// A customer stays for 2–3 plates (few customers, served many times, owner 2026-10-09), then leaves. A new one arrives
-// for a food that is still on the board (`foods` counts items left; serve() takes three off), or for a plate that is
-// already waiting at the cart.
+// A customer stays for 2–3 plates (few customers, served many times, owner 2026-10-09), then leaves.
+// The books always balance (owner, 2026-10-10): every open order stands for one trio still to come of that food (on the
+// board: `foods` counts items left, serve() takes three off; or a plate flying up / waiting on the cart). Nobody orders
+// a food there is no trio left for, so when two servings are left at most two customers wait, and two customers never
+// wait for the same last trio. A customer with nothing left to order goes home.
 import { mulberry32 } from '../../shared/rng.js';
 
 export const T = Object.freeze({ fly: 0.45, pick: 0.2, walk: 0.9, hand: 0.25, eat: 2.4, leave: 1, arrive: 1, back: 0.8, direct: 0.6, cheer: 1.2, steal: 1.6 });
 export const CAST = Object.freeze(['guest-1', 'guest-2', 'guest-3', 'guest-4', 'guest-5']); // strangers, never the story's cast
-const SEATED = new Set(['waiting', 'eating']);
 
 export function createCounter({ foods = {}, seats = 2, seed = 1, cast = CAST, carry = true } = {}) {
   const c = { rng: mulberry32(seed >>> 0 || 1), left: { ...foods }, cast, carry, seats: [], queue: [], ut: { phase: carry ? 'home' : 'off', t: 0 }, plates: [], cat: { phase: 'idle', t: 0 }, mood: { phase: 'idle', t: 0 }, guests: 0, served: 0 };
@@ -27,10 +28,23 @@ export function createCounter({ foods = {}, seats = 2, seed = 1, cast = CAST, ca
   return c;
 }
 
-/** Foods that can still be ordered (on the board or waiting at the cart, not already ordered by someone waiting). */
+const open = (s) => (s.phase === 'waiting' || s.phase === 'arriving') && !s.promised;
+
+/** Trios still to come per food (on the board, flying up to the cart, waiting on it) minus the open orders for them. */
+function spare(c) {
+  const n = {};
+  for (const [f, k] of Object.entries(c.left)) n[f] = Math.floor(k / 3);
+  for (const f of c.queue) n[f] = (n[f] ?? 0) + 1;
+  for (const p of c.plates) if (p.to === 'cart') n[p.food] = (n[p.food] ?? 0) + 1;
+  for (const s of c.seats) if (open(s)) n[s.order] = (n[s.order] ?? 0) - 1;
+  return n;
+}
+
+/** Foods a new order can be for: a trio nobody has ordered yet; ones nobody waits for come first (variety). */
 function orderable(c) {
-  const ordered = new Set(c.seats.filter((s) => s.phase === 'waiting' || s.phase === 'arriving').map((s) => s.order));
-  const left = [...new Set([...Object.keys(c.left).filter((f) => c.left[f] >= 3), ...c.queue])];
+  const n = spare(c);
+  const left = Object.keys(n).filter((f) => n[f] > 0);
+  const ordered = new Set(c.seats.filter(open).map((s) => s.order));
   const fresh = left.filter((f) => !ordered.has(f));
   return fresh.length ? fresh : left;
 }
@@ -56,19 +70,30 @@ export function serve(c, food) {
   return p;
 }
 
-/** The seated customer a plate of `food` goes to: who ordered it, else who waits, else who is still eating. */
+/**
+ * The customer a plate of `food` goes to: who ordered it; if they are still walking in, nobody yet (it waits on the
+ * cart); with no order for it, a second helping for someone eating, else someone waiting changes their mind.
+ */
 function target(c, food) {
-  const free = c.seats.filter((s) => SEATED.has(s.phase) && !s.promised);
-  return free.find((s) => s.phase === 'waiting' && s.order === food) ?? free.find((s) => s.phase === 'waiting') ?? free.find((s) => s.phase === 'eating') ?? null;
+  const free = c.seats.filter((s) => !s.promised);
+  const mine = free.find((s) => s.order === food && s.phase === 'waiting');
+  if (mine) return mine;
+  if (free.some((s) => s.order === food && s.phase === 'arriving')) return null;
+  const other = free.find((s) => s.phase === 'eating') ?? free.find((s) => s.phase === 'waiting');
+  if (other?.phase === 'waiting') other.order = food; // the bubble shows what is coming
+  return other ?? null;
 }
 
 /** Send the plates waiting at the cart: Út takes the first one (he hurries when more wait); without him they fade over. */
 function dispatch(c) {
-  while (c.queue.length) {
+  for (let i = 0; i < c.queue.length; ) {
     if (c.carry && c.ut.phase !== 'home') return;
-    const to = target(c, c.queue[0]);
-    if (!to) return;
-    const food = c.queue.shift();
+    const to = target(c, c.queue[i]);
+    if (!to) {
+      i++; // its customer is still walking in: the next plate goes first
+      continue;
+    }
+    const [food] = c.queue.splice(i, 1);
     to.promised = food;
     if (!c.carry) {
       c.plates.push({ food, t: 0, dur: T.direct, to: to.i, from: 'cart' });
@@ -113,12 +138,12 @@ export function tick(c, dt) {
     s.t += dt;
     if (s.phase === 'arriving' && s.t >= T.arrive) Object.assign(s, { phase: 'waiting', t: 0 });
     else if (s.phase === 'eating' && s.t >= T.eat && !s.promised) {
-      // still hungry and something left to order: order again, else make room
+      // still hungry and a trio left nobody has ordered: order again, else go home
       const options = s.ate < s.appetite ? orderable(c) : [];
       if (options.length) Object.assign(s, { phase: 'waiting', t: 0, order: pick(c, options) });
       else Object.assign(s, { phase: 'leaving', t: 0 });
     } else if (s.phase === 'leaving' && s.t >= T.leave) seat(c, s);
-    else if (s.phase === 'empty' && c.queue.length) seat(c, s); // a plate is waiting: someone comes for it
+    else if (s.phase === 'empty' && orderable(c).length) seat(c, s); // a trio nobody has ordered: someone comes for it
   }
   dispatch(c);
   for (const k of ['cat', 'mood']) {

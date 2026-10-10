@@ -84,6 +84,52 @@ test('counter: a plate with nobody seated waits until someone comes; reduced mot
   assert.equal(r.served, 2);
 });
 
+test('counter: never more customers waiting than trios to come; two never wait for the same last trio', () => {
+  const c = createCounter({ foods: { shrimp: 3, beef: 3 }, seats: 3, seed: 4 });
+  assert.equal(c.seats.filter((s) => s.phase === 'waiting').length, 2, 'two servings left: two customers');
+  const d = createCounter({ foods: { shrimp: 3 }, seats: 2, seed: 1 });
+  assert.deepEqual(d.seats.map((s) => s.order), ['shrimp', null], 'one trio: one customer');
+  const e = createCounter({ foods: { shrimp: 3, beef: 6 }, seats: 3, seed: 1 });
+  assert.equal(e.seats.filter((s) => s.order === 'shrimp').length, 1);
+});
+
+test('counter: the books balance through whole levels (random boards, match orders, timings)', () => {
+  const FOODS = ['shrimp', 'beef', 'corn', 'squid', 'carrot'];
+  for (let seed = 1; seed <= 60; seed++) {
+    let r = seed * 7919;
+    const rnd = () => ((r = (r * 16807) % 2147483647) / 2147483647);
+    const foods = {};
+    for (const f of FOODS.slice(0, 2 + (seed % 4))) foods[f] = 3 * (1 + Math.floor(rnd() * 3));
+    const trios = Object.entries(foods).flatMap(([f, k]) => Array(k / 3).fill(f)).sort(() => rnd() - 0.5);
+    const c = createCounter({ foods, seats: 2 + (seed % 2), seed, carry: seed % 5 !== 0 });
+    const check = (when) => {
+      const left = {};
+      for (const [f, k] of Object.entries(c.left)) left[f] = k / 3;
+      for (const f of c.queue) left[f] = (left[f] ?? 0) + 1;
+      for (const p of c.plates) if (p.to === 'cart') left[p.food] = (left[p.food] ?? 0) + 1;
+      for (const s of c.seats) {
+        if ((s.phase === 'waiting' || s.phase === 'arriving') && !s.promised) left[s.order] = (left[s.order] ?? 0) - 1;
+      }
+      for (const [f, k] of Object.entries(left)) assert.ok(k >= 0, `seed ${seed} ${when}: ${-k} order(s) too many for ${f}`);
+    };
+    check('start');
+    for (const f of trios) {
+      serve(c, f);
+      check(`serve ${f}`);
+      for (let t = 0, wait = rnd() * 3; t < wait; t += 0.1) {
+        tick(c, 0.1);
+        check('tick');
+      }
+    }
+    for (let k = 0; k < 600 && busy(c); k++) {
+      tick(c, 0.1);
+      check('end');
+    }
+    assert.equal(c.served, trios.length, `seed ${seed}: every trio reached a customer`);
+    assert.equal(c.seats.filter((s) => s.phase === 'waiting').length, 0, `seed ${seed}: nobody is left waiting when the board is clear`);
+  }
+});
+
 test('counter: a booster makes the customers look up for a moment; it never cuts a cheer or a win short', () => {
   const c = createCounter({ foods: { shrimp: 6 }, seats: 2, seed: 2 });
   wow(c);
