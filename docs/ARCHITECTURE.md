@@ -57,12 +57,14 @@ client/        browser game (Vite root)
                  dom.js (index.html landing text via data-i18n). Every player-facing string goes through t() in vi and en;
                  the first launch asks for the language, VI | EN in the menu footer and the pause menu, ?lang= for a visit
   ui/            dom.js (h, toasts), fit.js (board margins measured from the HUD / menu), coach.js (first-level
-                 onboarding hand), stats.js (?stats=1 overlay), install.js, update.js
+                 onboarding hand), stats.js (?stats=1 overlay), install.js, update.js, journey.js + vietnam-map.js (the level select:
+                 the journey map, #84; vietnam-map.js is the pure SVG of the map)
   sw.js          service worker source (offline); scripts/build-sw.js writes dist/sw.js with the precache list
   game/          session.js (state + undo + action log + the armed booster), input.js (pointer state machine), content.js (packs),
                  replay-player.js (replay viewer: ?r=<actions>&h=<hash> or ?r=best, validated, then stepped through the
                  same session + BoardView.play; nothing recorded),
-                 unlock.js (pure: pack / level unlocks, continue, next level),
+                 unlock.js (pure: pack / level unlocks, continue, next level), journey.js (pure: the journey map's stops, the
+                 cart, Bà Năm one stop ahead, story marks),
                  story.js (pure: which story beats / keepsakes an app start or a win triggers, seen ids, validateStory;
                  docs/STORY.md "Story engine"; ?story=log prints them),
                  routes.js (pure URL <-> screen: story levels are /<pack-slug>/<n>, e.g. /hem-sai-gon/12 = /saigon-alley/12,

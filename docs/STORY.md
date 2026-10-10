@@ -262,7 +262,8 @@ looks (`content/themes/<id>.json` `looks`), chosen per level from its name and h
 
 ## Retention loops (no new currency)
 
-- **The trail**: Bà Năm is always one stop ahead; the next stop is visible as a teaser on the journey map.
+- **The trail**: Bà Năm is always one stop ahead; the next stop is visible as a teaser on the journey map (#84: the
+  map of Vietnam with a pin per stop and a postcard per stop; stops not shipped yet show as "?").
 - **The clock**: the alley's clearance date moves on.
 - **Three layers**: something every level, something every few levels, a chapter every ten.
 - **The notebook** (#86): pages, keepsakes, margin notes, best replays (#77) kept as "memories".

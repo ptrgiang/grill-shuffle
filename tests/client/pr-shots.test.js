@@ -15,6 +15,8 @@ test('pr-shots: page specs', () => {
   assert.throws(() => parsePage('/saigon-alley/1'));
   const b = parsePage('/fishing-village/37@390x844m+unlock+tap=[data-booster=fan]');
   assert.deepEqual([b.name, b.unlock, b.tap, b.select], ['fishing-village-37-390x844-tap-data-booster-fan', true, '[data-booster=fan]', false]);
+  const c = parsePage('/levels@390x844m+progress=57');
+  assert.deepEqual([c.name, c.progress, c.unlock], ['levels-390x844-p57', 57, false]);
   assert.equal(b.url, '/fishing-village/37?freeze=1&quality=high&coach=0');
 });
 

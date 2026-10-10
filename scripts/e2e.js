@@ -436,34 +436,35 @@ async function runReplay(name, { w, h }) {
   }
 }
 
-// #67 / #17: the second pack (Beach Grill) is locked behind Street BBQ + its theme's stars, deep links to it land on
-// the level select at that pack, and finishing the requirement opens it in its own theme.
+// #67 / #17 / #84: the second pack (Beach Grill) is locked behind Street BBQ + its theme's stars, deep links to it land on
+// the journey map with its postcard turned over, and finishing the requirement opens it in its own theme.
 async function runPacks(name, { w, h }) {
   const { page, close } = await launchChrome({ width: w, height: h, mobile: true, life: 3 * 60_000 });
   const errors = [];
   collectPageErrors(page, errors);
   const tabState = () =>
     page.evaluate(() => {
-      const tab = document.querySelector('.pack-tab[data-pack="beach_grill"]');
-      const sec = document.querySelector('section.pack');
+      const tab = document.querySelector('.j-card[data-pack="beach_grill"]');
+      const pin = document.querySelector('.j-pin-at[data-pack="beach_grill"]');
+      const sec = document.querySelector('.j-card.open');
       const r = tab.getBoundingClientRect();
-      const cards = sec ? [...sec.querySelectorAll('.level-card')] : [];
+      const cards = sec ? [...sec.querySelectorAll('.j-node')] : [];
       return {
         path: location.pathname, shown: sec?.dataset.pack, tabLocked: tab.classList.contains('locked'), current: tab.getAttribute('aria-current'),
-        tabFits: r.left >= 0 && r.right <= innerWidth, tabH: Math.round(r.height), locked: sec?.classList.contains('locked'),
-        reason: sec?.querySelector('.pack-lock')?.textContent, links: cards.filter((c) => c.tagName === 'A').length, cards: cards.length,
+        tabFits: r.left >= 0 && r.right <= innerWidth, tabH: Math.round(r.height), pinH: Math.round(pin?.getBoundingClientRect().height ?? 0), locked: sec?.classList.contains('locked'),
+        reason: sec?.querySelector('.j-stop-sub')?.textContent, links: cards.filter((c) => c.tagName === 'A').length, cards: cards.length,
       };
     });
   try {
     await page.goto(`${vite.url}/levels`, { waitUntil: 'load' });
-    await page.waitForSelector('.pack-tab[data-pack="beach_grill"]', { timeout: 30000 });
+    await page.waitForSelector('.j-card[data-pack="beach_grill"]', { timeout: 30000 });
     let st = await tabState();
-    check(st.shown === 'street_bbq' && st.tabLocked && st.tabFits && st.tabH >= 44, `${name}: /levels opens the Street BBQ tab; the Beach Grill tab shows locked, fits and is tappable (${JSON.stringify({ shown: st.shown, fits: st.tabFits, h: st.tabH })})`);
+    check(st.shown === 'street_bbq' && st.tabLocked && st.tabFits && st.tabH >= 44 && st.pinH >= 44, `${name}: /levels opens the Street BBQ postcard; the Beach Grill postcard and map pin show locked, fit and are tappable (${JSON.stringify({ shown: st.shown, fits: st.tabFits, h: st.tabH, pin: st.pinH })})`);
 
-    await page.click('.pack-tab[data-pack="beach_grill"]');
+    await page.click('.j-card[data-pack="beach_grill"] .j-card-link');
     await page.waitForFunction(() => location.pathname === '/levels/fishing-village', { timeout: 10000 });
     st = await tabState();
-    check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Saigon Alley/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill tab (/levels/fishing-village) shows its requirement (${st.reason})`);
+    check(st.shown === 'beach_grill' && st.current === 'page' && st.locked && /Finish Saigon Alley/.test(st.reason) && /★ 75/.test(st.reason), `${name}: the Beach Grill postcard (/levels/fishing-village) turns over and shows its requirement (${st.reason})`);
     check(st.cards === 50 && st.links === 0, `${name}: its levels are not playable (${st.links}/${st.cards} links)`);
     await sleep(300);
     await page.screenshot({ path: join(ROOT, 'shots', `e2e-${name}.png`) });
@@ -471,7 +472,7 @@ async function runPacks(name, { w, h }) {
     await page.evaluate(() => window.__gs.go('/fishing-village/1'));
     await page.waitForFunction(() => location.pathname === '/levels/fishing-village', { timeout: 10000 });
     const toast = await page.evaluate(() => document.querySelector('.toast.show')?.textContent ?? '');
-    check(/Fishing Village is locked/.test(toast), `${name}: a deep link into the locked pack lands on its tab with a toast (${toast})`);
+    check(/Fishing Village is locked/.test(toast), `${name}: a deep link into the locked pack lands on its postcard with a toast (${toast})`);
 
     await page.evaluate(() => {
       const gs = window.__gs;
@@ -479,11 +480,11 @@ async function runPacks(name, { w, h }) {
       gs.app.progress['daily:2026-10-08'] = { stars: 3 }; // a daily result: not a story star
       gs.go('/levels');
     });
-    const badge = await page.evaluate(() => document.querySelector('.levels-head .badge')?.textContent);
+    const badge = await page.evaluate(() => document.querySelector('.levels-head .j-total')?.textContent);
     const story = await page.evaluate(() => window.__gs.packs.reduce((n, p) => n + p.levels.length, 0));
     check(badge === `★ 150/${story * 3}`, `${name}: the star total counts story levels only, not dailies (${badge})`);
     st = await tabState();
-    check(st.shown === 'beach_grill' && !st.tabLocked && !st.locked && st.links === 1, `${name}: finishing Street BBQ with enough stars opens the pack, and /levels now opens its tab (${JSON.stringify({ shown: st.shown, links: st.links })})`);
+    check(st.shown === 'beach_grill' && !st.tabLocked && !st.locked && st.links === 1, `${name}: finishing Street BBQ with enough stars opens the pack, and /levels now opens its postcard (${JSON.stringify({ shown: st.shown, links: st.links })})`);
     await page.evaluate(() => window.__gs.go('/fishing-village/1'));
     await page.waitForFunction(() => window.__gs.app.level?.id === 'beach-001', { timeout: 15000 });
     const theme = await page.evaluate(() => window.__gs.stage.theme.id);
