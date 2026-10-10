@@ -266,6 +266,7 @@ export class Stage {
   }
 
   addShake(amount) {
+    if (this.frozen) return; // stills stay repeatable, and a shake that render(0) never decays would keep it busy
     this.shake = Math.min(0.25, this.shake + amount);
   }
 
