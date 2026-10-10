@@ -135,7 +135,8 @@ serve chime; combo raises the chime's pitch, adds an octave layer at x2, brightn
 390×844, 430×932, 844×390 and 1280×800, the menu on a phone and a desktop) and pixel-compares each with
 `tests/visual/<name>.png`. Captures use `?freeze=1` (`Stage.frozen`: the stage clock stands still, so no ember
 drift or bulb flicker; the board pins its idle oscillations (bob, wobble, pulses) and spawns no ambient particles,
-but still gets real dt, so a selection's glow and dim settle into their end state), `quality=high` and DPR 1, so
+but still gets real dt, so a selection's glow and dim settle into their end state; every frame while the board is
+busy or the scene changed, then none, since its idle frames are one picture: `FROZEN_IDLE_FPS`), `quality=high` and DPR 1, so
 two runs on one machine match to the pixel. A
 pixel counts as changed when a channel differs by more than 40; a capture fails above 0.4 % changed pixels. Diffs (red
 on a faded copy) go to `shots/visual/diff/`.

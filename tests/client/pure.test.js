@@ -172,3 +172,20 @@ test('quality: idle gate renders every frame while busy, ~12 fps when still', as
   g.wake();
   assert.ok(g.tick(1 / 60, false) > 0); // input: render right away
 });
+
+test('quality: a frozen stage draws no idle frames, every frame while busy', async () => {
+  const { IdleGate, FROZEN_IDLE_FPS } = await import('../../client/render/quality.js');
+  assert.equal(FROZEN_IDLE_FPS, 0);
+  const g = IdleGate.for(true);
+  const run = (seconds, busy) => {
+    let rendered = 0;
+    for (let t = 0; t < seconds; t += 1 / 60) if (g.tick(1 / 60, busy) > 0) rendered++;
+    return rendered;
+  };
+  assert.ok(run(1, true) >= 59); // moves and fades settle frame by frame
+  assert.ok(run(0.6, false) >= 30); // hold
+  assert.equal(run(10, false), 0); // one still picture: drawn once, not again
+  g.wake();
+  assert.ok(g.tick(1 / 60, false) > 0); // input, resize
+  assert.equal(IdleGate.for(false).idleInterval, new IdleGate().idleInterval);
+});

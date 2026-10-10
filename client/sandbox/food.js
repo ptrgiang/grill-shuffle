@@ -3,6 +3,7 @@
 // ?ui=0 hides the control panel (clean lineup shots, e.g. the 390 px readability check), ?theme=<id> lights it with a theme.
 import * as THREE from 'three';
 import { Stage } from '../render/stage.js';
+import { IdleGate } from '../render/quality.js';
 import { createFood, foodMaterial, FOOD_MODELS } from '../render/foods.js';
 import { GrillView } from '../render/grill.js';
 import { FOOD_IDS } from '../../shared/foods.js';
@@ -21,6 +22,7 @@ const items = [];
 // Landscape: one column per food, variants down the column. Portrait (phones): one row per food, variants across,
 // so the lineup stays readable at 360-430 px.
 function build() {
+  stage.invalidate();
   root.clear();
   items.length = 0;
   const n = FOOD_IDS.length;
@@ -82,7 +84,11 @@ window.addEventListener('resize', () => {
   stage.resize();
   build();
 });
-stage.start((dt) => {
-  if (spinning) for (const m of items) m.rotation.y += dt * 0.6;
-});
+const idle = stage.frozen ? IdleGate.for(true) : null; // frozen stills: on demand, see sandbox/board.js
+stage.start(
+  (dt) => {
+    if (spinning) for (const m of items) m.rotation.y += dt * 0.6;
+  },
+  { gate: idle && ((dt) => idle.tick(dt, spinning || stage.busy)) },
+);
 window.__sandboxReady = true;

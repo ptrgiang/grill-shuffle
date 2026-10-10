@@ -22,6 +22,7 @@ export class Stage {
   constructor(canvas, { theme = {}, shadows = true, pixelRatioMax = 2, preserveDrawingBuffer = false, frozen = urlFlag('freeze') } = {}) {
     this.canvas = canvas;
     this.frozen = frozen;
+    this.dirty = true; // draw the first frame (invalidate)
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer });
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -52,6 +53,7 @@ export class Stage {
     const t = TIERS[name];
     if (!t || this.tierName === name) return;
     const prev = this.tier;
+    this.invalidate();
     this.tierName = name;
     this.tier = t;
     this.pixelRatioMax = t.pixelRatio;
@@ -82,6 +84,7 @@ export class Stage {
     if (this.theme && theme.id && this.theme.id === theme.id && (this.theme.look?.name ?? null) === (look && theme.looks?.[look] ? look : null)) return;
     const t = withLook(resolveTheme(theme), look);
     this.theme = t;
+    this.invalidate();
     this.scene.background.set(t.palette.background);
     this.renderer.toneMappingExposure = t.lights.exposure;
     this.hemi.color.set(t.lights.sky);
@@ -193,6 +196,7 @@ export class Stage {
    *  marginSide sets both sides; marginLeft / marginRight override it (landscape HUD columns). */
   frame({ width, depth, height = 1.2, marginTop = 0, marginBottom = 0, marginSide = 0, marginLeft = marginSide, marginRight = marginSide }) {
     this.viewBox = { width, depth, height, marginTop, marginBottom, marginLeft, marginRight };
+    this.invalidate();
     this.#fit();
   }
 
@@ -239,6 +243,7 @@ export class Stage {
     const w = Math.max(1, Math.round(r.width || this.canvas.clientWidth || 300));
     const h = Math.max(1, Math.round(r.height || this.canvas.clientHeight || 150));
     this.size = { w, h };
+    this.invalidate();
     this.renderer.setPixelRatio(Math.min(this.pixelRatioMax, window.devicePixelRatio || 1));
     this.renderer.setSize(w, h, false);
     this.#fit();
@@ -265,6 +270,7 @@ export class Stage {
   }
 
   render(dt) {
+    this.dirty = false;
     this.time += dt;
     tickMaterials(this.time);
     for (const f of this.updaters) f(dt, this.time);
@@ -284,7 +290,7 @@ export class Stage {
 
   /**
    * requestAnimationFrame loop. `gate(dt)` (optional) returns the dt to render with, or 0 to skip this frame
-   * (render on demand); `onFrame(dt)` advances the view before the render; `onRendered(info)` gets
+   * (render on demand; a frozen stage goes through it too, IdleGate.for); `onFrame(dt)` advances the view before the render; `onRendered(info)` gets
    * { dt, cpuMs, calls, triangles } after it. dt is clamped to 50 ms, so a slow device animates slower, never skips.
    * Stops while the page is hidden and restarts without a jump when it comes back.
    */
@@ -293,7 +299,7 @@ export class Stage {
     const loop = (now) => {
       const raw = (now - last) / 1000;
       last = now;
-      const step = this.frozen ? raw : gate ? gate(raw) : raw;
+      const step = gate ? gate(raw) : raw;
       if (step > 0) {
         const dt = Math.min(0.05, step);
         const t0 = performance.now();
@@ -322,8 +328,16 @@ export class Stage {
     this.onVisibility = null;
   }
 
-  /** Something on screen moves (camera shake). */
+  /**
+   * The scene changed outside an animation (theme, quality, size, framing; BoardView: a new state, layout, slot
+   * markers): the next frame is drawn even when nothing moves. A frozen stage draws no idle frames (IdleGate.for).
+   */
+  invalidate() {
+    this.dirty = true;
+  }
+
+  /** Something on screen moves (camera shake), or the scene changed since the last frame (invalidate). */
   get busy() {
-    return this.shake > 0.001;
+    return this.shake > 0.001 || !!this.dirty;
   }
 }

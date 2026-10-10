@@ -62,13 +62,21 @@ export class FrameMonitor {
 }
 
 /**
+ * Idle frame rate of a frozen stage (?freeze=1, screenshots): none. Its idle frames are all the same picture (the
+ * stage clock stands still), and a change that is not an animation (a new level, theme, margins, quality) marks the
+ * stage dirty (Stage.invalidate), which counts as busy. Redrawing that picture as fast as it could, SwiftShader at
+ * 1170 x 2532 with shadows kept every core busy between captures.
+ */
+export const FROZEN_IDLE_FPS = 0;
+
+/**
  * Render on demand: while something moves (busy), every frame; when the board is still, one frame per
  * `idleInterval` seconds (embers and bulbs keep flickering, the GPU mostly sleeps). Busy holds for `holdS` after
  * the last busy frame so a fade's last steps are smooth.
  */
 export class IdleGate {
   constructor({ idleFps = 12, holdS = 0.6 } = {}) {
-    this.idleInterval = 1 / idleFps;
+    this.idleInterval = idleFps > 0 ? 1 / idleFps : Infinity;
     this.holdS = holdS;
     this.pending = 0; // seconds since the last rendered frame
     this.quietFor = Infinity;
@@ -88,6 +96,11 @@ export class IdleGate {
 
   get active() {
     return this.quietFor < this.holdS;
+  }
+
+  /** The gate for a stage: `frozen` (Stage.frozen) idles at FROZEN_IDLE_FPS. */
+  static for(frozen) {
+    return new IdleGate(frozen ? { idleFps: FROZEN_IDLE_FPS } : {});
   }
 
   /** Something outside the view changed (input, resize, modal): render the next frame. */

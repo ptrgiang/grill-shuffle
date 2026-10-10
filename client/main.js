@@ -94,7 +94,7 @@ const input = new Input(canvas, () => app.session, view, {
 
 // ---------------------------------------------------------------- render loop: on demand, adaptive quality
 
-const idle = new IdleGate();
+const idle = IdleGate.for(stage.frozen);
 const frames = new FrameMonitor();
 const urlQuality = new URLSearchParams(location.search).get('quality'); // ?quality=low: this visit only (testing)
 const urlLang = new URLSearchParams(location.search).get('lang'); // ?lang=vi: this visit only (screenshots, tests)
